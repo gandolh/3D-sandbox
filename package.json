@@ -20,7 +20,8 @@
     "api": "npm run dev --workspace @solstice/api",
     "lint:corpus": "bash corpus/lint.sh",
     "check": "npm run build && npm run typecheck && npm run typecheck:web && npm run test && npm run scenes && npm run build:web && npm run lint:corpus",
-    "typecheck:web": "tsc --noEmit -p apps/web/tsconfig.json"
+    "typecheck:web": "tsc --noEmit -p apps/web/tsconfig.json",
+    "assets": "node assets/download-list.ts"
   },
   "devDependencies": {
     "@types/node": "24.13.4",

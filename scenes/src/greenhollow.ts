@@ -372,11 +372,14 @@ const greenhollow: SceneDocumentInput = {
     ],
 
     placements: [
-      // A fountain in the pond, and a bench under the pergola. Deliberately a
+      // A bench under the vine and a table out on the grass. Deliberately a
       // little above the ground — drop-to-floor is what settles them.
-      { id: "fountain", asset: "polyhaven/Fountain_01", position: [7.0, 0.6, 37.9], rotationY: 0, scale: 1.1 },
-      { id: "bench-vine", asset: "polyhaven/GardenBench_01", position: [-1.2, 0.5, 12.0], rotationY: 90 },
-      { id: "table-garden", asset: "polyhaven/CoffeeTable_01", position: [2.4, 0.7, 33.8], rotationY: 15 },
+      //
+      // There is no fountain: Poly Haven has none, and the pond reads perfectly
+      // well on its own. A proxy box in the middle of the water read worse than
+      // nothing at all.
+      { id: "bench-vine", asset: "polyhaven/painted_wooden_bench", position: [-1.2, 0.5, 12.0], rotationY: 90 },
+      { id: "table-garden", asset: "polyhaven/outdoor_table_chair_set_01", position: [2.4, 0.7, 33.8], rotationY: 15 },
     ],
   },
 
@@ -385,7 +388,9 @@ const greenhollow: SceneDocumentInput = {
       // Roses either side of the alley, in a strip a metre clear of the gravel.
       {
         id: "roses-west",
-        assets: ["polyhaven/rose_bush_01", "polyhaven/rose_bush_02"],
+        // Poly Haven has no roses. `shrub_01`–`04` are temperate and read as a
+        // clipped flowering border at the scale the alley is viewed from.
+        assets: ["polyhaven/shrub_01", "polyhaven/shrub_02", "polyhaven/shrub_03"],
         area: rect(-4.2, 2, 1.8, 19),
         density: 26,
         seed: 11,
@@ -395,7 +400,7 @@ const greenhollow: SceneDocumentInput = {
       },
       {
         id: "roses-east",
-        assets: ["polyhaven/rose_bush_01", "polyhaven/rose_bush_02"],
+        assets: ["polyhaven/shrub_02", "polyhaven/shrub_03", "polyhaven/shrub_04"],
         area: rect(2.4, 2, 1.8, 19),
         density: 26,
         seed: 12,
@@ -406,7 +411,7 @@ const greenhollow: SceneDocumentInput = {
       // The kitchen garden: beds between the house and the greenhouse.
       {
         id: "kitchen-garden",
-        assets: ["polyhaven/vegetable_bed_01"],
+        assets: ["polyhaven/planter_box_01", "polyhaven/planter_box_02", "polyhaven/planter_box_03"],
         area: rect(-13, 34, 9, 10),
         density: 9,
         seed: 21,
@@ -418,7 +423,9 @@ const greenhollow: SceneDocumentInput = {
       // The orchard, planted in rows — which is the whole reason rows exist.
       {
         id: "orchard",
-        assets: ["polyhaven/apple_tree_01", "polyhaven/pear_tree_01", "polyhaven/plum_tree_01"],
+        // Poly Haven has no fruit trees at all. What makes this read as an
+        // orchard is the row spacing, not the species.
+        assets: ["polyhaven/tree_small_02"],
         area: rect(-14, 46, 28, 14),
         density: 1,
         seed: 31,

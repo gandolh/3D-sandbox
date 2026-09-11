@@ -17,6 +17,31 @@ import {
   loadScene,
   serializeScene,
 } from "@solstice/schema";
+import { knownAssets } from "../assets/manifest.ts";
+import verified from "../assets/verified.json" with { type: "json" };
+
+/**
+ * What `asset-resolves` is checked against — and it is **always** checked
+ * against something. Eight of Greenhollow's asset slugs were invented and
+ * nothing caught them, because the rule had never been wired up at all; an
+ * arming condition that can quietly evaluate to "off" would reintroduce exactly
+ * that.
+ *
+ * Two states, both armed:
+ *
+ * - Nothing downloaded — the common case on a fresh clone and in CI. Checked
+ *   against `assets/verified.json`, the committed list of slugs confirmed to
+ *   exist at their source. Offline, so it cannot be skipped.
+ * - Assets present. Checked against what is actually on disk, which is stricter:
+ *   a scene may not name something that has not been fetched.
+ */
+const downloaded = await knownAssets();
+const assets = downloaded.size > 0 ? downloaded : new Set(verified.assets);
+console.log(
+  downloaded.size > 0
+    ? `  manifest: ${downloaded.size} assets downloaded in assets-src/`
+    : `  manifest: nothing downloaded — checking against ${assets.size} verified slugs`,
+);
 
 const here = dirname(fileURLToPath(import.meta.url));
 const srcDir = join(here, "src");
@@ -41,7 +66,7 @@ for (const entry of entries) {
   }
 
   try {
-    const { document, findings } = loadScene(mod.default);
+    const { document, findings } = loadScene(mod.default, { knownAssets: assets });
     const out = join(here, `${document.id}.scene.json`);
     await writeFile(out, serializeScene(document), "utf8");
 

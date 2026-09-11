@@ -2,9 +2,14 @@ node_modules/
 dist/
 *.tsbuildinfo
 
-# Raw asset downloads: 1k/2k committed, 4k too heavy for git
+# Raw asset downloads: 1k/2k committed, 4k and up too heavy for git.
+# DOWNLOADS.md and download.sh are generated but *are* committed — they are how
+# a fresh clone knows what to fetch.
 assets-src/**/*_4k.*
 assets-src/**/*-4k.*
+assets-src/**/*_8k.*
+assets-src/**/*-8k.*
+assets-src/**/*.zip
 
 .DS_Store
 

@@ -690,19 +690,8 @@
     ],
     "placements": [
       {
-        "id": "fountain",
-        "asset": "polyhaven/Fountain_01",
-        "position": [
-          7,
-          0.6,
-          37.9
-        ],
-        "rotationY": 0,
-        "scale": 1.1
-      },
-      {
         "id": "bench-vine",
-        "asset": "polyhaven/GardenBench_01",
+        "asset": "polyhaven/painted_wooden_bench",
         "position": [
           -1.2,
           0.5,
@@ -713,7 +702,7 @@
       },
       {
         "id": "table-garden",
-        "asset": "polyhaven/CoffeeTable_01",
+        "asset": "polyhaven/outdoor_table_chair_set_01",
         "position": [
           2.4,
           0.7,
@@ -804,8 +793,9 @@
       {
         "id": "roses-west",
         "assets": [
-          "polyhaven/rose_bush_01",
-          "polyhaven/rose_bush_02"
+          "polyhaven/shrub_01",
+          "polyhaven/shrub_02",
+          "polyhaven/shrub_03"
         ],
         "area": [
           [
@@ -843,8 +833,9 @@
       {
         "id": "roses-east",
         "assets": [
-          "polyhaven/rose_bush_01",
-          "polyhaven/rose_bush_02"
+          "polyhaven/shrub_02",
+          "polyhaven/shrub_03",
+          "polyhaven/shrub_04"
         ],
         "area": [
           [
@@ -882,7 +873,9 @@
       {
         "id": "kitchen-garden",
         "assets": [
-          "polyhaven/vegetable_bed_01"
+          "polyhaven/planter_box_01",
+          "polyhaven/planter_box_02",
+          "polyhaven/planter_box_03"
         ],
         "area": [
           [
@@ -939,9 +932,7 @@
       {
         "id": "orchard",
         "assets": [
-          "polyhaven/apple_tree_01",
-          "polyhaven/pear_tree_01",
-          "polyhaven/plum_tree_01"
+          "polyhaven/tree_small_02"
         ],
         "area": [
           [
