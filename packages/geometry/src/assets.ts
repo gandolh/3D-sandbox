@@ -103,3 +103,23 @@ function mergeGeometries(parts: readonly THREE.BufferGeometry[]): THREE.BufferGe
 export function assetSourceFrom(entries: ReadonlyMap<string, AssetGeometry>): AssetSource {
   return { get: (id) => entries.get(id) };
 }
+
+/** The PBR maps a material can carry, once its texture set is downloaded. */
+export interface MaterialMaps {
+  map?: THREE.Texture;
+  normalMap?: THREE.Texture;
+  roughnessMap?: THREE.Texture;
+  metalnessMap?: THREE.Texture;
+  aoMap?: THREE.Texture;
+}
+
+/**
+ * Where a material's textures come from, keyed by the document's material id.
+ *
+ * Separate from `AssetSource` because materials and models are downloaded,
+ * named and versioned independently — a scene can have every texture and no
+ * model, or the reverse, and both have to work.
+ */
+export interface MaterialSource {
+  maps(materialId: string): MaterialMaps | undefined;
+}

@@ -56,7 +56,12 @@ credential helper, no GitHub SSH key. Commits are accumulating locally on `main`
 **Placements are real.** A dev-only Vite middleware serves `assets-src/`, the
 generator loads glTF through an injectable `AssetSource` (so it still runs
 headlessly with nothing downloaded), and placements collide with each other —
-drop a bowl over a table and it rests on the table. **201 tests pass.**
+drop a bowl over a table and it rests on the table. **207 tests pass.**
+
+**Surfaces are real.** Materials load PBR maps from Poly Haven and ambientCG,
+projected in world metres (`Material.textureScale`) so a texture tiles the same
+on a 6 m wall as on a 0.9 m pier. The pergola's vine is 1,816 tilted leaf
+clusters rather than a slab, so light comes through it in patches.
 
 **Context vegetation is real.** `tree_small_02` bakes to a 3.9 MB angle atlas and
 scatters as crossed alpha-tested quads — 2,062,487 triangles per tree down to
@@ -66,8 +71,9 @@ camera-facing billboards because a path tracer has no "the camera" to face.
 
 ## Next
 
-**10 and 13 are done.** Queued: **11** textures and an alpha-cut vine, then **12**
-a sample-convergence study to replace the guessed 2,000-sample default.
+**10, 11 and 13 are done.** Queued: **12**, a sample-convergence study to replace
+the guessed 2,000-sample default — now more pressing than it was, since the scene
+carries far more geometry and alpha than when that number was invented.
 
 ## Briefs
 
@@ -84,7 +90,12 @@ a sample-convergence study to replace the guessed 2,000-sample default.
 **Placements are real.** A dev-only Vite middleware serves `assets-src/`, the
 generator loads glTF through an injectable `AssetSource` (so it still runs
 headlessly with nothing downloaded), and placements collide with each other —
-drop a bowl over a table and it rests on the table. **201 tests pass.**
+drop a bowl over a table and it rests on the table. **207 tests pass.**
+
+**Surfaces are real.** Materials load PBR maps from Poly Haven and ambientCG,
+projected in world metres (`Material.textureScale`) so a texture tiles the same
+on a 6 m wall as on a 0.9 m pier. The pergola's vine is 1,816 tilted leaf
+clusters rather than a slab, so light comes through it in patches.
 
 **Context vegetation is real.** `tree_small_02` bakes to a 3.9 MB angle atlas and
 scatters as crossed alpha-tested quads — 2,062,487 triangles per tree down to

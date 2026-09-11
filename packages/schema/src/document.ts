@@ -12,6 +12,7 @@ export const PolygonSchema = PlanSchema.array().min(3);
 
 const Meters = z.number().finite();
 const PositiveMeters = z.number().finite().positive();
+const PositiveMetersOrUndefined = z.number().finite().positive().optional();
 const Degrees = z.number().finite();
 
 /* ── materials ─────────────────────────────────────────────────── */
@@ -32,6 +33,16 @@ export const Material = z.strictObject({
   baseColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
   roughness: z.number().min(0).max(1).optional(),
   metalness: z.number().min(0).max(1).optional(),
+  /**
+   * Metres covered by one repeat of the texture.
+   *
+   * Geometry here is built from boxes and extrusions, which carry 0–1 UVs across
+   * each face whatever its size — so without a world-scaled projection one brick
+   * stretches across a 6.4 m wall and the same brick is squeezed onto a 0.9 m
+   * pier. This is the number that projection uses, and it is a property of the
+   * material because it describes the real-world size of what the texture shows.
+   */
+  textureScale: PositiveMetersOrUndefined,
 });
 
 /* ── subject tier ──────────────────────────────────────────────── */

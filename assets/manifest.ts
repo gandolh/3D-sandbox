@@ -19,6 +19,26 @@ export const ASSETS_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "a
 export const SOURCES = ["polyhaven", "ambientcg", "cgbookcase", "local"] as const;
 export type Source = (typeof SOURCES)[number];
 
+export type MapRole = "map" | "normalMap" | "roughnessMap" | "metalnessMap" | "aoMap";
+
+/**
+ * Filename patterns for the two libraries, in priority order.
+ *
+ * Poly Haven packs ambient occlusion, roughness and metalness into one `arm`
+ * texture — R, G and B respectively — which is exactly how three.js reads
+ * `aoMap`, `roughnessMap` and `metalnessMap`, so one file fills three roles.
+ * ambientCG ships them separately. Displacement is deliberately ignored: it
+ * needs tessellated geometry to mean anything, and applied to a flat wall it
+ * does nothing but cost memory.
+ */
+const MAP_PATTERNS: { role: MapRole; test: RegExp }[] = [
+  { role: "map", test: /(_diff_|_Color\.)/i },
+  { role: "normalMap", test: /(_nor_gl_|_NormalGL\.)/i },
+  { role: "roughnessMap", test: /(_arm_|_Roughness\.)/i },
+  { role: "metalnessMap", test: /(_arm_|_Metalness\.)/i },
+  { role: "aoMap", test: /(_arm_|_AmbientOcclusion\.)/i },
+];
+
 export interface ManifestEntry {
   /** `polyhaven/pine_tree_01` — what a scene document references. */
   id: string;
@@ -28,6 +48,8 @@ export interface ManifestEntry {
   gltf?: string;
   /** A baked angle atlas, when `impostor/atlas.png` is present. */
   impostor?: { atlas: string; meta: string };
+  /** PBR maps, by three.js role. */
+  maps?: Partial<Record<MapRole, string>>;
   /** Every file found, relative to the asset directory. */
   files: string[];
 }
@@ -75,6 +97,16 @@ export async function readManifest(dir = ASSETS_DIR): Promise<ManifestEntry[]> {
 
       const gltf = files.find((f) => f.endsWith(".gltf") || f.endsWith(".glb"));
       const atlas = files.find((f) => f === "impostor/atlas.png");
+
+      // Only top-level images. A model's `textures/` belong to its glTF, which
+      // references them itself; treating them as the asset's material would
+      // dress every wall in tree bark.
+      const flat = files.filter((f) => !f.includes("/") && /\.(jpg|jpeg|png)$/i.test(f));
+      const maps: Partial<Record<MapRole, string>> = {};
+      for (const { role, test } of MAP_PATTERNS) {
+        const hit = flat.find((f) => test.test(f));
+        if (hit !== undefined) maps[role] = hit;
+      }
       out.push({
         id: `${source}/${entry.name}`,
         source,
@@ -83,6 +115,7 @@ export async function readManifest(dir = ASSETS_DIR): Promise<ManifestEntry[]> {
         ...(atlas === undefined
           ? {}
           : { impostor: { atlas, meta: "impostor/impostor.json" } }),
+        ...(Object.keys(maps).length === 0 ? {} : { maps }),
         files: files.sort(),
       });
     }

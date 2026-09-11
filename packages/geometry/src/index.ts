@@ -8,7 +8,7 @@ import { extrudePolygon } from "./polygon.js";
 import { buildWall } from "./subject/walls.js";
 import { UnsupportedRoofError, buildRoof } from "./subject/roofs.js";
 import { buildRun } from "./subject/runs.js";
-import type { AssetSource } from "./assets.js";
+import type { AssetSource, MaterialSource } from "./assets.js";
 import {
   buildScatterMesh,
   mergeSimple,
@@ -16,10 +16,12 @@ import {
   type ScatterInstance,
 } from "./context/scatter.js";
 import { buildImpostorGeometry, impostorMaterial } from "./context/impostor.js";
+import { boxProjectUv } from "./uv.js";
 import { buildMass, buildRoad } from "./context/masses.js";
 
 export * from "./random.js";
 export * from "./attributes.js";
+export * from "./uv.js";
 export * from "./polygon.js";
 export * from "./materials.js";
 export * from "./subject/walls.js";
@@ -62,6 +64,8 @@ export interface GenerateOptions {
    * this generator runs identically in a Node test with nothing downloaded.
    */
   assets?: AssetSource;
+  /** Loaded PBR maps. Absent means every material is its `baseColor`. */
+  materials?: MaterialSource;
 }
 
 /**
@@ -106,7 +110,7 @@ export function generateScene(
   const includeContext = options.includeContext ?? true;
   const includeTerrain = options.includeTerrain ?? true;
 
-  const materials = buildMaterials(doc);
+  const materials = buildMaterials(doc, options.materials);
   const owned: THREE.BufferGeometry[] = [];
   const evaluator = new Evaluator();
   evaluator.useGroups = false;
@@ -134,15 +138,27 @@ export function generateScene(
     geometry: THREE.BufferGeometry,
     materialId: string,
     name: string,
+    /**
+     * Re-project UVs in world metres. True for everything this generator builds
+     * — boxes and extrusions whose 0–1 UVs would stretch a texture across a
+     * whole wall — and false for a loaded glTF, which already has UVs that were
+     * authored against its own maps.
+     */
+    options: { project?: boolean } = {},
   ): THREE.Mesh => {
-    owned.push(geometry);
-    const mesh = new THREE.Mesh(geometry, resolveMaterial(materials, materialId));
+    const material = resolveMaterial(materials, materialId);
+    let placed = geometry;
+    if (options.project !== false && material.map !== null) {
+      placed = boxProjectUv(geometry, doc.materials[materialId]?.textureScale ?? 2);
+    }
+    owned.push(placed);
+    const mesh = new THREE.Mesh(placed, material);
     mesh.name = name;
     mesh.castShadow = true;
     mesh.receiveShadow = true;
     group.add(mesh);
     tier.meshes++;
-    tier.triangles += triangleCount(geometry);
+    tier.triangles += triangleCount(placed);
     return mesh;
   };
 
@@ -174,7 +190,7 @@ export function generateScene(
     geometry.scale(placement.scale, placement.scale, placement.scale);
     geometry.rotateY(THREE.MathUtils.degToRad(placement.rotationY));
     geometry.translate(...placement.position);
-    attach(subject, stats.subject, geometry, doc.site.terrain.material, `placement:${placement.id}`);
+    attach(subject, stats.subject, geometry, doc.site.terrain.material, `placement:${placement.id}`, loaded === undefined ? {} : { project: false });
   }
 
   for (const run of doc.subject.runs) {

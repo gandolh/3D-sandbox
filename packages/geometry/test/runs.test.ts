@@ -71,9 +71,36 @@ describe("buildRun", () => {
     expect(buildRun(run({ kind: "fence", climber: "vine" })).climber).toHaveLength(0);
   });
 
-  it("sits the climber on top of the beams, not inside them", () => {
+  it("sits the climber on the beams, hanging a little through them", () => {
+    // Not strictly above: a trained vine droops between the rafters, and
+    // clusters tilted to catch the light necessarily dip below their centres.
+    // What matters is that the mass is on top and the droop is a hand's width,
+    // not that the canopy floats clear of the structure.
     const { structure, climber } = buildRun(run({ climber: "vine" }));
-    expect(boxOf(climber).minY).toBeGreaterThanOrEqual(boxOf(structure).maxY - 1e-6);
+    const top = boxOf(structure).maxY;
+    const canopy = boxOf(climber);
+    expect(canopy.maxY).toBeGreaterThan(top);
+    expect(top - canopy.minY).toBeLessThan(0.25);
+  });
+
+  it("builds the climber from many small clusters, not one slab", () => {
+    // A slab reads as a black soffit from underneath. What makes a vine a vine
+    // is that light comes through it in patches, so the gaps are the feature.
+    const { climber } = buildRun(run({ climber: "vine" }));
+    expect(climber.length).toBeGreaterThan(200);
+    const box = boxOf(climber);
+    // Each cluster is a fraction of a metre; the canopy as a whole is metres.
+    expect(box.maxX - box.minX).toBeGreaterThan(3);
+    expect(box.maxY - box.minY).toBeLessThan(1);
+  });
+
+  it("is deterministic in the run's id", () => {
+    const a = buildRun(run({ id: "p1", climber: "vine" })).climber.length;
+    const b = buildRun(run({ id: "p1", climber: "vine" })).climber.length;
+    const c = buildRun(run({ id: "p2", climber: "vine" })).climber;
+    expect(a).toBe(b);
+    // A different pergola gets different foliage, not a copy of the first.
+    expect(boxOf(c).minY).not.toBe(boxOf(buildRun(run({ id: "p1", climber: "vine" })).climber).minY);
   });
 
   it("forces the last bay onto the path's end", () => {

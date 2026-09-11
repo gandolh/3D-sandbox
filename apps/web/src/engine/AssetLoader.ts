@@ -1,6 +1,14 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-import { prepareAsset, type AssetGeometry, type AssetSource, type ImpostorAsset } from "@solstice/geometry";
+import {
+  prepareAsset,
+  type AssetGeometry,
+  type AssetSource,
+  type ImpostorAsset,
+  type MaterialMaps,
+  type MaterialSource,
+} from "@solstice/geometry";
+import type { SceneDocument } from "@solstice/schema";
 
 /**
  * Loads the glTF the manifest knows about, once, into an `AssetSource`.
@@ -13,20 +21,27 @@ import { prepareAsset, type AssetGeometry, type AssetSource, type ImpostorAsset 
  * no `/assets-src` at all, and the correct behaviour there is the proxy, not a
  * blank viewport.
  */
-export async function loadAssets(signal?: AbortSignal): Promise<AssetSource> {
+export interface LoadedAssets {
+  assets: AssetSource;
+  /** Built per document, because material ids are the document's, not the library's. */
+  materialsFor(doc: SceneDocument): MaterialSource;
+}
+
+export async function loadAssets(signal?: AbortSignal): Promise<LoadedAssets> {
   const entries = new Map<string, AssetGeometry>();
   const impostors = new Map<string, ImpostorAsset>();
 
   let index: {
     models?: { id: string; path: string }[];
     impostors?: { id: string; atlas: string; meta: string }[];
+    materials?: { id: string; maps: Record<string, string> }[];
   };
   try {
     const response = await fetch("/assets-src/index.json", signal === undefined ? {} : { signal });
-    if (!response.ok) return source(entries, impostors);
+    if (!response.ok) return bundle(entries, impostors, new Map());
     index = (await response.json()) as typeof index;
   } catch {
-    return source(entries, impostors);
+    return bundle(entries, impostors, new Map());
   }
 
   const loader = new GLTFLoader();
@@ -69,16 +84,54 @@ export async function loadAssets(signal?: AbortSignal): Promise<AssetSource> {
     }),
   );
 
-  return source(entries, impostors);
+  const libraryMaps = new Map<string, MaterialMaps>();
+  await Promise.all(
+    (index.materials ?? []).map(async (entry) => {
+      const maps: MaterialMaps = {};
+      await Promise.all(
+        Object.entries(entry.maps).map(async ([role, path]) => {
+          try {
+            const texture = await textures.loadAsync(`/assets-src/${path}`);
+            // Only the base colour is colour. Normal, roughness, metalness and
+            // occlusion are data, and running them through sRGB decode makes
+            // surfaces subtly, unexplainably wrong.
+            texture.colorSpace = role === "map" ? THREE.SRGBColorSpace : THREE.NoColorSpace;
+            texture.wrapS = THREE.RepeatWrapping;
+            texture.wrapT = THREE.RepeatWrapping;
+            (maps as Record<string, THREE.Texture>)[role] = texture;
+          } catch {
+            // One missing map is not a missing material.
+          }
+        }),
+      );
+      if (Object.keys(maps).length > 0) libraryMaps.set(entry.id, maps);
+    }),
+  );
+
+  return bundle(entries, impostors, libraryMaps);
 }
 
-function source(
+function bundle(
   entries: ReadonlyMap<string, AssetGeometry>,
   impostors: ReadonlyMap<string, ImpostorAsset>,
-): AssetSource {
+  libraryMaps: ReadonlyMap<string, MaterialMaps>,
+): LoadedAssets {
   return {
-    get: (id) => entries.get(id),
-    impostor: (id) => impostors.get(id),
+    assets: {
+      get: (id) => entries.get(id),
+      impostor: (id) => impostors.get(id),
+    },
+    // The document names materials by its own ids; the library names them
+    // `<source>/<slug>`. This is the only place that knows both.
+    materialsFor: (doc) => {
+      const byMaterialId = new Map<string, MaterialMaps>();
+      for (const [id, definition] of Object.entries(doc.materials)) {
+        if (definition.slug === undefined || definition.source === "procedural") continue;
+        const found = libraryMaps.get(`${definition.source}/${definition.slug}`);
+        if (found !== undefined) byMaterialId.set(id, found);
+      }
+      return { maps: (id) => byMaterialId.get(id) };
+    },
   };
 }
 

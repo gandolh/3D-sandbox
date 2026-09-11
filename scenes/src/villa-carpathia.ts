@@ -57,7 +57,7 @@ const villa: SceneDocumentInput = {
     [WALL_MATERIAL]: {
       label: "Lime Plaster 04",
       source: "polyhaven",
-      slug: "plaster_brick_pattern",
+      slug: "clay_plaster",
       roughness: 0.82,
     },
     "roof-clay-tile": {
@@ -75,7 +75,7 @@ const villa: SceneDocumentInput = {
     "grass-meadow": {
       label: "Meadow Grass",
       source: "polyhaven",
-      slug: "coast_sand_rocks_02",
+      slug: "leafy_grass",
       roughness: 1,
     },
     "asphalt-road": {

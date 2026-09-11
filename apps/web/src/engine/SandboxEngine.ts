@@ -3,7 +3,12 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { TransformControls } from "three/addons/controls/TransformControls.js";
 import { Sky } from "three/addons/objects/Sky.js";
 import type { SceneDocument, Shot } from "@solstice/schema";
-import { generateScene, type AssetSource, type GeneratedScene } from "@solstice/geometry";
+import {
+  generateScene,
+  type AssetSource,
+  type GeneratedScene,
+  type MaterialSource,
+} from "@solstice/geometry";
 import type { CuboidCollider } from "@solstice/physics";
 import { resolveSolar } from "@solstice/solar";
 import {
@@ -63,6 +68,8 @@ export class SandboxEngine {
   private lastDocument: SceneDocument | null = null;
   /** Real models when they have loaded; until then the generator uses proxies. */
   private assets: AssetSource | null = null;
+  /** Real PBR maps when they have loaded; until then every material is a colour. */
+  private materials: MaterialSource | null = null;
   private readonly colliderOverlay = new THREE.Group();
 
   constructor(
@@ -132,6 +139,7 @@ export class SandboxEngine {
     this.generated = generateScene(doc, {
       includeContext: options.includeContext,
       ...(this.assets === null ? {} : { assets: this.assets }),
+      ...(this.materials === null ? {} : { materials: this.materials }),
     });
     this.scene.add(this.generated.root);
     this.setSolar(doc);
@@ -147,8 +155,13 @@ export class SandboxEngine {
    * Hand the engine its loaded models. Regenerates, because the scene standing
    * on screen was built from proxies.
    */
-  setAssets(assets: AssetSource, options: { includeContext: boolean }): void {
+  setAssets(
+    assets: AssetSource,
+    materials: MaterialSource,
+    options: { includeContext: boolean },
+  ): void {
     this.assets = assets;
+    this.materials = materials;
     if (this.lastDocument !== null) this.setDocument(this.lastDocument, options);
   }
 

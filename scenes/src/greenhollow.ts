@@ -129,8 +129,9 @@ const greenhollow: SceneDocumentInput = {
     "plaster-lime": {
       label: "Lime Plaster",
       source: "polyhaven",
-      slug: "plaster_brick_pattern",
+      slug: "clay_plaster",
       baseColor: "#E9E1D3",
+      textureScale: 2.4,
       roughness: 0.84,
     },
     "roof-clay-tile": {
@@ -138,6 +139,7 @@ const greenhollow: SceneDocumentInput = {
       source: "polyhaven",
       slug: "roof_tiles_14",
       baseColor: "#9C5540",
+      textureScale: 1.6,
       roughness: 0.66,
     },
     "roof-zinc": {
@@ -152,6 +154,7 @@ const greenhollow: SceneDocumentInput = {
       source: "ambientcg",
       slug: "Concrete034",
       baseColor: "#B9B5AD",
+      textureScale: 3.0,
       roughness: 0.9,
     },
     "concrete-wall": {
@@ -159,6 +162,7 @@ const greenhollow: SceneDocumentInput = {
       source: "ambientcg",
       slug: "Concrete034",
       baseColor: "#C2BDB3",
+      textureScale: 3.0,
       roughness: 0.88,
     },
     "steel-dark": {
@@ -176,10 +180,11 @@ const greenhollow: SceneDocumentInput = {
       metalness: 0.1,
     },
     "grass-lawn": {
-      label: "Mown Lawn",
+      label: "Leafy Grass",
       source: "polyhaven",
-      slug: "coast_sand_rocks_02",
+      slug: "leafy_grass",
       baseColor: "#5C7B43",
+      textureScale: 4.0,
       roughness: 1,
     },
     "gravel-alley": {
@@ -187,6 +192,7 @@ const greenhollow: SceneDocumentInput = {
       source: "ambientcg",
       slug: "Gravel023",
       baseColor: "#A79D8D",
+      textureScale: 2.0,
       roughness: 0.96,
     },
     "asphalt-road": {
@@ -194,6 +200,7 @@ const greenhollow: SceneDocumentInput = {
       source: "ambientcg",
       slug: "Asphalt026A",
       baseColor: "#47474A",
+      textureScale: 4.0,
       roughness: 0.95,
     },
     "hedge-green": {

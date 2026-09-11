@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import type { Plan, Run } from "@solstice/schema";
 import { ensureStandardAttributes } from "../attributes.js";
+import { mulberry32, randomBetween } from "../random.js";
 
 /** Post section, in metres. Slim enough to read as metalwork at render scale. */
 const POST = 0.08;
@@ -133,19 +134,58 @@ function beams(run: Run, height: number, rafters: boolean): THREE.BufferGeometry
   return out;
 }
 
-/** The climber trained over a pergola: a slab of foliage sitting on the beams. */
+/**
+ * The climber trained over a pergola: a canopy of leaf clusters, not a slab.
+ *
+ * A solid box was the first attempt and it reads as a black soffit — which is
+ * exactly right for a solid box and exactly wrong for a vine. What makes a vine
+ * a vine, from underneath, is that light comes *through* it in patches.
+ *
+ * So the canopy is many small quads with gaps between them. Geometry rather than
+ * an alpha-cut texture, because no CC0 leaf texture with an alpha channel is in
+ * the asset set — and gaps in geometry are honest in a way a missing texture is
+ * not: the path tracer gets real light through real holes, with no material
+ * trickery to go wrong.
+ */
+const LEAF = 0.34;
+/** Clusters per square metre of canopy. Enough to read as dense, sparse enough to see sky. */
+const LEAF_DENSITY = 26;
+
 function canopy(run: Run, height: number): THREE.BufferGeometry[] {
-  return segments(run.path).map((segment) => {
-    const geometry = new THREE.BoxGeometry(segment.length, CANOPY, run.width + 0.4);
-    geometry.translate(0, height + CANOPY / 2, 0);
-    geometry.rotateY(segment.angle);
-    geometry.translate(
-      (segment.from[0] + segment.to[0]) / 2,
-      0,
-      (segment.from[1] + segment.to[1]) / 2,
-    );
-    return geometry;
-  });
+  const out: THREE.BufferGeometry[] = [];
+  // Seeded from the run's own id, so a canopy is stable across reloads and two
+  // pergolas in one scene do not get identical foliage.
+  let seed = 0;
+  for (const ch of run.id) seed = (seed * 31 + ch.charCodeAt(0)) >>> 0;
+  const rng = mulberry32(seed);
+
+  for (const segment of segments(run.path)) {
+    const count = Math.max(1, Math.round(segment.length * run.width * LEAF_DENSITY));
+    for (let i = 0; i < count; i++) {
+      const along = rng() * segment.length;
+      const across = randomBetween(rng, -run.width / 2 - 0.2, run.width / 2 + 0.2);
+      const size = LEAF * randomBetween(rng, 0.7, 1.5);
+
+      const leaf = new THREE.PlaneGeometry(size, size);
+      // Tilted, not flat: a field of horizontal quads reads as a perforated
+      // ceiling, and the whole point is that it should not.
+      leaf.rotateX(-Math.PI / 2 + randomBetween(rng, -0.7, 0.7));
+      leaf.rotateY(rng() * Math.PI * 2);
+
+      const u = along / segment.length;
+      leaf.translate(
+        segment.from[0] +
+          (segment.to[0] - segment.from[0]) * u +
+          Math.sin(segment.angle) * across * -1,
+        height + randomBetween(rng, 0.02, 0.26),
+        segment.from[1] +
+          (segment.to[1] - segment.from[1]) * u +
+          Math.cos(segment.angle) * across * -1,
+      );
+      out.push(leaf);
+    }
+  }
+  return out;
 }
 
 export interface RunGeometry {

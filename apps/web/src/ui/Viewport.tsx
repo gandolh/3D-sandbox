@@ -82,13 +82,17 @@ export function Viewport() {
     // then, built from proxies — which is the point: the viewport is usable
     // immediately and improves, rather than waiting on 135 MB of glTF.
     const assetLoad = new AbortController();
-    void loadAssets(assetLoad.signal).then((assets) => {
+    void loadAssets(assetLoad.signal).then((loaded) => {
       if (assetLoad.signal.aborted) return;
-      engine.setAssets(assets, { includeContext: getState().showContext });
+      const doc = getState().document;
+      if (doc === null) return;
+      engine.setAssets(loaded.assets, loaded.materialsFor(doc), {
+        includeContext: getState().showContext,
+      });
 
       const sizes = new Map<string, readonly [number, number, number]>();
-      for (const id of new Set(getState().document?.subject.placements.map((p) => p.asset) ?? [])) {
-        const asset = assets.get(id);
+      for (const id of new Set(doc.subject.placements.map((p) => p.asset))) {
+        const asset = loaded.assets.get(id);
         if (asset !== undefined) sizes.set(id, asset.size);
       }
       setAssetSizes(sizes);

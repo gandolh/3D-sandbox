@@ -25,16 +25,18 @@
     "plaster-lime": {
       "label": "Lime Plaster",
       "source": "polyhaven",
-      "slug": "plaster_brick_pattern",
+      "slug": "clay_plaster",
       "baseColor": "#E9E1D3",
-      "roughness": 0.84
+      "roughness": 0.84,
+      "textureScale": 2.4
     },
     "roof-clay-tile": {
       "label": "Clay Roof Tile",
       "source": "polyhaven",
       "slug": "roof_tiles_14",
       "baseColor": "#9C5540",
-      "roughness": 0.66
+      "roughness": 0.66,
+      "textureScale": 1.6
     },
     "roof-zinc": {
       "label": "Standing-seam Zinc",
@@ -48,14 +50,16 @@
       "source": "ambientcg",
       "slug": "Concrete034",
       "baseColor": "#B9B5AD",
-      "roughness": 0.9
+      "roughness": 0.9,
+      "textureScale": 3
     },
     "concrete-wall": {
       "label": "Cast Concrete",
       "source": "ambientcg",
       "slug": "Concrete034",
       "baseColor": "#C2BDB3",
-      "roughness": 0.88
+      "roughness": 0.88,
+      "textureScale": 3
     },
     "steel-dark": {
       "label": "Dark Steel",
@@ -72,25 +76,28 @@
       "metalness": 0.1
     },
     "grass-lawn": {
-      "label": "Mown Lawn",
+      "label": "Leafy Grass",
       "source": "polyhaven",
-      "slug": "coast_sand_rocks_02",
+      "slug": "leafy_grass",
       "baseColor": "#5C7B43",
-      "roughness": 1
+      "roughness": 1,
+      "textureScale": 4
     },
     "gravel-alley": {
       "label": "Gravel",
       "source": "ambientcg",
       "slug": "Gravel023",
       "baseColor": "#A79D8D",
-      "roughness": 0.96
+      "roughness": 0.96,
+      "textureScale": 2
     },
     "asphalt-road": {
       "label": "Worn Asphalt",
       "source": "ambientcg",
       "slug": "Asphalt026A",
       "baseColor": "#47474A",
-      "roughness": 0.95
+      "roughness": 0.95,
+      "textureScale": 4
     },
     "hedge-green": {
       "label": "Clipped Hedge",
