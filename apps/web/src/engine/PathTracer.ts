@@ -1,5 +1,6 @@
 import * as THREE from "three";
-import { WebGLPathTracer } from "three-gpu-pathtracer";
+import { DenoiseMaterial, WebGLPathTracer } from "three-gpu-pathtracer";
+import { FullScreenQuad } from "three/addons/postprocessing/Pass.js";
 import { GenerateMeshBVHWorker } from "three-mesh-bvh/worker";
 import { hexToRgb, skyRadianceMap, type SunVector } from "@solstice/solar";
 
@@ -8,6 +9,13 @@ export interface RenderSettings {
   height: number;
   samples: number;
   bounces?: number;
+  /**
+   * Run the denoise pass over the accumulation before it reaches the canvas.
+   *
+   * An edge-aware blur, not a trained denoiser, and it is judged on what it
+   * destroys as much as on what it smooths — see the measurements in the wiki.
+   */
+  denoise?: boolean;
   /** What is being rendered, for the overlay. See `RenderProgress.label`. */
   label?: string;
 }
@@ -45,6 +53,8 @@ export class PathTraceSession {
   private building = true;
   private buildProgress = 0;
   private captured: Promise<Blob | null> | null = null;
+  private denoise: DenoiseMaterial | null = null;
+  private denoiseQuad: FullScreenQuad | null = null;
 
   constructor(
     private readonly renderer: THREE.WebGLRenderer,
@@ -73,6 +83,24 @@ export class PathTraceSession {
     // path is that a large BVH build does not freeze the interface. The worker
     // is constructed with `new Worker(new URL(...), { type: 'module' })`
     // upstream, which Vite bundles natively — no worker plugin needed.
+    if (settings.denoise === true) {
+      // The tracer normally blits its accumulation target to the canvas with a
+      // plain quad. Swapping that blit for the denoise pass puts the filter on
+      // the *presented* image — which is also what `toBlob` reads, so the saved
+      // PNG matches the screen instead of quietly being the noisy version.
+      this.denoise = new DenoiseMaterial();
+      this.denoiseQuad = new FullScreenQuad(this.denoise);
+      const material = this.denoise;
+      const quad = this.denoiseQuad;
+      this.tracer.renderToCanvasCallback = (target, renderer) => {
+        material.map = target.texture;
+        const previous = renderer.autoClear;
+        renderer.autoClear = false;
+        quad.render(renderer);
+        renderer.autoClear = previous;
+      };
+    }
+
     this.bvhWorker = new GenerateMeshBVHWorker();
     this.tracer.setBVHWorker(this.bvhWorker);
     this.tracer.renderScale = 1;
@@ -153,6 +181,8 @@ export class PathTraceSession {
 
   /** Restore the renderer to what the viewport had. */
   dispose(): void {
+    this.denoiseQuad?.dispose();
+    this.denoise?.dispose();
     this.tracer.dispose();
     this.bvhWorker.dispose();
     this.scene.environment?.dispose();

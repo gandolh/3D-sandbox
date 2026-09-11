@@ -131,47 +131,40 @@ Two cautions worth keeping with the numbers:
 Shot budgets are now 600, which is about 13 minutes at 1920 × 1080 and sits past
 the knee of the curve.
 
-### On denoising
+### On denoising — measured, and the answer changed
+
+The convergence study predicted a denoiser would help. **Measured, the bundled
+one does not.** `three-gpu-pathtracer`'s `DenoiseMaterial`, at its default
+`sigma 5 / threshold 0.03 / kSigma 1`, against a 1,159-sample reference:
+
+| | RMS vs reference |
+|---|---|
+| 150 samples, off | 13.62 |
+| 150 samples, **on** | **13.75** |
+| 400 samples, off | 11.75 |
+| 400 samples, **on** | **12.16** |
+
+It moves the image *away* from the converged one, and by more at higher sample
+counts — the signature of a filter destroying detail faster than it removes
+noise. This scene is mostly high-frequency material: grass, gravel, clay plaster,
+leaf silhouettes. An edge-aware blur has very little here it can safely smooth.
+
+So the pass ships **off by default**, available as `denoise: true` on a render
+request. What is *not* settled is whether tuned uniforms would help, or whether
+this simply needs a trained denoiser (`oidn-web`) rather than a blur. Both cost
+GPU time to answer and neither is urgent.
+
+The prediction was reasonable and wrong, which is the argument for measuring
+before building: the same reasoning that made "a denoiser will help" obvious also
+made "2,000 samples" obvious.
+
+### The earlier prediction
 
 **Yes, it is worth a brief.** The residual at 300–700 samples is fine-grained
 noise on flat, indirectly-lit surfaces — grass, plaster, the shaded side of the
 roof — which is precisely what a denoiser is good at, and the 1/√N convergence
 says brute force will never be an efficient way to remove it. That conclusion is
 now measured rather than assumed, which was the whole point of deferring it.
-
-## The first render that ever finished
-
-Until 2026-09-11 every render in this project's life had been cancelled, so
-`toBlob` and the download after it had never executed. The first one to run to
-completion produced **a fully black PNG** — 44 KB of RGB(0,0,0) at 1920 × 1080,
-after fourteen minutes, while the screen had shown the correct image throughout.
-
-The renderer is constructed without `preserveDrawingBuffer`, so the drawing
-buffer is cleared before the next compositing step. A `toBlob` issued a frame
-later — which is what `startRender` did, after the accumulation loop had already
-yielded — reads an empty buffer.
-
-The fix is to snapshot **in the same tick as the final sample**, from inside the
-loop. `preserveDrawingBuffer: true` would also work and would tax every 60 fps
-viewport frame, forever, for a read that happens once per render.
-
-The lesson is not about WebGL. It is that a fourteen-minute operation whose
-output nobody had ever opened was wrong in the most basic possible way, and four
-briefs of work had been verified against *screenshots of the viewport* rather
-than against the artefact.
-
-### Measured, end to end
-
-| | |
-|---|---|
-| 600 samples at 1920 × 1080 | **~870 s** (14.5 min), 0.69 samples/s |
-| 400 samples at 960 × 540 | 4.87 samples/s |
-
-**Window occlusion does not throttle it.** Measured: 97.9 samples at 20.1 s in
-the foreground, then 332 at 68.2 s after 48 s completely covered by another
-maximised window — 4.87 samples/s across both. A genuinely backgrounded *tab* is
-still untested; the in-tick capture means such a stall would delay a render
-rather than corrupt it.
 
 ## What this does not settle
 
@@ -180,3 +173,9 @@ interactive path tracing feel real and to make sample budgets measurable, but a
 discrete GPU would change the numbers again. Shot defaults (2,000 samples) and
 the absence of a denoiser are still open — now testable rather than guesswork.
 See [open-questions.md](open-questions.md).
+
+---
+
+Measured render performance — how long a shot takes, how many samples it needs,
+and why the denoiser did not help — is in
+[render-performance.md](render-performance.md).

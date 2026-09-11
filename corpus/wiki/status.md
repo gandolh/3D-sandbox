@@ -85,8 +85,10 @@ five more in `todo/`, in rough order of how much they matter:
   first render that ever completed came out **fully black**: no
   `preserveDrawingBuffer`, so `toBlob` read a cleared buffer a frame too late.
   Captured in-tick now.
-- **[16 — denoise](../briefs/todo/16-denoiser.md).** Already a dependency:
-  `three-gpu-pathtracer` ships `DenoiseMaterial`.
+- **[16 — denoise](../briefs/done/16-denoiser.md) — done, and the answer was
+  *no*.** Measured, `DenoiseMaterial` moves the image away from converged: this
+  scene is nearly all high-frequency material and an edge-aware blur has little
+  it can safely touch. Ships off by default.
 - **[17 — repo honesty pass](../briefs/todo/17-repo-honesty-pass.md).** A dead
   dependency, a stale overview, no README, one web test file for eighteen sources.
 - **[18 — finish the vegetation](../briefs/todo/18-vegetation-finishing.md).**

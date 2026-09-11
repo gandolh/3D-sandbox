@@ -47,3 +47,35 @@ thing to try rather than pinning `oidn-web` and carrying a WASM model.
 - A stated sample saving at equal quality, or a stated finding that there is none.
 - A side-by-side crop of foliage and gravel, so the cost is visible and not just
   the benefit.
+
+---
+
+## Outcome (2026-09-11)
+
+Done, and the answer is **no** — which is the outcome the brief explicitly
+allowed for.
+
+`DenoiseMaterial` is wired in behind `denoise: true` on a render request, via the
+tracer's `renderToCanvasCallback`, so the filter lands on the *presented* image
+and `toBlob` therefore saves what the screen shows. Measured against a
+1,159-sample reference at 800 × 450:
+
+| | RMS vs reference |
+|---|---|
+| 150 samples, off | 13.62 |
+| 150 samples, on | **13.75** |
+| 400 samples, off | 11.75 |
+| 400 samples, on | **12.16** |
+
+It moves the image *away* from converged, and by more at higher sample counts —
+a filter destroying detail faster than it removes noise. This scene is almost
+entirely high-frequency material: grass, gravel, clay plaster, leaf silhouettes.
+An edge-aware blur has very little here it can safely touch.
+
+Ships off by default. Whether tuned uniforms or a trained denoiser (`oidn-web`)
+would do better is untested and not urgent — both cost GPU time, and the sample
+budgets from brief 12 already make renders tractable.
+
+Worth keeping: the convergence study *predicted* a denoiser would help, from
+sound reasoning about 1/√N. The same kind of reasoning produced the 2,000-sample
+default. Measuring is what settled both.

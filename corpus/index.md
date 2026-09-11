@@ -20,6 +20,7 @@ Brief states live in [`wiki/status.md`](./wiki/status.md), not here.
 - [`wiki/glossary.md`](./wiki/glossary.md) — Canonical vocabulary — the terms Solstice uses in a specific way, and the synonyms they displace.
 - [`wiki/open-questions.md`](./wiki/open-questions.md) — Genuinely unresolved questions — deleted the moment they are answered.
 - [`wiki/overview.md`](./wiki/overview.md) — What Solstice is, who authors what, and the top-level layout — read this first if you have never seen the project.
+- [`wiki/render-performance.md`](./wiki/render-performance.md) — What a render actually costs — end-to-end timings, the sample-convergence curve behind the 600-sample default, and the measured finding that the bundled denoiser makes things worse.
 - [`wiki/running-on-a-gpu.md`](./wiki/running-on-a-gpu.md) — Why the path tracer falls back to software under WSL2, and the exact browser flags that reach the real GPU — with measured numbers for both.
 - [`wiki/status.md`](./wiki/status.md) — Dated snapshot of what is built, what is in flight, and what is next — the living dashboard.
 <!-- CATALOG:END -->
