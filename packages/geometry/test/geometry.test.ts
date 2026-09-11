@@ -9,6 +9,9 @@ import {
   buildRoof,
   buildWall,
   extrudePolygon,
+  ensureStandardAttributes,
+  hasStandardAttributes,
+  mergeSimple,
   generateScene,
   mulberry32,
   pointInPolygon,
@@ -336,5 +339,42 @@ describe("building masses sit on the ground", () => {
     expect(box.max.y).toBeLessThan(6.2 + 5);
     expect(box.min.x).toBeCloseTo(-46, 4);
     expect(box.min.z).toBeCloseTo(22, 4);
+  });
+});
+
+describe("attribute consistency", () => {
+  // three-gpu-pathtracer merges the whole scene into one buffer, so a mesh
+  // missing `uv` while its neighbour has one breaks the merge far from the
+  // cause. Every geometry leaving this package carries the same attributes.
+  const doc = loadScene(
+    JSON.parse(
+      readFileSync(new URL("../../../scenes/villa-carpathia.scene.json", import.meta.url), "utf8"),
+    ) as unknown,
+  ).document;
+
+  it("gives every generated mesh position, normal and uv", () => {
+    const scene = generateScene(doc);
+    const offenders: string[] = [];
+    scene.root.traverse((object) => {
+      const mesh = object as THREE.Mesh;
+      if (mesh.geometry === undefined) return;
+      if (!hasStandardAttributes(mesh.geometry)) offenders.push(object.name || "<unnamed>");
+    });
+    expect(offenders).toEqual([]);
+    scene.dispose();
+  });
+
+  it("adds a zeroed uv rather than leaving it absent", () => {
+    const bare = new THREE.BufferGeometry();
+    bare.setAttribute("position", new THREE.Float32BufferAttribute([0, 0, 0, 1, 0, 0, 0, 1, 0], 3));
+    ensureStandardAttributes(bare);
+    expect(hasStandardAttributes(bare)).toBe(true);
+    expect(bare.getAttribute("uv").count).toBe(3);
+  });
+
+  it("carries uv through a merge", () => {
+    const merged = mergeSimple([new THREE.BoxGeometry(1, 1, 1), new THREE.ConeGeometry(1, 2, 6)]);
+    expect(hasStandardAttributes(merged)).toBe(true);
+    expect(merged.getAttribute("uv").count).toBe(merged.getAttribute("position").count);
   });
 });

@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { Brush, Evaluator, SUBTRACTION } from "three-bvh-csg";
 import { degToRad, type Level, type Opening, type Wall } from "@solstice/schema";
+import { ensureStandardAttributes } from "../attributes.js";
 
 /**
  * A wall is a box centred on the line from `start` to `end`, `thickness` wide and
@@ -51,7 +52,7 @@ export function openingVoid(opening: Opening, wall: Wall, level: Level): THREE.B
  */
 export function buildWall(wall: Wall, level: Level, evaluator: Evaluator): THREE.BufferGeometry {
   const solid = wallSolid(wall, level);
-  if (wall.openings.length === 0) return solid;
+  if (wall.openings.length === 0) return ensureStandardAttributes(solid);
 
   let current = new Brush(solid);
   current.updateMatrixWorld();
@@ -64,7 +65,7 @@ export function buildWall(wall: Wall, level: Level, evaluator: Evaluator): THREE
     current = result;
   }
 
-  return current.geometry;
+  return ensureStandardAttributes(current.geometry);
 }
 
 /** Direction the wall runs, in scene degrees clockwise from +Z (north). */

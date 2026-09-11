@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { bounds, degToRad, type Roof } from "@solstice/schema";
 import { extrudePolygon } from "../polygon.js";
+import { ensureStandardAttributes } from "../attributes.js";
 
 export class UnsupportedRoofError extends Error {
   constructor(kind: string) {
@@ -83,7 +84,7 @@ export function buildRoof(roof: Roof): THREE.BufferGeometry {
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
   geometry.computeVertexNormals();
-  return geometry;
+  return ensureStandardAttributes(geometry);
 }
 
 /** Ridge height above the eave, for inspectors and annotation overlays. */

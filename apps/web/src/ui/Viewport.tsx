@@ -1,12 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import { SandboxEngine } from "../engine/SandboxEngine.js";
-import { editDocument, getState, select, useStore } from "../state/store.js";
+import type { RenderProgress, RenderSettings } from "../engine/PathTracer.js";
+import { RenderOverlay } from "./RenderOverlay.jsx";
+import { editDocument, getState, select, setStatus, useStore } from "../state/store.js";
 import { translateWall } from "../lib/entities.js";
 
 export function Viewport() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const engineRef = useRef<SandboxEngine | null>(null);
   const [stats, setStats] = useState({ triangles: 0, instances: 0 });
+  const [render, setRender] = useState<RenderProgress | null>(null);
 
   const doc = useStore((s) => s.document);
   const revision = useStore((s) => s.revision);
@@ -28,6 +31,7 @@ export function Viewport() {
           }
         }),
       onStats: setStats,
+      onRenderProgress: setRender,
     });
     engineRef.current = engine;
 
@@ -35,7 +39,25 @@ export function Viewport() {
     if (current !== null) {
       engine.setDocument(current, { includeContext: getState().showContext });
     }
+    // The toolbar's Render button is far from the engine; a custom event keeps
+    // the engine out of global state without threading a ref through the tree.
+    const onRenderRequest = (event: Event): void => {
+      const settings = (event as CustomEvent<RenderSettings>).detail;
+      void engine.startRender(settings).then((blob) => {
+        if (blob === null) return;
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement("a");
+        anchor.href = url;
+        anchor.download = `render-${Date.now()}.png`;
+        anchor.click();
+        URL.revokeObjectURL(url);
+        setStatus("Render downloaded");
+      });
+    };
+    window.addEventListener("solstice:render", onRenderRequest);
+
     return () => {
+      window.removeEventListener("solstice:render", onRenderRequest);
       engine.dispose();
       engineRef.current = null;
     };
@@ -62,6 +84,13 @@ export function Viewport() {
         {stats.triangles.toLocaleString("en-GB")} tris · {stats.instances.toLocaleString("en-GB")}{" "}
         instances
       </Hud>
+
+      {render !== null && (
+        <RenderOverlay
+          progress={render}
+          onCancel={() => engineRef.current?.cancelRender()}
+        />
+      )}
     </div>
   );
 }

@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { area, bounds, type ScatterField } from "@solstice/schema";
 import { mulberry32, pick, randomBetween } from "../random.js";
 import { pointInPolygon } from "../polygon.js";
+import { ensureStandardAttributes } from "../attributes.js";
 
 export interface ScatterInstance {
   asset: string;
@@ -74,14 +75,17 @@ export function proxyTreeGeometry(): THREE.BufferGeometry {
 export function mergeSimple(geometries: readonly THREE.BufferGeometry[]): THREE.BufferGeometry {
   const positions: number[] = [];
   const normals: number[] = [];
+  const uvs: number[] = [];
 
   for (const g of geometries) {
     const src = g.index === null ? g : g.toNonIndexed();
     const p = src.getAttribute("position");
     const n = src.getAttribute("normal");
+    const t = src.getAttribute("uv");
     for (let i = 0; i < p.count; i++) {
       positions.push(p.getX(i), p.getY(i), p.getZ(i));
       if (n !== undefined) normals.push(n.getX(i), n.getY(i), n.getZ(i));
+      uvs.push(t === undefined ? 0 : t.getX(i), t === undefined ? 0 : t.getY(i));
     }
     if (src !== g) src.dispose();
   }
@@ -90,10 +94,9 @@ export function mergeSimple(geometries: readonly THREE.BufferGeometry[]): THREE.
   out.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
   if (normals.length === positions.length) {
     out.setAttribute("normal", new THREE.Float32BufferAttribute(normals, 3));
-  } else {
-    out.computeVertexNormals();
   }
-  return out;
+  out.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2));
+  return ensureStandardAttributes(out);
 }
 
 /** One `InstancedMesh` per field. Instancing is the whole point of the tier. */

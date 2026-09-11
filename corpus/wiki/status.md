@@ -21,7 +21,13 @@ generator does, which is the cheapest check that tests and app agree.
 `apps/api` persists scenes: seven routes, files as truth, a `node:sqlite` index
 that is rebuilt by rescanning. `Save` writes through it. **121 tests pass.**
 
-`Render` is still disabled — path tracing is brief 06.
+**Render works.** `three-gpu-pathtracer` accumulates samples behind an explicit
+Render action, lit by a sky radiance map computed from the sun; the result
+downloads. **132 tests pass.**
+
+⚠️ It has only ever run on software WebGL, where it managed 0.22 samples in 74
+seconds. Nobody has seen it on a GPU yet — that is the first thing to check on
+real hardware.
 
 **Blocked:** `git push` has no credentials on this machine — no `gh`, no
 credential helper, no GitHub SSH key. Commits are accumulating locally on `main`.
@@ -35,13 +41,17 @@ credential helper, no GitHub SSH key. Commits are accumulating locally on `main`
 | 03 | [Solar time](../briefs/done/03-solar.md) | done |
 | 04 | [Viewport and app shell](../briefs/done/04-viewport-shell.md) | done |
 | 05 | [Fastify persistence API](../briefs/done/05-persistence-api.md) | done |
+| 06 | [Path-traced render](../briefs/done/06-path-traced-render.md) | done |
 
 ## Next
 
-Brief 06 (**path-traced render**) next — `three-gpu-pathtracer@0.0.24` behind the
-Render button, progressive accumulation with a sample counter, downloading the
-result. This is the feature the whole WebGL2 decision was made for. Then 07
-(physics as an authoring aid).
+Brief 07 (**physics as an authoring aid**) is the last of the agreed sequence:
+rapier during editing so placement is physical — drop a chair and it settles,
+objects cannot interpenetrate walls — with colliders derived from the semantic
+document and never persisted.
+
+Before that, **run a render on a machine with a GPU**. Everything downstream of
+that (denoising, sample budgets, shot selection) is guesswork until someone has.
 
 The canonical solar moment is **21 Jun 2026 17:42 EEST at 44.4268 N, 26.1025 E →
 altitude 32.949°, azimuth 271.654°**. That figure is pinned by a test and quoted

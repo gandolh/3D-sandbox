@@ -12,12 +12,14 @@
   },
   "scripts": {
     "build": "tsc --build",
+    "build:web": "npm run build --workspace @solstice/web",
     "scenes": "npm run build --workspace @solstice/scenes",
     "typecheck": "tsc --build --force",
     "test": "vitest run",
+    "dev": "npm run dev --workspace @solstice/web",
+    "api": "npm run dev --workspace @solstice/api",
     "lint:corpus": "bash corpus/lint.sh",
-    "check": "npm run build && npm run typecheck && npm run test && npm run scenes && npm run lint:corpus",
-    "api": "npm run dev --workspace @solstice/api"
+    "check": "npm run build && npm run typecheck && npm run test && npm run scenes && npm run build:web && npm run lint:corpus"
   },
   "devDependencies": {
     "@types/node": "24.13.4",

@@ -5,12 +5,19 @@ import { Sky } from "three/addons/objects/Sky.js";
 import type { SceneDocument } from "@solstice/schema";
 import { generateScene, type GeneratedScene } from "@solstice/geometry";
 import { resolveSolar } from "@solstice/solar";
+import {
+  PathTraceSession,
+  buildSkyEnvironment,
+  type RenderProgress,
+  type RenderSettings,
+} from "./PathTracer.js";
 
 export interface EngineEvents {
   onSelect: (id: string | null) => void;
   /** Fired when the gizmo finishes a drag, in world-space metres. */
   onTranslate: (id: string, dx: number, dz: number) => void;
   onStats: (stats: { triangles: number; instances: number }) => void;
+  onRenderProgress: (progress: RenderProgress | null) => void;
 }
 
 /**
@@ -40,6 +47,8 @@ export class SandboxEngine {
   private selectedId: string | null = null;
   private dragStart: THREE.Vector3 | null = null;
   private resizeObserver: ResizeObserver | null = null;
+  private render: PathTraceSession | null = null;
+  private lastSolar: ReturnType<typeof resolveSolar> | null = null;
 
   constructor(
     private readonly canvas: HTMLCanvasElement,
@@ -114,7 +123,9 @@ export class SandboxEngine {
   }
 
   setSolar(doc: SceneDocument): void {
-    const { position, lighting } = resolveSolar(doc);
+    const solved = resolveSolar(doc);
+    this.lastSolar = solved;
+    const { position, lighting } = solved;
     const distance = 120;
     this.sun.position.set(
       position.direction.x * distance,
@@ -193,6 +204,81 @@ export class SandboxEngine {
     this.events.onTranslate(this.selectedId, dx, dz);
   }
 
+  /* ── path-traced render ─────────────────────────────────────── */
+
+  /**
+   * Leave the real-time path entirely and accumulate samples.
+   *
+   * Resolves with the finished image, or null if it was cancelled. The renderer
+   * is restored to the viewport's size either way.
+   */
+  async startRender(settings: RenderSettings): Promise<Blob | null> {
+    this.cancelRender();
+    const renderScene = this.buildRenderScene();
+    const session = new PathTraceSession(this.renderer, renderScene, this.camera, settings);
+    this.render = session;
+    this.orbit.enabled = false;
+    this.gizmo.getHelper().visible = false;
+    this.selectionBox.visible = false;
+
+    try {
+      await session.start((progress) => this.events.onRenderProgress(progress));
+      await new Promise<void>((resolve) => {
+        const poll = (): void => {
+          if (this.render !== session || session.complete) return resolve();
+          setTimeout(poll, 120);
+        };
+        poll();
+      });
+      return this.render === session ? await session.toBlob() : null;
+    } finally {
+      session.dispose();
+      renderScene.clear();
+      if (this.render === session) this.render = null;
+      this.orbit.enabled = true;
+      this.reattachSelection();
+      this.events.onRenderProgress(null);
+    }
+  }
+
+  /**
+   * A scene containing only what the path tracer can sample.
+   *
+   * The viewport's `Sky` mesh, hemisphere light, transform gizmo and selection
+   * box all live in `this.scene` and none of them survive a path trace — the sky
+   * shader in particular fails inside a colour lookup rather than being skipped.
+   * The sky still lights the render, but as a pre-filtered environment map
+   * rather than as geometry.
+   */
+  private buildRenderScene(): THREE.Scene {
+    const renderScene = new THREE.Scene();
+    if (this.generated !== null) renderScene.add(this.generated.root.clone());
+
+    const sun = this.sun.clone();
+    sun.target = this.sun.target.clone();
+    renderScene.add(sun, sun.target);
+
+    const { position, lighting } = this.lastSolar ?? { position: null, lighting: null };
+    const environment =
+      position === null || lighting === null
+        ? null
+        : buildSkyEnvironment(position.direction, lighting.color, lighting.sky.turbidity);
+    if (environment !== null) {
+      renderScene.environment = environment;
+      renderScene.background = environment;
+    }
+    return renderScene;
+  }
+
+  cancelRender(): void {
+    this.render?.cancel();
+    this.render = null;
+  }
+
+  get isRendering(): boolean {
+    return this.render !== null;
+  }
+
   /* ── loop ───────────────────────────────────────────────────── */
 
   private observeResize(): void {
@@ -211,6 +297,16 @@ export class SandboxEngine {
   private readonly loop = (): void => {
     if (this.disposed) return;
     this.frame = requestAnimationFrame(this.loop);
+
+    // A render owns the frame while it lasts. The real-time path is not
+    // "paused" behind a flag — it simply does not run, which is what makes
+    // cancelling it a matter of dropping the session.
+    if (this.render !== null) {
+      const progress = this.render.step();
+      this.events.onRenderProgress(progress);
+      return;
+    }
+
     this.orbit.update();
     if (this.selectionBox.visible && this.gizmo.object !== undefined) {
       this.selectionBox.setFromObject(this.gizmo.object);
@@ -223,6 +319,7 @@ export class SandboxEngine {
     cancelAnimationFrame(this.frame);
     this.canvas.removeEventListener("pointerdown", this.onPointerDown);
     this.resizeObserver?.disconnect();
+    this.cancelRender();
     this.generated?.dispose();
     this.gizmo.detach();
     this.gizmo.dispose();

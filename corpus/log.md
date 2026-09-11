@@ -113,3 +113,25 @@ computed scatter counts separately from the lint rule and got them wrong
 (2 instead of 284). `estimateScatterInstances` is now one shared function.
 
 Brief: [05-persistence-api.md](./briefs/done/05-persistence-api.md).
+
+## [2026-09-11] done | Brief 06 — Path-traced render
+
+The feature the WebGL2 decision was made for. `three-gpu-pathtracer@0.0.24`
+accumulates samples behind an explicit Render action, with BVH build progress, a
+sample counter, cancel, and a PNG download at the shot's declared size.
+
+Three failures, all found by running it rather than building it: `setSceneAsync`
+needs a BVH worker registered first; the path tracer cannot sample the viewport's
+`Sky` shader mesh, hemisphere light or gizmo helpers, so renders get a
+purpose-built scene; and `scene.environment` must be an equirectangular texture
+with readable pixels, which a PMREM render target is not.
+
+That last one produced `skyRadianceMap` in `@solstice/solar` — a sky dome as
+pure arithmetic over a `Float32Array`, testable without a GPU, replaced by a real
+HDRI when assets land.
+
+**It has only run on software WebGL** (0.22 samples in 74 s at 960 × 540). That
+is an environment limit, not a measurement — but nobody has seen this on real
+hardware, and the shot defaults are untested at speed.
+
+Brief: [06-path-traced-render.md](./briefs/done/06-path-traced-render.md).

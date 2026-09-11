@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import type { Plan } from "@solstice/schema";
+import { ensureStandardAttributes } from "./attributes.js";
 
 /** Ray-casting point-in-polygon. Boundary cases are not meaningful for scatter. */
 export function pointInPolygon(point: Plan, polygon: readonly Plan[]): boolean {
@@ -57,5 +58,5 @@ export function extrudePolygon(
   geometry.rotateX(Math.PI / 2);
   // The solid now occupies y ∈ [-height, 0]; lift it onto its base.
   geometry.translate(0, base + height, 0);
-  return geometry;
+  return ensureStandardAttributes(geometry);
 }

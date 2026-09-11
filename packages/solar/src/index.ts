@@ -184,3 +184,4 @@ export function resolveSolar(doc: SceneDocument, override?: SolarTime) {
     lighting: sunLighting(position),
   };
 }
+export * from "./sky-map.js";

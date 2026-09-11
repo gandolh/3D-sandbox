@@ -1,4 +1,5 @@
 import { setShowContext, setTheme, useStore } from "../state/store.js";
+import type { RenderSettings } from "../engine/PathTracer.js";
 
 export function Toolbar({ onSave }: { onSave: () => void }) {
   const doc = useStore((s) => s.document);
@@ -41,9 +42,22 @@ export function Toolbar({ onSave }: { onSave: () => void }) {
       </button>
       <button
         type="button"
-        disabled
-        title="Path-traced rendering arrives in a later brief"
-        className="rounded-sm border border-accent bg-accent px-3 py-1.5 text-[12px] font-semibold text-accent-ink disabled:opacity-50"
+        onClick={() => {
+          // A Shot is the reproducible unit, so its declared output size wins.
+          const shot = doc?.shots[0];
+          const settings: RenderSettings = {
+            width: shot?.render.width ?? 1280,
+            height: shot?.render.height ?? 720,
+            samples: shot?.render.samples ?? 256,
+          };
+          window.dispatchEvent(new CustomEvent("solstice:render", { detail: settings }));
+        }}
+        title={
+          doc?.shots[0] === undefined
+            ? "Path-trace at 1280 × 720"
+            : `Path-trace shot "${doc.shots[0].name}" at ${doc.shots[0].render.width} × ${doc.shots[0].render.height}`
+        }
+        className="rounded-sm border border-accent bg-accent px-3 py-1.5 text-[12px] font-semibold text-accent-ink"
       >
         Render
       </button>

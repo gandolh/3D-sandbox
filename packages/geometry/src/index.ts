@@ -3,6 +3,7 @@ import { Evaluator } from "three-bvh-csg";
 import type { SceneDocument } from "@solstice/schema";
 
 import { buildMaterials, resolveMaterial, type MaterialTable } from "./materials.js";
+import { ensureStandardAttributes } from "./attributes.js";
 import { extrudePolygon } from "./polygon.js";
 import { buildWall } from "./subject/walls.js";
 import { UnsupportedRoofError, buildRoof } from "./subject/roofs.js";
@@ -10,6 +11,7 @@ import { buildScatterMesh } from "./context/scatter.js";
 import { buildMass, buildRoad } from "./context/masses.js";
 
 export * from "./random.js";
+export * from "./attributes.js";
 export * from "./polygon.js";
 export * from "./materials.js";
 export * from "./subject/walls.js";
@@ -140,6 +142,7 @@ export function generateScene(
     const [sx, sz] = doc.site.terrain.size;
     const ground = new THREE.PlaneGeometry(sx, sz);
     ground.rotateX(-Math.PI / 2);
+    ensureStandardAttributes(ground);
     attach(context, stats.context, ground, doc.site.terrain.material, "terrain");
   }
 

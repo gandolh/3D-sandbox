@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { bounds, degToRad, type BuildingMass, type RoadNetwork } from "@solstice/schema";
 import { extrudePolygon } from "../polygon.js";
 import { mergeSimple } from "./scatter.js";
+import { ensureStandardAttributes } from "../attributes.js";
 
 /**
  * A neighbouring building: an extruded footprint, with a crude prism on top when
@@ -52,6 +53,7 @@ export function buildMass(mass: BuildingMass): THREE.BufferGeometry {
   const roof = new THREE.BufferGeometry();
   roof.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
   roof.computeVertexNormals();
+  ensureStandardAttributes(roof);
 
   const merged = mergeSimple([walls, roof]);
   walls.dispose();
@@ -86,5 +88,5 @@ export function buildRoad(road: RoadNetwork): THREE.BufferGeometry {
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
   geometry.computeVertexNormals();
-  return geometry;
+  return ensureStandardAttributes(geometry);
 }

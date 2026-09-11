@@ -4,6 +4,8 @@ import { loadScene, type Site, type SolarTime } from "@solstice/schema";
 import {
   dayBounds,
   directionFrom,
+  hexToRgb,
+  skyRadianceMap,
   localToUtc,
   resolveSolar,
   sunLighting,
@@ -188,5 +190,97 @@ describe("resolveSolar against the reference scene", () => {
     const { position } = resolveSolar(doc, morning);
     expect(position.altitude).toBeLessThan(30);
     expect(position.azimuth).toBeLessThan(120); // morning sun, east of south
+  });
+});
+
+describe("sky radiance map", () => {
+  const noon = sunPosition(bucharest, at("2026-06-21", "13:15"));
+  const night = sunPosition(bucharest, at("2026-06-21", "01:00"));
+  const white = { r: 1, g: 1, b: 1 };
+
+  const luminance = (map: ReturnType<typeof skyRadianceMap>, x: number, y: number): number => {
+    const i = (y * map.width + x) * 4;
+    return 0.2126 * map.data[i]! + 0.7152 * map.data[i + 1]! + 0.0722 * map.data[i + 2]!;
+  };
+
+  it("has the requested dimensions and RGBA stride", () => {
+    const map = skyRadianceMap({ sunDirection: noon.direction, sunColor: white, turbidity: 3 });
+    expect(map.width).toBe(256);
+    expect(map.height).toBe(128);
+    expect(map.data.length).toBe(256 * 128 * 4);
+  });
+
+  it("produces only finite, non-negative radiance", () => {
+    const map = skyRadianceMap({ sunDirection: noon.direction, sunColor: white, turbidity: 3 });
+    let bad = 0;
+    for (const v of map.data) if (!Number.isFinite(v) || v < 0) bad++;
+    expect(bad).toBe(0);
+  });
+
+  it("is brighter above the horizon than below it", () => {
+    const map = skyRadianceMap({ sunDirection: noon.direction, sunColor: white, turbidity: 3 });
+    const above = luminance(map, 10, Math.floor(map.height * 0.85));
+    const below = luminance(map, 10, Math.floor(map.height * 0.15));
+    expect(above).toBeGreaterThan(below);
+  });
+
+  it("puts its brightest point in the sun's direction", () => {
+    const map = skyRadianceMap({ sunDirection: noon.direction, sunColor: white, turbidity: 2 });
+    let best = -1;
+    let bx = 0;
+    let by = 0;
+    for (let y = 0; y < map.height; y++) {
+      for (let x = 0; x < map.width; x++) {
+        const l = luminance(map, x, y);
+        if (l > best) {
+          best = l;
+          bx = x;
+          by = y;
+        }
+      }
+    }
+    // Invert three's equirect mapping and compare with the sun vector.
+    const elevation = ((by + 0.5) / map.height - 0.5) * Math.PI;
+    const phi = ((bx + 0.5) / map.width - 0.5) * 2 * Math.PI;
+    const dir = {
+      x: Math.cos(phi) * Math.cos(elevation),
+      y: Math.sin(elevation),
+      z: Math.sin(phi) * Math.cos(elevation),
+    };
+    const dot =
+      dir.x * noon.direction.x + dir.y * noon.direction.y + dir.z * noon.direction.z;
+    expect(dot).toBeGreaterThan(0.97);
+    expect(best).toBeGreaterThan(5);
+  });
+
+  it("is dark at night", () => {
+    const map = skyRadianceMap({ sunDirection: night.direction, sunColor: white, turbidity: 3 });
+    let peak = 0;
+    for (let y = 0; y < map.height; y++) {
+      for (let x = 0; x < map.width; x++) peak = Math.max(peak, luminance(map, x, y));
+    }
+    expect(peak).toBeLessThan(0.5);
+  });
+
+  it("pales the horizon as turbidity rises", () => {
+    const clear = skyRadianceMap({ sunDirection: noon.direction, sunColor: white, turbidity: 2 });
+    const hazy = skyRadianceMap({ sunDirection: noon.direction, sunColor: white, turbidity: 9 });
+    const row = Math.floor(clear.height * 0.52);
+    expect(luminance(hazy, 200, row)).toBeGreaterThan(luminance(clear, 200, row));
+  });
+
+  it("honours a requested size", () => {
+    const map = skyRadianceMap({
+      sunDirection: noon.direction, sunColor: white, turbidity: 3, width: 64, height: 32,
+    });
+    expect(map.data.length).toBe(64 * 32 * 4);
+  });
+});
+
+describe("hexToRgb", () => {
+  it("splits a hex triplet into 0–1 components", () => {
+    expect(hexToRgb("#ffffff")).toEqual({ r: 1, g: 1, b: 1 });
+    expect(hexToRgb("#000000")).toEqual({ r: 0, g: 0, b: 0 });
+    expect(hexToRgb("e8a33d").r).toBeCloseTo(232 / 255, 5);
   });
 });
