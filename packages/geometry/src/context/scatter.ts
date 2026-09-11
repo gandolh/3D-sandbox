@@ -18,6 +18,8 @@ export interface ScatterInstance {
  * forest everywhere, or a render is not reproducible from its scene file.
  */
 export function scatterInstances(field: ScatterField): ScatterInstance[] {
+  if (field.arrangement === "rows") return rowInstances(field);
+
   const net = Math.max(
     0,
     area(field.area) - field.exclude.reduce((sum, poly) => sum + area(poly), 0),
@@ -53,17 +55,69 @@ export function scatterInstances(field: ScatterField): ScatterInstance[] {
 }
 
 /**
- * Placeholder vegetation: a cone on a cylinder.
+ * Instances on a lattice — an orchard, a vineyard, a nursery bed.
+ *
+ * The lattice is not jittered; the *position within its cell* is. Jittering the
+ * lattice itself would drift the rows out of line down a long field, and rows
+ * that are nearly-but-not-quite straight read as a mistake in a way that either
+ * true rows or frank randomness does not.
+ *
+ * `density` is ignored here: the spacing sets the count. A row planting's whole
+ * character is that a person decided how far apart to put the trees.
+ */
+function rowInstances(field: ScatterField): ScatterInstance[] {
+  const [along, across] = field.rowSpacing;
+  const b = bounds(field.area);
+  const rng = mulberry32(field.seed);
+  const out: ScatterInstance[] = [];
+
+  // A quarter of the spacing, so a tree never wanders into its neighbour's place.
+  const jitterX = along / 4;
+  const jitterZ = across / 4;
+
+  for (let z = b.minZ + across / 2; z <= b.maxZ; z += across) {
+    for (let x = b.minX + along / 2; x <= b.maxX; x += along) {
+      const px = x + randomBetween(rng, -jitterX, jitterX);
+      const pz = z + randomBetween(rng, -jitterZ, jitterZ);
+      const rotation = rng() * 360;
+      const scale = randomBetween(rng, field.scaleRange[0], field.scaleRange[1]);
+      const asset = pick(rng, field.assets);
+
+      // Drawn before the containment test on purpose: the random sequence must
+      // depend only on the lattice, so editing the field's outline moves trees
+      // in and out without reshuffling the ones that stay.
+      if (!pointInPolygon([px, pz], field.area)) continue;
+      if (field.exclude.some((poly) => pointInPolygon([px, pz], poly))) continue;
+
+      out.push({ asset, position: [px, 0, pz], rotationY: rotation, scale });
+    }
+  }
+  return out;
+}
+
+/**
+ * Placeholder vegetation: a cone on a cylinder, at the planting's own height.
  *
  * Deliberately crude. The asset manifest does not exist yet, and a proxy that
  * looked plausible would be mistaken for the real thing in a screenshot — which
  * is exactly how a placeholder survives to production.
+ *
+ * It does have to be the right *size*, though. A single fixed proxy made a bed
+ * of roses into six-metre cones towering over the house, which is not a
+ * placeholder being honest about being a placeholder — it is a scene that
+ * cannot be composed.
  */
-export function proxyTreeGeometry(): THREE.BufferGeometry {
-  const trunk = new THREE.CylinderGeometry(0.18, 0.24, 2.2, 6);
-  trunk.translate(0, 1.1, 0);
-  const canopy = new THREE.ConeGeometry(1.6, 4.4, 7);
-  canopy.translate(0, 4.4, 0);
+export function proxyTreeGeometry(height = 6): THREE.BufferGeometry {
+  // A third trunk, two thirds crown, and a crown as wide as it is roughly half
+  // tall — the proportions read as "shrub" or "tree" purely from the height.
+  const trunkHeight = height / 3;
+  const crownHeight = height - trunkHeight;
+  const radius = crownHeight * 0.36;
+
+  const trunk = new THREE.CylinderGeometry(height * 0.03, height * 0.04, trunkHeight, 6);
+  trunk.translate(0, trunkHeight / 2, 0);
+  const canopy = new THREE.ConeGeometry(radius, crownHeight, 7);
+  canopy.translate(0, trunkHeight + crownHeight / 2, 0);
 
   const merged = mergeSimple([trunk, canopy]);
   trunk.dispose();
@@ -105,7 +159,7 @@ export function buildScatterMesh(
   material: THREE.Material,
 ): { mesh: THREE.InstancedMesh; instances: ScatterInstance[] } {
   const instances = scatterInstances(field);
-  const geometry = proxyTreeGeometry();
+  const geometry = proxyTreeGeometry(field.height);
   const mesh = new THREE.InstancedMesh(geometry, material, Math.max(1, instances.length));
   mesh.name = `scatter:${field.id}`;
   mesh.count = instances.length;

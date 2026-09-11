@@ -25,9 +25,17 @@ that is rebuilt by rescanning. `Save` writes through it. **121 tests pass.**
 Render action, lit by a sky radiance map computed from the sun; the result
 downloads.
 
+**The reference scene is a place.** `greenhollow` — a smallholding with a
+porch, a vine pergola from the gate to the front door, a garage, hedges, a
+walled front with a gate, a kitchen garden, greenhouse, pond and an orchard in
+rows — replaced the box-in-a-field as the scene the app loads. Authoring it is
+what turned up `Run`, row-planted scatter, per-planting heights and materials,
+and the fact that `roof-covers-walls` assumed one building per level.
+`villa-carpathia` stays as the regression fixture.
+
 **Physics works** as an authoring aid: colliders derived from the semantic
 document with openings cut out of walls, drop-to-rest that snaps to the surface,
-and a collider overlay. **163 tests pass.**
+and a collider overlay. **184 tests pass.**
 
 **It has now run on a real GPU** — 3.2 samples/sec at 511×759 (538 samples in
 168 s), against 0.22 samples in 74 s on SwiftShader, roughly a thousandfold. The

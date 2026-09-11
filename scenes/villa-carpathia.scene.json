@@ -257,7 +257,8 @@
         "rotationY": 0,
         "scale": 1.2
       }
-    ]
+    ],
+    "runs": []
   },
   "context": {
     "scatter": [
@@ -292,6 +293,12 @@
           0.8,
           1.25
         ],
+        "arrangement": "random",
+        "rowSpacing": [
+          6,
+          6
+        ],
+        "height": 6,
         "exclude": [
           [
             [

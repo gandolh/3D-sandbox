@@ -22,3 +22,9 @@ updated: 2026-09-11
   said where it stops improving.
 - **Placements do not collide with each other.** The physics world derives only
   static geometry, so two chairs dropped at the same spot occupy the same space.
+- **A pergola's climber is an opaque slab.** The vine over the metalwork is a box,
+  so it reads as a black soffit in the approach render instead of dappling light
+  through. Needs either an alpha-cut foliage material or real instanced leaves —
+  and the path tracer has to sample whichever it is.
+- **Placements and plantings are still proxy boxes and cones.** The fountain in
+  the pond is a box on a plinth. Gated on the asset manifest, not on code.

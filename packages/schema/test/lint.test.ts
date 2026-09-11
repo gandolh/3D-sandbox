@@ -163,6 +163,34 @@ describe("roof-covers-walls", () => {
     expect(found[0]!.message).toMatch(/does not cover the walls of level "L1"/);
   });
 
+  it("ignores a second building on the same level", () => {
+    // The case that broke the old rule: one level, two structures. The house
+    // roof must not be judged against the garage's walls twenty metres away.
+    const doc = baseScene();
+    const level = doc.subject!.levels![0]!;
+    level.walls = [
+      ...level.walls!,
+      { id: "G-01", start: [20, 0], end: [26, 0], material: "m1" },
+      { id: "G-02", start: [26, 0], end: [26, 5], material: "m1" },
+      { id: "G-03", start: [26, 5], end: [20, 5], material: "m1" },
+      { id: "G-04", start: [20, 5], end: [20, 0], material: "m1" },
+    ];
+    expect(lint(doc).filter((f) => f.rule === "roof-covers-walls")).toEqual([]);
+  });
+
+  it("warns about a roof that sits over no walls at all", () => {
+    const doc = baseScene();
+    doc.subject!.roofs![0]!.footprint = [
+      [40, 40],
+      [44, 40],
+      [44, 44],
+      [40, 44],
+    ];
+    const found = lint(doc).filter((f) => f.rule === "roof-covers-walls");
+    expect(found[0]!.severity).toBe("warning");
+    expect(found[0]!.message).toMatch(/shelters nothing/);
+  });
+
   it("warns when no level's top matches the roof's eave", () => {
     const doc = baseScene();
     doc.subject!.roofs![0]!.baseElevation = 9;

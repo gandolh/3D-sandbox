@@ -6,7 +6,7 @@ import { Timeline } from "./ui/Timeline.jsx";
 import { Toolbar } from "./ui/Toolbar.jsx";
 import { Viewport } from "./ui/Viewport.jsx";
 import { getState, loadDocument, setStatus, useStore } from "./state/store.js";
-import sceneJson from "../../../scenes/villa-carpathia.scene.json";
+import sceneJson from "../../../scenes/greenhollow.scene.json";
 
 export function App() {
   const status = useStore((s) => s.status);

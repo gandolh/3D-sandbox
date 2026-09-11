@@ -7,6 +7,7 @@ import { ensureStandardAttributes } from "./attributes.js";
 import { extrudePolygon } from "./polygon.js";
 import { buildWall } from "./subject/walls.js";
 import { UnsupportedRoofError, buildRoof } from "./subject/roofs.js";
+import { buildRun } from "./subject/runs.js";
 import { buildScatterMesh, mergeSimple } from "./context/scatter.js";
 import { buildMass, buildRoad } from "./context/masses.js";
 
@@ -16,6 +17,7 @@ export * from "./polygon.js";
 export * from "./materials.js";
 export * from "./subject/walls.js";
 export * from "./subject/roofs.js";
+export * from "./subject/runs.js";
 export * from "./context/scatter.js";
 export * from "./context/masses.js";
 
@@ -156,6 +158,21 @@ export function generateScene(
     attach(subject, stats.subject, proxy, doc.site.terrain.material, `placement:${placement.id}`);
   }
 
+  for (const run of doc.subject.runs) {
+    const { structure, climber } = buildRun(run);
+    // Merged per material rather than per part: a 60 m hedge is one solid and a
+    // pergola is two — steel and vine — not two hundred little boxes, each of
+    // which would be its own draw call.
+    if (structure.length > 0) {
+      attach(subject, stats.subject, mergeSimple(structure), run.material, `run:${run.id}`);
+      for (const part of structure) part.dispose();
+    }
+    if (climber.length > 0 && run.climber !== undefined) {
+      attach(subject, stats.subject, mergeSimple(climber), run.climber, `run:${run.id}:climber`);
+      for (const part of climber) part.dispose();
+    }
+  }
+
   for (const roof of doc.subject.roofs) {
     try {
       attach(subject, stats.subject, buildRoof(roof), roof.material, `roof:${roof.id}`);
@@ -181,7 +198,7 @@ export function generateScene(
 
   if (includeContext) {
     for (const field of doc.context.scatter) {
-      const material = resolveMaterial(materials, doc.site.terrain.material);
+      const material = resolveMaterial(materials, field.material ?? doc.site.terrain.material);
       const { mesh, instances } = buildScatterMesh(field, material);
       owned.push(mesh.geometry);
       context.add(mesh);

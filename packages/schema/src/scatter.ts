@@ -19,5 +19,15 @@ export function estimateScatterInstances(field: ScatterField): ScatterEstimate {
   const gross = area(field.area);
   const excluded = field.exclude.reduce((sum, poly) => sum + area(poly), 0);
   const net = Math.max(0, gross - excluded);
+
+  // A row planting's count comes from its spacing, not its density — the whole
+  // point of rows is that a person chose how far apart to put the trees. Using
+  // `density` here would have the linter and the API both quoting a number the
+  // generator never produces.
+  if (field.arrangement === "rows") {
+    const [along, across] = field.rowSpacing;
+    return { net, instances: Math.round(net / (along * across)) };
+  }
+
   return { net, instances: Math.round((net / 100) * field.density) };
 }

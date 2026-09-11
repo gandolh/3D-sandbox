@@ -1,0 +1,1242 @@
+{
+  "schemaVersion": 1,
+  "id": "greenhollow",
+  "title": "Greenhollow",
+  "site": {
+    "latitude": 45.7489,
+    "longitude": 21.2087,
+    "timezone": "Europe/Bucharest",
+    "northOffset": 40,
+    "terrain": {
+      "kind": "flat",
+      "size": [
+        280,
+        280
+      ],
+      "material": "grass-lawn"
+    }
+  },
+  "solar": {
+    "date": "2026-09-12",
+    "time": "17:20",
+    "hdri": "kloppenheim_06"
+  },
+  "materials": {
+    "plaster-lime": {
+      "label": "Lime Plaster",
+      "source": "polyhaven",
+      "slug": "plaster_brick_pattern",
+      "baseColor": "#E9E1D3",
+      "roughness": 0.84
+    },
+    "roof-clay-tile": {
+      "label": "Clay Roof Tile",
+      "source": "polyhaven",
+      "slug": "roof_tiles_14",
+      "baseColor": "#9C5540",
+      "roughness": 0.66
+    },
+    "roof-zinc": {
+      "label": "Standing-seam Zinc",
+      "source": "procedural",
+      "baseColor": "#6E7378",
+      "roughness": 0.42,
+      "metalness": 0.8
+    },
+    "slab-concrete": {
+      "label": "Board-formed Concrete",
+      "source": "ambientcg",
+      "slug": "Concrete034",
+      "baseColor": "#B9B5AD",
+      "roughness": 0.9
+    },
+    "concrete-wall": {
+      "label": "Cast Concrete",
+      "source": "ambientcg",
+      "slug": "Concrete034",
+      "baseColor": "#C2BDB3",
+      "roughness": 0.88
+    },
+    "steel-dark": {
+      "label": "Dark Steel",
+      "source": "procedural",
+      "baseColor": "#3A3D42",
+      "roughness": 0.35,
+      "metalness": 0.95
+    },
+    "glass-house": {
+      "label": "Greenhouse Glazing",
+      "source": "procedural",
+      "baseColor": "#CFE0DA",
+      "roughness": 0.08,
+      "metalness": 0.1
+    },
+    "grass-lawn": {
+      "label": "Mown Lawn",
+      "source": "polyhaven",
+      "slug": "coast_sand_rocks_02",
+      "baseColor": "#5C7B43",
+      "roughness": 1
+    },
+    "gravel-alley": {
+      "label": "Gravel",
+      "source": "ambientcg",
+      "slug": "Gravel023",
+      "baseColor": "#A79D8D",
+      "roughness": 0.96
+    },
+    "asphalt-road": {
+      "label": "Worn Asphalt",
+      "source": "ambientcg",
+      "slug": "Asphalt026A",
+      "baseColor": "#47474A",
+      "roughness": 0.95
+    },
+    "hedge-green": {
+      "label": "Clipped Hedge",
+      "source": "procedural",
+      "baseColor": "#3F5A32",
+      "roughness": 1
+    },
+    "rose-green": {
+      "label": "Rose Bush",
+      "source": "procedural",
+      "baseColor": "#5A7A3E",
+      "roughness": 1
+    },
+    "orchard-green": {
+      "label": "Fruit Tree",
+      "source": "procedural",
+      "baseColor": "#4A6B38",
+      "roughness": 1
+    },
+    "vegetable-green": {
+      "label": "Vegetable Bed",
+      "source": "procedural",
+      "baseColor": "#6B7F3C",
+      "roughness": 1
+    },
+    "vine-green": {
+      "label": "Grapevine",
+      "source": "procedural",
+      "baseColor": "#4E6B33",
+      "roughness": 0.95
+    },
+    "water-pond": {
+      "label": "Still Water",
+      "source": "procedural",
+      "baseColor": "#2C4A52",
+      "roughness": 0.04,
+      "metalness": 0.1
+    },
+    "render-neighbour": {
+      "label": "Neutral Render",
+      "source": "procedural",
+      "baseColor": "#C9C3B6",
+      "roughness": 0.85
+    }
+  },
+  "subject": {
+    "levels": [
+      {
+        "id": "ground",
+        "name": "Ground",
+        "elevation": 0,
+        "height": 3,
+        "walls": [
+          {
+            "id": "W-01",
+            "start": [
+              -5.5,
+              22
+            ],
+            "end": [
+              5.5,
+              22
+            ],
+            "thickness": 0.3,
+            "material": "plaster-lime",
+            "openings": [
+              {
+                "id": "w-f1",
+                "kind": "window",
+                "offset": 1.4,
+                "width": 1.5,
+                "height": 1.3,
+                "sill": 0.95
+              },
+              {
+                "id": "d-front",
+                "kind": "door",
+                "offset": 4.9,
+                "width": 1.2,
+                "height": 2.2,
+                "sill": 0
+              },
+              {
+                "id": "w-f2",
+                "kind": "window",
+                "offset": 8,
+                "width": 1.5,
+                "height": 1.3,
+                "sill": 0.95
+              }
+            ]
+          },
+          {
+            "id": "W-02",
+            "start": [
+              5.5,
+              22
+            ],
+            "end": [
+              5.5,
+              32
+            ],
+            "thickness": 0.3,
+            "material": "plaster-lime",
+            "openings": [
+              {
+                "id": "w-e1",
+                "kind": "window",
+                "offset": 2.2,
+                "width": 1.3,
+                "height": 1.3,
+                "sill": 0.95
+              },
+              {
+                "id": "w-e2",
+                "kind": "window",
+                "offset": 6.4,
+                "width": 1.3,
+                "height": 1.3,
+                "sill": 0.95
+              }
+            ]
+          },
+          {
+            "id": "W-03",
+            "start": [
+              5.5,
+              32
+            ],
+            "end": [
+              -5.5,
+              32
+            ],
+            "thickness": 0.3,
+            "material": "plaster-lime",
+            "openings": [
+              {
+                "id": "w-g1",
+                "kind": "window",
+                "offset": 1.6,
+                "width": 2.2,
+                "height": 1.7,
+                "sill": 0.75
+              },
+              {
+                "id": "d-garden",
+                "kind": "door",
+                "offset": 5,
+                "width": 1.2,
+                "height": 2.2,
+                "sill": 0
+              },
+              {
+                "id": "w-g2",
+                "kind": "window",
+                "offset": 8.2,
+                "width": 2.2,
+                "height": 1.7,
+                "sill": 0.75
+              }
+            ]
+          },
+          {
+            "id": "W-04",
+            "start": [
+              -5.5,
+              32
+            ],
+            "end": [
+              -5.5,
+              22
+            ],
+            "thickness": 0.3,
+            "material": "plaster-lime",
+            "openings": [
+              {
+                "id": "d-porch",
+                "kind": "door",
+                "offset": 3.4,
+                "width": 1,
+                "height": 2.1,
+                "sill": 0
+              },
+              {
+                "id": "w-p1",
+                "kind": "window",
+                "offset": 6.2,
+                "width": 1.2,
+                "height": 1.2,
+                "sill": 0.95
+              }
+            ]
+          },
+          {
+            "id": "G-01",
+            "start": [
+              7,
+              20
+            ],
+            "end": [
+              14,
+              20
+            ],
+            "height": 2.8,
+            "thickness": 0.25,
+            "material": "plaster-lime",
+            "openings": [
+              {
+                "id": "d-garage",
+                "kind": "door",
+                "offset": 1.4,
+                "width": 4.2,
+                "height": 2.4,
+                "sill": 0
+              }
+            ]
+          },
+          {
+            "id": "G-02",
+            "start": [
+              14,
+              20
+            ],
+            "end": [
+              14,
+              27
+            ],
+            "height": 2.8,
+            "thickness": 0.25,
+            "material": "plaster-lime",
+            "openings": []
+          },
+          {
+            "id": "G-03",
+            "start": [
+              14,
+              27
+            ],
+            "end": [
+              7,
+              27
+            ],
+            "height": 2.8,
+            "thickness": 0.25,
+            "material": "plaster-lime",
+            "openings": []
+          },
+          {
+            "id": "G-04",
+            "start": [
+              7,
+              27
+            ],
+            "end": [
+              7,
+              20
+            ],
+            "height": 2.8,
+            "thickness": 0.25,
+            "material": "plaster-lime",
+            "openings": []
+          },
+          {
+            "id": "H-01",
+            "start": [
+              -10,
+              36
+            ],
+            "end": [
+              -5,
+              36
+            ],
+            "height": 2.6,
+            "thickness": 0.08,
+            "material": "glass-house",
+            "openings": [
+              {
+                "id": "d-glass",
+                "kind": "door",
+                "offset": 1.9,
+                "width": 1.1,
+                "height": 2,
+                "sill": 0
+              }
+            ]
+          },
+          {
+            "id": "H-02",
+            "start": [
+              -5,
+              36
+            ],
+            "end": [
+              -5,
+              42
+            ],
+            "height": 2.6,
+            "thickness": 0.08,
+            "material": "glass-house",
+            "openings": []
+          },
+          {
+            "id": "H-03",
+            "start": [
+              -5,
+              42
+            ],
+            "end": [
+              -10,
+              42
+            ],
+            "height": 2.6,
+            "thickness": 0.08,
+            "material": "glass-house",
+            "openings": []
+          },
+          {
+            "id": "H-04",
+            "start": [
+              -10,
+              42
+            ],
+            "end": [
+              -10,
+              36
+            ],
+            "height": 2.6,
+            "thickness": 0.08,
+            "material": "glass-house",
+            "openings": []
+          },
+          {
+            "id": "B-01",
+            "start": [
+              -16,
+              0
+            ],
+            "end": [
+              16,
+              0
+            ],
+            "height": 1.8,
+            "thickness": 0.3,
+            "material": "concrete-wall",
+            "openings": [
+              {
+                "id": "gate",
+                "kind": "door",
+                "offset": 14,
+                "width": 4,
+                "height": 1.8,
+                "sill": 0,
+                "material": "steel-dark"
+              }
+            ]
+          }
+        ],
+        "slabs": [
+          {
+            "id": "slab-house",
+            "polygon": [
+              [
+                -5.5,
+                22
+              ],
+              [
+                5.5,
+                22
+              ],
+              [
+                5.5,
+                32
+              ],
+              [
+                -5.5,
+                32
+              ]
+            ],
+            "thickness": 0.3,
+            "material": "slab-concrete"
+          },
+          {
+            "id": "slab-porch",
+            "polygon": [
+              [
+                -9.5,
+                23
+              ],
+              [
+                -5.5,
+                23
+              ],
+              [
+                -5.5,
+                31
+              ],
+              [
+                -9.5,
+                31
+              ]
+            ],
+            "thickness": 0.2,
+            "material": "slab-concrete"
+          },
+          {
+            "id": "slab-garage",
+            "polygon": [
+              [
+                7,
+                20
+              ],
+              [
+                14,
+                20
+              ],
+              [
+                14,
+                27
+              ],
+              [
+                7,
+                27
+              ]
+            ],
+            "thickness": 0.25,
+            "material": "slab-concrete"
+          },
+          {
+            "id": "slab-greenhouse",
+            "polygon": [
+              [
+                -10,
+                36
+              ],
+              [
+                -5,
+                36
+              ],
+              [
+                -5,
+                42
+              ],
+              [
+                -10,
+                42
+              ]
+            ],
+            "thickness": 0.15,
+            "material": "slab-concrete"
+          },
+          {
+            "id": "pond",
+            "polygon": [
+              [
+                4.2,
+                35.4
+              ],
+              [
+                7.4,
+                34.8
+              ],
+              [
+                9.8,
+                36.6
+              ],
+              [
+                10.1,
+                39.4
+              ],
+              [
+                8,
+                41.2
+              ],
+              [
+                5.1,
+                40.6
+              ],
+              [
+                3.8,
+                38.2
+              ]
+            ],
+            "thickness": 0.12,
+            "material": "water-pond"
+          }
+        ]
+      }
+    ],
+    "roofs": [
+      {
+        "id": "roof-house",
+        "kind": "gable",
+        "footprint": [
+          [
+            -6,
+            21.5
+          ],
+          [
+            6,
+            21.5
+          ],
+          [
+            6,
+            32.5
+          ],
+          [
+            -6,
+            32.5
+          ]
+        ],
+        "baseElevation": 3,
+        "pitch": 38,
+        "overhang": 0.5,
+        "ridgeBearing": 90,
+        "material": "roof-clay-tile"
+      },
+      {
+        "id": "roof-porch",
+        "kind": "flat",
+        "footprint": [
+          [
+            -9.9,
+            22.6
+          ],
+          [
+            -5.300000000000001,
+            22.6
+          ],
+          [
+            -5.300000000000001,
+            31.400000000000002
+          ],
+          [
+            -9.9,
+            31.400000000000002
+          ]
+        ],
+        "baseElevation": 2.7,
+        "pitch": 0,
+        "overhang": 0.3,
+        "material": "roof-zinc"
+      },
+      {
+        "id": "roof-garage",
+        "kind": "gable",
+        "footprint": [
+          [
+            6.6,
+            19.6
+          ],
+          [
+            14.399999999999999,
+            19.6
+          ],
+          [
+            14.399999999999999,
+            27.400000000000002
+          ],
+          [
+            6.6,
+            27.400000000000002
+          ]
+        ],
+        "baseElevation": 2.8,
+        "pitch": 30,
+        "overhang": 0.4,
+        "ridgeBearing": 90,
+        "material": "roof-clay-tile"
+      },
+      {
+        "id": "roof-greenhouse",
+        "kind": "gable",
+        "footprint": [
+          [
+            -10.3,
+            35.7
+          ],
+          [
+            -4.700000000000001,
+            35.7
+          ],
+          [
+            -4.700000000000001,
+            42.300000000000004
+          ],
+          [
+            -10.3,
+            42.300000000000004
+          ]
+        ],
+        "baseElevation": 2.6,
+        "pitch": 26,
+        "overhang": 0.15,
+        "ridgeBearing": 0,
+        "material": "glass-house"
+      }
+    ],
+    "placements": [
+      {
+        "id": "fountain",
+        "asset": "polyhaven/Fountain_01",
+        "position": [
+          7,
+          0.6,
+          37.9
+        ],
+        "rotationY": 0,
+        "scale": 1.1
+      },
+      {
+        "id": "bench-vine",
+        "asset": "polyhaven/GardenBench_01",
+        "position": [
+          -1.2,
+          0.5,
+          12
+        ],
+        "rotationY": 90,
+        "scale": 1
+      },
+      {
+        "id": "table-garden",
+        "asset": "polyhaven/CoffeeTable_01",
+        "position": [
+          2.4,
+          0.7,
+          33.8
+        ],
+        "rotationY": 15,
+        "scale": 1
+      }
+    ],
+    "runs": [
+      {
+        "id": "pergola-vine",
+        "kind": "pergola",
+        "path": [
+          [
+            0,
+            2
+          ],
+          [
+            0,
+            21.4
+          ]
+        ],
+        "width": 3.6,
+        "height": 2.6,
+        "spacing": 2.4,
+        "material": "steel-dark",
+        "climber": "vine-green"
+      },
+      {
+        "id": "porch-posts",
+        "kind": "colonnade",
+        "path": [
+          [
+            -9.5,
+            23
+          ],
+          [
+            -9.5,
+            31
+          ]
+        ],
+        "width": 0.3,
+        "height": 2.7,
+        "spacing": 2.6,
+        "material": "steel-dark"
+      },
+      {
+        "id": "hedge-west",
+        "kind": "hedge",
+        "path": [
+          [
+            -16,
+            0.4
+          ],
+          [
+            -16,
+            62
+          ]
+        ],
+        "width": 0.9,
+        "height": 1.7,
+        "spacing": 3,
+        "material": "hedge-green"
+      },
+      {
+        "id": "hedge-east",
+        "kind": "hedge",
+        "path": [
+          [
+            16,
+            0.4
+          ],
+          [
+            16,
+            62
+          ]
+        ],
+        "width": 0.9,
+        "height": 1.7,
+        "spacing": 3,
+        "material": "hedge-green"
+      }
+    ]
+  },
+  "context": {
+    "scatter": [
+      {
+        "id": "roses-west",
+        "assets": [
+          "polyhaven/rose_bush_01",
+          "polyhaven/rose_bush_02"
+        ],
+        "area": [
+          [
+            -4.2,
+            2
+          ],
+          [
+            -2.4000000000000004,
+            2
+          ],
+          [
+            -2.4000000000000004,
+            21
+          ],
+          [
+            -4.2,
+            21
+          ]
+        ],
+        "density": 26,
+        "seed": 11,
+        "material": "rose-green",
+        "scaleRange": [
+          0.85,
+          1.2
+        ],
+        "arrangement": "random",
+        "rowSpacing": [
+          6,
+          6
+        ],
+        "height": 0.9,
+        "exclude": []
+      },
+      {
+        "id": "roses-east",
+        "assets": [
+          "polyhaven/rose_bush_01",
+          "polyhaven/rose_bush_02"
+        ],
+        "area": [
+          [
+            2.4,
+            2
+          ],
+          [
+            4.2,
+            2
+          ],
+          [
+            4.2,
+            21
+          ],
+          [
+            2.4,
+            21
+          ]
+        ],
+        "density": 26,
+        "seed": 12,
+        "material": "rose-green",
+        "scaleRange": [
+          0.85,
+          1.2
+        ],
+        "arrangement": "random",
+        "rowSpacing": [
+          6,
+          6
+        ],
+        "height": 0.9,
+        "exclude": []
+      },
+      {
+        "id": "kitchen-garden",
+        "assets": [
+          "polyhaven/vegetable_bed_01"
+        ],
+        "area": [
+          [
+            -13,
+            34
+          ],
+          [
+            -4,
+            34
+          ],
+          [
+            -4,
+            44
+          ],
+          [
+            -13,
+            44
+          ]
+        ],
+        "density": 9,
+        "seed": 21,
+        "material": "vegetable-green",
+        "scaleRange": [
+          0.95,
+          1.05
+        ],
+        "arrangement": "random",
+        "rowSpacing": [
+          6,
+          6
+        ],
+        "height": 0.5,
+        "exclude": [
+          [
+            [
+              -10.5,
+              35.4
+            ],
+            [
+              -4.5,
+              35.4
+            ],
+            [
+              -4.5,
+              42.6
+            ],
+            [
+              -10.5,
+              42.6
+            ]
+          ]
+        ]
+      },
+      {
+        "id": "orchard",
+        "assets": [
+          "polyhaven/apple_tree_01",
+          "polyhaven/pear_tree_01",
+          "polyhaven/plum_tree_01"
+        ],
+        "area": [
+          [
+            -14,
+            46
+          ],
+          [
+            14,
+            46
+          ],
+          [
+            14,
+            60
+          ],
+          [
+            -14,
+            60
+          ]
+        ],
+        "density": 1,
+        "seed": 31,
+        "material": "orchard-green",
+        "scaleRange": [
+          0.9,
+          1.15
+        ],
+        "arrangement": "rows",
+        "rowSpacing": [
+          5.5,
+          4.5
+        ],
+        "height": 4.2,
+        "exclude": []
+      }
+    ],
+    "masses": [
+      {
+        "id": "n-01",
+        "footprint": [
+          [
+            -34,
+            -24
+          ],
+          [
+            -23,
+            -24
+          ],
+          [
+            -23,
+            -15
+          ],
+          [
+            -34,
+            -15
+          ]
+        ],
+        "height": 6,
+        "roofKind": "gable",
+        "pitch": 30,
+        "material": "render-neighbour"
+      },
+      {
+        "id": "n-02",
+        "footprint": [
+          [
+            -16,
+            -23
+          ],
+          [
+            -6,
+            -23
+          ],
+          [
+            -6,
+            -15
+          ],
+          [
+            -16,
+            -15
+          ]
+        ],
+        "height": 5.6,
+        "roofKind": "gable",
+        "pitch": 30,
+        "material": "render-neighbour"
+      },
+      {
+        "id": "n-03",
+        "footprint": [
+          [
+            4,
+            -24
+          ],
+          [
+            16,
+            -24
+          ],
+          [
+            16,
+            -15
+          ],
+          [
+            4,
+            -15
+          ]
+        ],
+        "height": 6.4,
+        "roofKind": "gable",
+        "pitch": 30,
+        "material": "render-neighbour"
+      },
+      {
+        "id": "n-04",
+        "footprint": [
+          [
+            24,
+            -23
+          ],
+          [
+            34,
+            -23
+          ],
+          [
+            34,
+            -15
+          ],
+          [
+            24,
+            -15
+          ]
+        ],
+        "height": 5.8,
+        "roofKind": "gable",
+        "pitch": 30,
+        "material": "render-neighbour"
+      }
+    ],
+    "roads": [
+      {
+        "id": "road",
+        "path": [
+          [
+            -70,
+            -5
+          ],
+          [
+            -20,
+            -4.8
+          ],
+          [
+            20,
+            -5.1
+          ],
+          [
+            70,
+            -4.9
+          ]
+        ],
+        "width": 6,
+        "material": "asphalt-road"
+      },
+      {
+        "id": "alley",
+        "path": [
+          [
+            0,
+            -1.5
+          ],
+          [
+            0,
+            21.2
+          ]
+        ],
+        "width": 3.2,
+        "material": "gravel-alley"
+      },
+      {
+        "id": "alley-garage",
+        "path": [
+          [
+            0,
+            16.5
+          ],
+          [
+            5.5,
+            17.6
+          ],
+          [
+            9.5,
+            19.4
+          ]
+        ],
+        "width": 3,
+        "material": "gravel-alley"
+      }
+    ]
+  },
+  "shots": [
+    {
+      "id": "overview",
+      "name": "Overview",
+      "camera": {
+        "position": [
+          40,
+          34,
+          -22
+        ],
+        "target": [
+          0,
+          0,
+          28
+        ],
+        "focalLength": 30
+      },
+      "render": {
+        "width": 1920,
+        "height": 1080,
+        "samples": 1200
+      }
+    },
+    {
+      "id": "approach",
+      "name": "Approach from the gate",
+      "camera": {
+        "position": [
+          0,
+          1.72,
+          0.8
+        ],
+        "target": [
+          0,
+          1.55,
+          23
+        ],
+        "focalLength": 35
+      },
+      "render": {
+        "width": 1920,
+        "height": 1080,
+        "samples": 2000
+      }
+    },
+    {
+      "id": "garden-threequarter",
+      "name": "Garden three-quarter",
+      "camera": {
+        "position": [
+          13.5,
+          4.4,
+          41.5
+        ],
+        "target": [
+          -1.5,
+          2.2,
+          28
+        ],
+        "focalLength": 40
+      },
+      "solar": {
+        "date": "2026-09-12",
+        "time": "08:40",
+        "hdri": "kloppenheim_02"
+      },
+      "render": {
+        "width": 1920,
+        "height": 1080,
+        "samples": 2000
+      }
+    },
+    {
+      "id": "porch-evening",
+      "name": "Porch, evening",
+      "camera": {
+        "position": [
+          -16.5,
+          2.6,
+          19.5
+        ],
+        "target": [
+          -7.5,
+          2.1,
+          27
+        ],
+        "focalLength": 50
+      },
+      "solar": {
+        "date": "2026-09-12",
+        "time": "18:35",
+        "hdri": "kloppenheim_02"
+      },
+      "render": {
+        "width": 1920,
+        "height": 1080,
+        "samples": 2500
+      }
+    }
+  ]
+}

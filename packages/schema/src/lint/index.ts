@@ -4,6 +4,7 @@ import { polygonsHaveArea, scatterDensityIsSane, shotCameraIsValid } from "./rul
 import { uniqueIds } from "./rules/identity.js";
 import { assetResolves, materialResolves, materialsAreUsed } from "./rules/references.js";
 import { roofCoversWalls } from "./rules/roofs.js";
+import { runIsWellFormed } from "./rules/runs.js";
 import {
   openingFitsHeight,
   openingFitsWall,
@@ -23,6 +24,7 @@ export const RULES: readonly Rule[] = [
   openingFitsHeight,
   openingsDoNotOverlap,
   roofCoversWalls,
+  runIsWellFormed,
   polygonsHaveArea,
   materialResolves,
   assetResolves,

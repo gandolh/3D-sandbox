@@ -45,3 +45,25 @@ _Avoid_: validator, checker
 A void cut into a wall — a door or a window. Positioned along its host wall by
 offset, never by world coordinates.
 _Avoid_: hole, window, door, aperture, void
+
+**Run**:
+A linear feature carried along a path — a hedge, a fence, a colonnade, or a
+pergola. All four are one profile extruded or repeated along a polyline; they
+differ only in what stands on it. Deliberately *not* a `Wall`: a wall is a
+building element that lives inside a level and is judged against the roof above
+it, and a hedge has neither.
+_Avoid_: linear feature, border, fence (a fence is one kind of run), landscape wall
+
+**Structure**:
+A connected group of walls — walls that share an endpoint. What distinguishes
+the house from the garage on the same level, without the document having to say
+so. Roofs are judged against the structure they mostly sit over, which is why a
+roof never names the walls it covers.
+_Avoid_: building, mass (a `BuildingMass` is a context-tier thing entirely)
+
+**Planting height**:
+A scatter field's nominal instance height in metres, before `scaleRange`. A real
+property of what is planted — a rose bed and an apple orchard differ by it — not
+a rendering hint, and the thing that lets proxy geometry be the right size
+before the asset manifest exists.
+_Avoid_: proxy size, tree height

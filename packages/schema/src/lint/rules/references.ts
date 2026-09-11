@@ -36,10 +36,19 @@ export const materialResolves: Rule = {
       );
     });
     doc.subject.roofs.forEach((r, i) => check(r.material, `subject.roofs[${i}]`, `roof "${r.id}"`));
+    doc.subject.runs.forEach((r, i) => {
+      check(r.material, `subject.runs[${i}]`, `${r.kind} "${r.id}"`);
+      if (r.climber !== undefined) {
+        check(r.climber, `subject.runs[${i}].climber`, `climber on ${r.kind} "${r.id}"`);
+      }
+    });
     doc.context.masses.forEach((m, i) =>
       check(m.material, `context.masses[${i}]`, `mass "${m.id}"`),
     );
     doc.context.roads.forEach((r, i) => check(r.material, `context.roads[${i}]`, `road "${r.id}"`));
+    doc.context.scatter.forEach((f, i) => {
+      if (f.material !== undefined) check(f.material, `context.scatter[${i}]`, `scatter "${f.id}"`);
+    });
 
     return out;
   },
@@ -61,8 +70,13 @@ export const materialsAreUsed: Rule = {
       for (const s of level.slabs) used.add(s.material);
     }
     for (const r of doc.subject.roofs) used.add(r.material);
+    for (const r of doc.subject.runs) {
+      used.add(r.material);
+      if (r.climber !== undefined) used.add(r.climber);
+    }
     for (const m of doc.context.masses) used.add(m.material);
     for (const r of doc.context.roads) used.add(r.material);
+    for (const f of doc.context.scatter) if (f.material !== undefined) used.add(f.material);
 
     return Object.keys(doc.materials)
       .filter((id) => !used.has(id))

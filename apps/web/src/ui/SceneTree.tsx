@@ -1,7 +1,16 @@
 import { Fragment } from "react";
+import type { Run } from "@solstice/schema";
+import { runLength } from "@solstice/geometry";
 import { select, useStore } from "../state/store.js";
 import { PanelTitle } from "./primitives.jsx";
 import { Scroll } from "./Scroll.jsx";
+
+const RUN_GLYPH: Record<Run["kind"], string> = {
+  hedge: "❖",
+  fence: "⫿",
+  colonnade: "⊓",
+  pergola: "⌸",
+};
 
 function Node({
   id,
@@ -74,6 +83,20 @@ export function SceneTree() {
             <Node key={placement.id} id={placement.id} label={placement.id} depth={2} glyph="◦" />
           ))}
 
+          {doc.subject.runs.length > 0 && (
+            <Node label="Runs" depth={1} glyph="⌇" badge={`${doc.subject.runs.length}`} />
+          )}
+          {doc.subject.runs.map((run) => (
+            <Node
+              key={run.id}
+              id={run.id}
+              label={run.id}
+              depth={2}
+              glyph={RUN_GLYPH[run.kind]}
+              badge={`${runLength(run).toFixed(0)} m`}
+            />
+          ))}
+
           {doc.subject.roofs.map((roof) => (
             <Node
               key={roof.id}
@@ -89,7 +112,19 @@ export function SceneTree() {
             Context · instanced
           </div>
           {doc.context.scatter.map((field) => (
-            <Node key={field.id} label={field.id} depth={1} glyph="✦" badge={`${field.density}/100m²`} />
+            <Node
+              key={field.id}
+              label={field.id}
+              depth={1}
+              glyph="✦"
+              // A row planting's count comes from its spacing, so quoting a
+              // density here would be quoting a number nothing uses.
+              badge={
+                field.arrangement === "rows"
+                  ? `${field.rowSpacing[0]} × ${field.rowSpacing[1]} m`
+                  : `${field.density}/100m²`
+              }
+            />
           ))}
           <Node label="Neighbours" depth={1} glyph="▦" badge={`${doc.context.masses.length}`} />
           {doc.context.roads.map((road) => (

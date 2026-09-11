@@ -22,7 +22,13 @@ export const Material = z.strictObject({
   source: z.enum(["polyhaven", "ambientcg", "procedural"]),
   /** Asset slug at the source, e.g. `plaster_brick_pattern`. */
   slug: z.string().max(128).optional(),
-  /** sRGB hex, used directly when `source` is `procedural`. */
+  /**
+   * sRGB hex. The whole surface when `source` is `procedural`, and the
+   * stand-in until the maps are downloaded when it is not — so a textured
+   * material should still declare its dominant colour. Without one every
+   * untextured material resolves to the same neutral grey, and a scene of
+   * grass, tile, gravel and zinc comes out one flat colour.
+   */
   baseColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
   roughness: z.number().min(0).max(1).optional(),
   metalness: z.number().min(0).max(1).optional(),
@@ -94,10 +100,36 @@ export const Placement = z.strictObject({
   scale: z.number().finite().positive().default(1),
 });
 
+/**
+ * A linear feature: a hedge, a fence, a colonnade, or a pergola.
+ *
+ * All four are the same idea — a profile carried along a path — and differ only
+ * in what is placed along it. A hedge is solid; the rest stand posts at
+ * `spacing` carrying a head beam, and a pergola adds rafters across them (and,
+ * with a `climber`, a vine over those). A colonnade is the porch case: posts
+ * holding up the edge of a roof. They are not `Wall`s:
+ * a wall is a building element that lives inside a level and is checked against
+ * the roof over it, and a hedge has neither a level nor a roof.
+ */
+export const Run = z.strictObject({
+  id: Id,
+  kind: z.enum(["hedge", "fence", "colonnade", "pergola"]),
+  /** Centreline. Not closed — repeat the first point to close it deliberately. */
+  path: PlanSchema.array().min(2),
+  width: PositiveMeters,
+  height: PositiveMeters,
+  /** Post pitch along the path. Ignored by `hedge`, which is continuous. */
+  spacing: PositiveMeters.default(3),
+  material: MaterialId,
+  /** A climber trained over a pergola — the grapevine on the metalwork. */
+  climber: MaterialId.optional(),
+});
+
 export const Subject = z.strictObject({
   levels: Level.array().default([]),
   roofs: Roof.array().default([]),
   placements: Placement.array().default([]),
+  runs: Run.array().default([]),
 });
 
 /* ── context tier ──────────────────────────────────────────────── */
@@ -111,7 +143,29 @@ export const ScatterField = z.strictObject({
   density: z.number().finite().positive(),
   /** Deterministic placement — the same seed must give the same forest. */
   seed: z.number().int().nonnegative().default(0),
+  /**
+   * Surface for the instances. Falls back to the terrain's, which is only ever
+   * right by accident — roses, an orchard and a vegetable bed are not the lawn
+   * they stand on.
+   */
+  material: MaterialId.optional(),
   scaleRange: z.tuple([z.number().positive(), z.number().positive()]).default([0.85, 1.15]),
+  /**
+   * How instances are laid out. `random` is scrub, woodland, meadow; `rows` is
+   * anything planted by a person — an orchard, a vineyard, a nursery bed.
+   */
+  arrangement: z.enum(["random", "rows"]).default("random"),
+  /** `[along, across]` row spacing in metres. Only read when `arrangement` is `rows`. */
+  rowSpacing: z.tuple([PositiveMeters, PositiveMeters]).default([6, 6]),
+  /**
+   * Nominal height of one instance, in metres, before `scaleRange`.
+   *
+   * A real property of the planting rather than a rendering hint — a rose bed
+   * and an apple orchard differ by it — and the only thing that lets the proxy
+   * geometry be the right size before the asset manifest exists. When the
+   * manifest lands this becomes a check on the glTF rather than dead weight.
+   */
+  height: PositiveMeters.default(6),
   /** Regions kept clear, e.g. the house footprint and the driveway. */
   exclude: PolygonSchema.array().default([]),
 });
@@ -224,6 +278,7 @@ export type Terrain = z.infer<typeof Terrain>;
 export type Site = z.infer<typeof Site>;
 export type SolarTime = z.infer<typeof SolarTime>;
 export type Shot = z.infer<typeof Shot>;
+export type Run = z.infer<typeof Run>;
 export type SceneDocument = z.infer<typeof SceneDocument>;
 /** What an author writes, before defaults are applied. */
 export type SceneDocumentInput = z.input<typeof SceneDocument>;

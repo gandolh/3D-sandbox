@@ -65,3 +65,4 @@ export function intervalsOverlap(
 ): boolean {
   return Math.min(aEnd, bEnd) - Math.max(aStart, bStart) > epsilon;
 }
+
