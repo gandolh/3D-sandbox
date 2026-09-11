@@ -49,7 +49,8 @@ const villa: SceneDocumentInput = {
     terrain: { kind: "flat", size: [140, 140], material: "grass-meadow" },
   },
 
-  // 21 June, late afternoon: sun altitude 32.3°, azimuth 272.3°.
+  // 21 June, late afternoon: sun altitude 32.9°, azimuth 271.7° (suncalc,
+  // refraction-corrected). Sun in the west, so shadows fall east.
   solar: { date: "2026-06-21", time: "17:42", hdri: "kloppenheim_06" },
 
   materials: {

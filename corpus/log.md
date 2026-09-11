@@ -57,3 +57,21 @@ no git credential helper, no `GH_TOKEN`/`GITHUB_TOKEN`, and no GitHub SSH key
 (`~/.ssh` holds GitLab and VPS keys only; `ssh -T git@github.com` is denied).
 Commits accumulate locally on `main`. Resolving this needs a human — a token, a
 credential helper, or a deploy key.
+
+## [2026-09-11] done | Brief 03 — Solar time
+
+`@solstice/solar` resolves a site and a wall-clock moment into sun altitude and
+azimuth, a scene-space direction vector, day bounds, and a viewport lighting
+model. Timezone handling is two-pass so times near a DST transition resolve
+correctly, with tests either side of the 2026-03-29 Bucharest boundary.
+
+Two findings. **suncalc 2.0.2 differs from 1.x in both units and convention** —
+degrees rather than radians, azimuth north-based clockwise rather than from
+south. The remembered 1.x conversion would have put the sun in the wrong quadrant
+while still looking plausible; reading the shipped `index.d.ts` caught it.
+
+And **the canonical sun figures moved**: hand-computed 32.3° / 272.3° became
+**32.949° / 271.654°** once refraction was accounted for. The artifact, the scene
+and the regression test now agree on suncalc's numbers.
+
+Brief: [03-solar.md](./briefs/done/03-solar.md).
