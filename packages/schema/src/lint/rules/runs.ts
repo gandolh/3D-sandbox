@@ -31,7 +31,12 @@ export const runIsWellFormed: Rule = {
         length += step;
       }
 
-      if (run.kind !== "hedge" && run.width < 2 * 0.08) {
+      // Not `fence`: a fence stands on one line of posts, so its `width` is the
+      // thickness of the thing and a small number is correct. This rule is
+      // about the *span* between two rows, which only a pergola and a colonnade
+      // have. It used to fire on every railing, and the honest reading of that
+      // warning was that the geometry was wrong rather than the number.
+      if (run.kind !== "hedge" && run.kind !== "fence" && run.width < 2 * 0.08) {
         out.push({
           rule: "run-is-well-formed",
           severity: "warning",

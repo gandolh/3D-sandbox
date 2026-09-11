@@ -1,4 +1,5 @@
 import {
+  setSceneId,
   setShotId,
   setShowColliders,
   setShowContext,
@@ -13,6 +14,7 @@ import {
   renderQueue,
 } from "../engine/queue.js";
 import { setStatus } from "../state/store.js";
+import { SCENES } from "../scenes.js";
 
 export function Toolbar({ onSave }: { onSave: () => void }) {
   const doc = useStore((s) => s.document);
@@ -20,15 +22,31 @@ export function Toolbar({ onSave }: { onSave: () => void }) {
   const showContext = useStore((s) => s.showContext);
   const showColliders = useStore((s) => s.showColliders);
   const shotId = useStore((s) => s.shotId);
+  const sceneId = useStore((s) => s.sceneId);
   const shots = doc?.shots ?? [];
   const shot = shots.find((s) => s.id === shotId);
 
   return (
     <header className="flex h-[46px] shrink-0 items-center gap-3 border-b border-line bg-chrome px-3.5">
       <span className="text-[14px] font-semibold tracking-tight text-ink">Solstice</span>
-      <span className="rounded-sm border border-line bg-panel px-2 py-[3px] font-mono text-[11.5px] text-muted">
-        {doc === null ? "—" : `${doc.id}.scene.json`}
-      </span>
+      {SCENES.length > 1 ? (
+        <select
+          value={sceneId}
+          onChange={(event) => setSceneId(event.target.value)}
+          title="Which scene is open"
+          className="rounded-sm border border-line bg-panel px-2 py-[3px] font-mono text-[11.5px] text-muted"
+        >
+          {SCENES.map((s) => (
+            <option key={s.id} value={s.id}>
+              {s.id}.scene.json
+            </option>
+          ))}
+        </select>
+      ) : (
+        <span className="rounded-sm border border-line bg-panel px-2 py-[3px] font-mono text-[11.5px] text-muted">
+          {doc === null ? "—" : `${doc.id}.scene.json`}
+        </span>
+      )}
 
       <div className="flex-1" />
 

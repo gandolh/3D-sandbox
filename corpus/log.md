@@ -369,3 +369,43 @@ Also closed on the same pass:
   and the two commands a human must run are in `status.md`. Worth noting the
   Caddyfile is estate-wide — installing it rewrites routes for all 18 stacks,
   which is a larger action than "deploy solstice" and belongs in a human's hand.
+
+## [2026-09-11] done | A second scene, and the three bugs it found
+
+Briefs 20 and 21. The open question after the audit was whether the document
+format generalises or is quietly shaped like one smallholding. **It
+generalises**: Elmsgate — a two-storey mid-terrace on a 6.5 m lot, party walls
+on both boundaries, railed forecourt, walled rear yard — needed no new entity
+type, and `Subject.levels` holding two things worked the first time it was
+asked to. Every level in the project before it sat at elevation 0.
+
+The value was not in the answer. It was in what looking at the result turned up:
+
+- **Both gable builders wound the ridge-along-X branch backwards**, so the slope
+  normals pointed into the building. The other branch is correct and no test had
+  ever asserted a direction, so this had been true since the roof builder was
+  written — and **Greenhollow's house and garage roofs, which both declare
+  `ridgeBearing: 90`, have been inside out in every render of the reference
+  scene**. Elmsgate's roof rendering solid black is what forced the chase;
+  measuring the normals headlessly is what settled it.
+- **`Run` built every fence as two rows of posts.** Right for a pergola or a
+  colonnade — you walk through those and `width` is the span — and wrong for a
+  railing, whose `width` is a thickness. `run-is-well-formed` had been warning
+  "narrower than its own posts" all along, and the honest reading of that
+  warning was that the geometry was wrong rather than the number.
+- **`BuildingMass` had no ridge bearing** while `Roof` did, so a context
+  neighbour always took the long-axis guess — wrong by ninety degrees for a
+  terrace, and a row that could never line up.
+- **An upper floor's slab z-fights through the facade** when drawn on the wall
+  centrelines. A document error, not a generator one: ground slabs never showed
+  it because they sit below grade.
+
+A scene picker went in first (brief 20) so the second scene had somewhere to be
+opened. It re-parses through Zod on every switch rather than trusting the
+bundled JSON, and resets selection, shot and playhead — all ids into a document
+that has just gone away. `villa-carpathia` is openable for the first time.
+
+The lesson is the one this project keeps relearning, in a new place: **running it
+catches what building it cannot.** Three of these four were invisible to the type
+checker, to the linter that was actively warning about one of them, and to 248
+passing tests.

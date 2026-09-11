@@ -75,8 +75,14 @@ export function buildRoof(roof: Roof): THREE.BufferGeometry {
   } else {
     const r1: [number, number, number] = [b.minX, apex, cz];
     const r2: [number, number, number] = [b.maxX, apex, cz];
-    quad([b.minX, base, b.minZ], [b.maxX, base, b.minZ], r2, r1);
-    quad([b.maxX, base, b.maxZ], [b.minX, base, b.maxZ], r1, r2);
+    // Wound eave → ridge → ridge → eave, so the face normal comes out *up*.
+    // Reversed, as this was, both slopes point into the building: the roof
+    // renders unlit and the path tracer shades its underside. It survived
+    // because the other branch is correct and nothing asserted a direction —
+    // and because Greenhollow's house and garage, the two roofs it affected,
+    // were only ever seen from outside, where a black roof reads as a dark one.
+    quad([b.minX, base, b.minZ], r1, r2, [b.maxX, base, b.minZ]);
+    quad([b.maxX, base, b.maxZ], r2, r1, [b.minX, base, b.maxZ]);
     tri([b.minX, base, b.maxZ], r1, [b.minX, base, b.minZ]);
     tri([b.maxX, base, b.minZ], r2, [b.maxX, base, b.maxZ]);
   }

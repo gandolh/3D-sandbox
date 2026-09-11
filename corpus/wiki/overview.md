@@ -38,9 +38,10 @@ a language model and the thing reading it is a geometry generator.
 
 ## What it can do today
 
-Open a scene, orbit it, select and edit walls and placements, watch the sun move
-across a real day, drop furniture onto the floor it is standing over, and
-path-trace a named shot at its own camera, clock and resolution. Trees and
+Open any of three bundled scenes, orbit it, select and edit walls and
+placements, watch the sun move across a real day, drop furniture onto the floor
+it is standing over, and path-trace a named shot — or the whole shot list
+unattended — at its own camera, clock and resolution. Trees and
 shrubs are real models — the heavy ones as baked impostors — and surfaces carry
 real PBR maps.
 

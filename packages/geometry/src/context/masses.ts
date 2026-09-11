@@ -16,7 +16,11 @@ export function buildMass(mass: BuildingMass): THREE.BufferGeometry {
   const b = bounds(mass.footprint);
   const width = b.maxX - b.minX;
   const depth = b.maxZ - b.minZ;
-  const ridgeAlongZ = depth >= width;
+  // Same rule as `subject/roofs.ts`: declared bearing wins, and the long-axis
+  // guess is only a fallback. It has to be the same rule — a neighbour and the
+  // house it abuts are the same roofline.
+  const ridgeAlongZ =
+    mass.ridgeBearing === undefined ? depth >= width : mass.ridgeBearing % 180 === 0;
   const span = ridgeAlongZ ? width : depth;
   const rise = (span / 2) * Math.tan(degToRad(mass.pitch));
   const base = mass.height;
@@ -44,8 +48,11 @@ export function buildMass(mass: BuildingMass): THREE.BufferGeometry {
     tri([b.minX, base, b.minZ], [cx, apex, b.minZ], [b.maxX, base, b.minZ]);
     tri([b.maxX, base, b.maxZ], [cx, apex, b.maxZ], [b.minX, base, b.maxZ]);
   } else {
-    quad([b.minX, base, b.minZ], [b.maxX, base, b.minZ], [b.maxX, apex, cz], [b.minX, apex, cz]);
-    quad([b.maxX, base, b.maxZ], [b.minX, base, b.maxZ], [b.minX, apex, cz], [b.maxX, apex, cz]);
+    // Same reversed winding as `subject/roofs.ts` had, and the same fix: eave →
+    // ridge → ridge → eave. It never showed before because no context mass had
+    // a way to ask for this branch until `ridgeBearing` was added.
+    quad([b.minX, base, b.minZ], [b.minX, apex, cz], [b.maxX, apex, cz], [b.maxX, base, b.minZ]);
+    quad([b.maxX, base, b.maxZ], [b.maxX, apex, cz], [b.minX, apex, cz], [b.minX, base, b.maxZ]);
     tri([b.minX, base, b.maxZ], [b.minX, apex, cz], [b.minX, base, b.minZ]);
     tri([b.maxX, base, b.minZ], [b.maxX, apex, cz], [b.maxX, base, b.maxZ]);
   }

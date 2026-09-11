@@ -323,6 +323,73 @@ describe("extruded polygons", () => {
   });
 });
 
+describe("gable slopes face the sky", () => {
+  /**
+   * The pitched faces only.
+   *
+   * Bounded at both ends on purpose: below 0.1 are the vertical faces (gable
+   * ends, and a mass's extruded walls), above 0.95 are the horizontal ones (a
+   * mass's floor and ceiling caps, which come along because `buildMass` merges
+   * walls and roof into one geometry). Averaging without the upper bound reads
+   * a correct roof as half wrong, because a downward cap cancels a slope.
+   */
+  const slopes = (g: { getAttribute(n: string): { array: ArrayLike<number> } }): number[] => {
+    const n = g.getAttribute("normal").array;
+    const out: number[] = [];
+    for (let t = 0; t < n.length / 9; t++) {
+      const ny = (n[t * 9 + 1]! + n[t * 9 + 4]! + n[t * 9 + 7]!) / 3;
+      if (Math.abs(ny) < 0.1 || Math.abs(ny) > 0.95) continue;
+      out.push(ny);
+    }
+    return out;
+  };
+
+  const footprint = [
+    [-3.25, 1.4],
+    [3.25, 1.4],
+    [3.25, 10.6],
+    [-3.25, 10.6],
+  ];
+
+  // The bug Elmsgate's black roof exposed: the ridge-along-X branch of both
+  // gable builders wound its slopes backwards, so the normals pointed into the
+  // building. The other branch was right, and nothing had ever asserted a
+  // direction — so Greenhollow's house and garage roofs, which both declare
+  // `ridgeBearing: 90`, had been inside out since they were written.
+  it.each([undefined, 0, 90, 180, 270])("points up with ridgeBearing %s", (bearing) => {
+    const roof = Roof.parse({
+      id: "r",
+      kind: "gable",
+      footprint,
+      baseElevation: 5.8,
+      pitch: 38,
+      material: "m",
+      ...(bearing === undefined ? {} : { ridgeBearing: bearing }),
+    });
+    const found = slopes(buildRoof(roof));
+    expect(found).toHaveLength(4);
+    // Every slope, not the average: an average hides one inverted face.
+    expect(found.every((ny) => ny > 0)).toBe(true);
+  });
+
+  it("points up on a context mass too", () => {
+    for (const bearing of [undefined, 0, 90]) {
+      const mass = BuildingMass.parse({
+        id: "nb",
+        footprint,
+        height: 5.8,
+        roofKind: "gable",
+        pitch: 38,
+        material: "m",
+        ...(bearing === undefined ? {} : { ridgeBearing: bearing }),
+      });
+      const found = slopes(buildMass(mass));
+      expect(found.length).toBeGreaterThanOrEqual(4);
+      expect(found.every((ny) => ny > 0)).toBe(true);
+    }
+  });
+});
+
 describe("building masses sit on the ground", () => {
   it("places a pitched neighbour from 0 to height + rise", () => {
     const mass = BuildingMass.parse({
@@ -339,6 +406,32 @@ describe("building masses sit on the ground", () => {
     expect(box.max.y).toBeLessThan(6.2 + 5);
     expect(box.min.x).toBeCloseTo(-46, 4);
     expect(box.min.z).toBeCloseTo(22, 4);
+  });
+
+  it("runs the ridge along the declared bearing, not the long axis", () => {
+    // Elmsgate's finding. A terrace neighbour is narrow and deep, so the
+    // long-axis guess points the ridge front-to-back and shows a gable end to
+    // the street — while the subject's roof, which *can* declare a bearing,
+    // runs along the row. A whole terrace could never line up.
+    const terraced = {
+      id: "nb",
+      footprint: [[0, 0], [6.5, 0], [6.5, 9.2], [0, 9.2]],
+      height: 5.8,
+      roofKind: "gable" as const,
+      pitch: 38,
+      material: "brick",
+    };
+    const guessed = boxOf(buildMass(BuildingMass.parse(terraced)));
+    const declared = boxOf(buildMass(BuildingMass.parse({ ...terraced, ridgeBearing: 90 })));
+
+    // The apex is what tells the two apart, because the span the slopes cross
+    // is the axis the ridge does *not* run along. Guessed: ridge front-to-back,
+    // slopes cross the 6.5 m width. Declared 90°: ridge along the row, slopes
+    // cross the 9.2 m depth — a bigger span, so a higher ridge.
+    const rise = (span: number) => 5.8 + (span / 2) * Math.tan((38 * Math.PI) / 180);
+    expect(guessed.max.y).toBeCloseTo(rise(6.5), 4);
+    expect(declared.max.y).toBeCloseTo(rise(9.2), 4);
+    expect(declared.max.y).toBeGreaterThan(guessed.max.y);
   });
 });
 

@@ -77,20 +77,35 @@ function hedgeParts(run: Run): THREE.BufferGeometry[] {
 }
 
 /**
- * Posts down both sides of the path, at `spacing`.
+ * Which side-offsets a run's uprights stand on.
+ *
+ * A pergola and a colonnade are things you walk *through*: two rows of posts
+ * with a span between them, and `width` is that span. **A fence is not.** It is
+ * one line of posts, and its `width` is the thickness of the thing, not a gap —
+ * so building it as two rows put a duplicate row 70 mm away, which is both twice
+ * the geometry and visibly wrong from anywhere close.
+ *
+ * Found by authoring Elmsgate's front railings, which is the first fence in any
+ * scene: Greenhollow's runs are a pergola, a colonnade and two hedges.
+ */
+function sidesFor(run: Run): number[] {
+  return run.kind === "fence" ? [0] : [-run.width / 2, run.width / 2];
+}
+
+/**
+ * Posts along the path, at `spacing`.
  *
  * The last post is forced onto the segment's end rather than left wherever the
  * spacing happened to stop. A pergola whose final bay is 0.3 m deep looks like
  * a bug, because it is one.
  */
 function posts(run: Run, height: number): THREE.BufferGeometry[] {
-  const half = run.width / 2;
   const out: THREE.BufferGeometry[] = [];
   for (const segment of segments(run.path)) {
     const bays = Math.max(1, Math.round(segment.length / run.spacing));
     const step = segment.length / bays;
     for (let i = 0; i <= bays; i++) {
-      for (const side of [-half, half]) {
+      for (const side of sidesFor(run)) {
         const post = boxAt(segment, i * step, [POST, height, POST], 0);
         // Offset perpendicular to the run: rotate the side vector into place.
         post.translate(
@@ -105,14 +120,30 @@ function posts(run: Run, height: number): THREE.BufferGeometry[] {
   return out;
 }
 
-/** A head beam down each side; a pergola adds rafters across them. */
+/**
+ * Head beams; a pergola adds rafters across them.
+ *
+ * A fence gets two **rails** on its single line instead of one beam per side —
+ * a top rail and a mid rail, which is what makes a railing read as a railing
+ * rather than as a row of unconnected stakes.
+ */
 function beams(run: Run, height: number, rafters: boolean): THREE.BufferGeometry[] {
   const half = run.width / 2;
   const out: THREE.BufferGeometry[] = [];
+  const rails: readonly { side: number; at: number }[] =
+    run.kind === "fence"
+      ? [
+          { side: 0, at: height - BEAM / 2 },
+          { side: 0, at: height * 0.45 },
+        ]
+      : [
+          { side: -half, at: height - BEAM / 2 },
+          { side: half, at: height - BEAM / 2 },
+        ];
   for (const segment of segments(run.path)) {
-    for (const side of [-half, half]) {
+    for (const { side, at } of rails) {
       const beam = new THREE.BoxGeometry(segment.length, BEAM, BEAM);
-      beam.translate(0, height - BEAM / 2, 0);
+      beam.translate(0, at, 0);
       beam.rotateY(segment.angle);
       beam.translate(
         (segment.from[0] + segment.to[0]) / 2 + Math.sin(segment.angle) * side * -1,

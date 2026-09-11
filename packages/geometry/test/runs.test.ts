@@ -65,6 +65,39 @@ describe("buildRun", () => {
     expect(box.maxY).toBeCloseTo(2.6, 1);
   });
 
+  it("stands a fence on one line of posts, not two", () => {
+    // The bug Elmsgate's railings found: `posts` built two rows whatever the
+    // kind, so a 0.07 m railing got a duplicate row 70 mm away — twice the
+    // geometry, and visibly doubled from anywhere near it.
+    const fence = run({ kind: "fence", width: 0.07, height: 1.05, spacing: 1.1 });
+    const { structure } = buildRun(fence);
+    const box = boxOf(structure);
+    // Everything sits on the path's own line, within one post section of it.
+    expect(box.maxX - box.minX).toBeLessThanOrEqual(0.08 + 1e-6);
+  });
+
+  it("gives a fence a top rail and a mid rail", () => {
+    const fence = run({ kind: "fence", width: 0.07, height: 1.2, spacing: 1.1 });
+    const pergola = run();
+    // A pergola's two beams are one per side; a fence's two are stacked, which
+    // is what makes a railing read as a railing rather than a row of stakes.
+    const rails = buildRun(fence).structure.filter((g) => {
+      const y = g.getAttribute("position").array;
+      let min = Infinity;
+      for (let i = 1; i < y.length; i += 3) min = Math.min(min, y[i]!);
+      return min > 0.3;
+    });
+    expect(rails.length).toBeGreaterThanOrEqual(2);
+    expect(buildRun(pergola).structure.length).toBeGreaterThan(0);
+  });
+
+  it("keeps two rows for the runs that actually span something", () => {
+    for (const kind of ["pergola", "colonnade"] as const) {
+      const box = boxOf(buildRun(run({ kind, width: 3.6 })).structure);
+      expect(box.maxX - box.minX).toBeGreaterThan(3.6);
+    }
+  });
+
   it("only grows a climber on a pergola that declares one", () => {
     expect(buildRun(run()).climber).toHaveLength(0);
     expect(buildRun(run({ climber: "vine" })).climber.length).toBeGreaterThan(0);

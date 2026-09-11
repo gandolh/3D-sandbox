@@ -5,6 +5,7 @@ import {
   type LintFinding,
   type SolarTime,
 } from "@solstice/schema";
+import { DEFAULT_SCENE_ID } from "../scenes.js";
 
 /**
  * A ~50-line store on `useSyncExternalStore`.
@@ -23,6 +24,8 @@ export interface AppState {
   revision: number;
   showContext: boolean;
   showColliders: boolean;
+  /** Which bundled scene is open — see `scenes.ts`. */
+  sceneId: string;
   /** Shot id to render, or null for "whatever the viewport is looking at". */
   shotId: string | null;
   /** Animation playhead, in seconds. Driven at frame rate — see `setPlayhead`. */
@@ -45,6 +48,7 @@ let state: AppState = {
   revision: 0,
   showContext: true,
   showColliders: false,
+  sceneId: DEFAULT_SCENE_ID,
   shotId: null,
   playhead: 0,
   playing: false,
@@ -76,12 +80,20 @@ export function useStore<T>(select: (s: AppState) => T): T {
 
 /* ── actions ───────────────────────────────────────────────────── */
 
-export function loadDocument(document: SceneDocument): void {
+export function loadDocument(document: SceneDocument, sceneId?: string): void {
   set({
     document,
     findings: lintScene(document),
     revision: state.revision + 1,
+    // Selection, shot and playhead are all ids into the document that is being
+    // replaced. Carried over, they point at nothing: a shot id from Greenhollow
+    // selected against Villa Carpathia leaves the Render button naming a shot
+    // that does not exist.
     selection: null,
+    shotId: null,
+    playhead: 0,
+    playing: false,
+    ...(sceneId === undefined ? {} : { sceneId }),
     status: `${document.title} loaded`,
   });
 }
@@ -102,6 +114,14 @@ export const setShowContext = (showContext: boolean): void =>
 export const setStatus = (status: string): void => set({ status });
 
 export const setShotId = (shotId: string | null): void => set({ shotId });
+
+/**
+ * Open a different bundled scene.
+ *
+ * Only sets the id — `App` watches it and does the parse, so switching and
+ * first load take the same path rather than two that can drift apart.
+ */
+export const setSceneId = (sceneId: string): void => set({ sceneId });
 
 /**
  * Move the playhead. Called every frame during playback, so it must stay cheap.

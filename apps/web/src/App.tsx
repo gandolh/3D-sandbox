@@ -6,21 +6,30 @@ import { Timeline } from "./ui/Timeline.jsx";
 import { Toolbar } from "./ui/Toolbar.jsx";
 import { Viewport } from "./ui/Viewport.jsx";
 import { getState, loadDocument, setStatus, useStore } from "./state/store.js";
-import sceneJson from "../../../scenes/greenhollow.scene.json";
+import { DEFAULT_SCENE_ID, sceneById } from "./scenes.js";
 
 export function App() {
   const status = useStore((s) => s.status);
   const findings = useStore((s) => s.findings);
   const errors = findings.filter((f) => f.severity === "error").length;
 
+  const sceneId = useStore((s) => s.sceneId);
+
+  // Re-runs on every scene change, and goes through the same parse each time.
+  // A scene reached by switching is not a scene anyone validated less.
   useEffect(() => {
-    const parsed = SceneDocument.safeParse(sceneJson);
-    if (!parsed.success) {
-      setStatus(`Scene failed to parse: ${parsed.error.issues[0]?.message ?? "unknown"}`);
+    const scene = sceneById(sceneId) ?? sceneById(DEFAULT_SCENE_ID);
+    if (scene === undefined) {
+      setStatus("No scenes are bundled in this build");
       return;
     }
-    loadDocument(parsed.data);
-  }, []);
+    const parsed = SceneDocument.safeParse(scene.json);
+    if (!parsed.success) {
+      setStatus(`${scene.title} failed to parse: ${parsed.error.issues[0]?.message ?? "unknown"}`);
+      return;
+    }
+    loadDocument(parsed.data, scene.id);
+  }, [sceneId]);
 
   /**
    * Save writes through the API, which validates again before the file is

@@ -188,6 +188,18 @@ export const BuildingMass = z.strictObject({
   height: PositiveMeters,
   roofKind: z.enum(["gable", "hip", "flat"]).default("gable"),
   pitch: Degrees.min(0).max(85).default(30),
+  /**
+   * Ridge direction, in plan degrees clockwise from +Z — the same meaning as
+   * `Roof.ridgeBearing`, and omitted the same way to mean "along the long axis".
+   *
+   * A context mass could declare that it was gabled but not which way it ran,
+   * so it always fell back to the long-axis guess. For a terrace that guess is
+   * wrong by ninety degrees: neighbours 6.5 m wide and 9.2 m deep get their
+   * ridges running front-to-back and present gable ends to the street, while
+   * the subject's own roof runs along the row. The two could never line up,
+   * which is the one thing a row of terraced houses has to do.
+   */
+  ridgeBearing: Degrees.optional(),
   material: MaterialId,
 });
 

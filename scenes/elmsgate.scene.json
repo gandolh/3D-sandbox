@@ -1,0 +1,896 @@
+{
+  "schemaVersion": 1,
+  "id": "elmsgate",
+  "title": "Elmsgate",
+  "site": {
+    "latitude": 51.45,
+    "longitude": -2.59,
+    "timezone": "Europe/London",
+    "northOffset": 12,
+    "terrain": {
+      "kind": "flat",
+      "size": [
+        90,
+        90
+      ],
+      "material": "ground-urban"
+    }
+  },
+  "solar": {
+    "date": "2026-09-15",
+    "time": "11:30",
+    "hdri": "kloppenheim_02"
+  },
+  "materials": {
+    "brick-stock": {
+      "label": "Stock brick",
+      "source": "procedural",
+      "baseColor": "#9B7B5E",
+      "roughness": 0.92
+    },
+    "brick-yard": {
+      "label": "Yard wall brick, weathered",
+      "source": "procedural",
+      "baseColor": "#8A705A",
+      "roughness": 0.95
+    },
+    "roof-slate": {
+      "label": "Welsh slate",
+      "source": "procedural",
+      "baseColor": "#5D646C",
+      "roughness": 0.52
+    },
+    "render-stucco": {
+      "label": "Lime stucco",
+      "source": "polyhaven",
+      "slug": "clay_plaster",
+      "baseColor": "#EDE7DB",
+      "roughness": 0.9,
+      "textureScale": 2.4
+    },
+    "ground-urban": {
+      "label": "Made ground",
+      "source": "ambientcg",
+      "slug": "Gravel023",
+      "baseColor": "#6E6A62",
+      "textureScale": 3
+    },
+    "pavement-stone": {
+      "label": "Pavement slab",
+      "source": "ambientcg",
+      "slug": "Concrete034",
+      "baseColor": "#BCB8B0",
+      "textureScale": 2
+    },
+    "paving-yard": {
+      "label": "Yard paving",
+      "source": "ambientcg",
+      "slug": "Concrete034",
+      "baseColor": "#B0ACA4",
+      "textureScale": 3
+    },
+    "asphalt-road": {
+      "label": "Asphalt",
+      "source": "ambientcg",
+      "slug": "Asphalt026A",
+      "baseColor": "#47474A",
+      "textureScale": 4
+    },
+    "joinery-white": {
+      "label": "Painted joinery",
+      "source": "procedural",
+      "baseColor": "#EAE7E0",
+      "roughness": 0.4
+    },
+    "door-green": {
+      "label": "Front door, painted",
+      "source": "procedural",
+      "baseColor": "#2E4A3B",
+      "roughness": 0.35
+    },
+    "steel-rail": {
+      "label": "Cast iron railing",
+      "source": "procedural",
+      "baseColor": "#32353A",
+      "roughness": 0.45,
+      "metalness": 0.6
+    },
+    "neighbour-brick": {
+      "label": "Neighbouring terrace",
+      "source": "procedural",
+      "baseColor": "#A18468",
+      "roughness": 0.92
+    },
+    "planting-green": {
+      "label": "Yard planting",
+      "source": "procedural",
+      "baseColor": "#4E6B33"
+    }
+  },
+  "subject": {
+    "levels": [
+      {
+        "id": "ground",
+        "name": "Ground floor",
+        "elevation": 0,
+        "height": 3,
+        "walls": [
+          {
+            "id": "W-01",
+            "start": [
+              -3.25,
+              1.4
+            ],
+            "end": [
+              3.25,
+              1.4
+            ],
+            "thickness": 0.34,
+            "material": "brick-stock",
+            "openings": [
+              {
+                "id": "d-front",
+                "kind": "door",
+                "offset": 0.7,
+                "width": 1,
+                "height": 2.1,
+                "sill": 0,
+                "material": "door-green"
+              },
+              {
+                "id": "w-bay",
+                "kind": "window",
+                "offset": 2.5,
+                "width": 2.8,
+                "height": 1.7,
+                "sill": 0.7,
+                "material": "joinery-white"
+              }
+            ]
+          },
+          {
+            "id": "W-02",
+            "start": [
+              3.25,
+              1.4
+            ],
+            "end": [
+              3.25,
+              10.6
+            ],
+            "thickness": 0.34,
+            "material": "brick-stock",
+            "openings": []
+          },
+          {
+            "id": "W-03",
+            "start": [
+              3.25,
+              10.6
+            ],
+            "end": [
+              -3.25,
+              10.6
+            ],
+            "thickness": 0.34,
+            "material": "brick-stock",
+            "openings": [
+              {
+                "id": "d-yard",
+                "kind": "door",
+                "offset": 1.1,
+                "width": 1.8,
+                "height": 2.2,
+                "sill": 0,
+                "material": "joinery-white"
+              },
+              {
+                "id": "w-kitchen",
+                "kind": "window",
+                "offset": 3.7,
+                "width": 1.6,
+                "height": 1.3,
+                "sill": 0.95,
+                "material": "joinery-white"
+              }
+            ]
+          },
+          {
+            "id": "W-04",
+            "start": [
+              -3.25,
+              10.6
+            ],
+            "end": [
+              -3.25,
+              1.4
+            ],
+            "thickness": 0.34,
+            "material": "brick-stock",
+            "openings": []
+          },
+          {
+            "id": "Y-W",
+            "start": [
+              -3.25,
+              10.6
+            ],
+            "end": [
+              -3.25,
+              24
+            ],
+            "height": 2,
+            "thickness": 0.22,
+            "material": "brick-yard",
+            "openings": []
+          },
+          {
+            "id": "Y-E",
+            "start": [
+              3.25,
+              10.6
+            ],
+            "end": [
+              3.25,
+              24
+            ],
+            "height": 2,
+            "thickness": 0.22,
+            "material": "brick-yard",
+            "openings": []
+          },
+          {
+            "id": "Y-N",
+            "start": [
+              3.25,
+              24
+            ],
+            "end": [
+              -3.25,
+              24
+            ],
+            "height": 2,
+            "thickness": 0.22,
+            "material": "brick-yard",
+            "openings": []
+          }
+        ],
+        "slabs": [
+          {
+            "id": "slab-house",
+            "polygon": [
+              [
+                -3.25,
+                1.4
+              ],
+              [
+                3.25,
+                1.4
+              ],
+              [
+                3.25,
+                10.6
+              ],
+              [
+                -3.25,
+                10.6
+              ]
+            ],
+            "thickness": 0.25,
+            "material": "paving-yard"
+          },
+          {
+            "id": "slab-forecourt",
+            "polygon": [
+              [
+                -3.25,
+                0
+              ],
+              [
+                3.25,
+                0
+              ],
+              [
+                3.25,
+                1.4
+              ],
+              [
+                -3.25,
+                1.4
+              ]
+            ],
+            "thickness": 0.15,
+            "material": "pavement-stone"
+          },
+          {
+            "id": "slab-terrace",
+            "polygon": [
+              [
+                -3.25,
+                10.6
+              ],
+              [
+                3.25,
+                10.6
+              ],
+              [
+                3.25,
+                14.6
+              ],
+              [
+                -3.25,
+                14.6
+              ]
+            ],
+            "thickness": 0.15,
+            "material": "paving-yard"
+          }
+        ]
+      },
+      {
+        "id": "first",
+        "name": "First floor",
+        "elevation": 3,
+        "height": 2.8,
+        "walls": [
+          {
+            "id": "F-01",
+            "start": [
+              -3.25,
+              1.4
+            ],
+            "end": [
+              3.25,
+              1.4
+            ],
+            "thickness": 0.34,
+            "material": "brick-stock",
+            "openings": [
+              {
+                "id": "w-s1",
+                "kind": "window",
+                "offset": 0.9,
+                "width": 1.1,
+                "height": 1.65,
+                "sill": 0.85,
+                "material": "joinery-white"
+              },
+              {
+                "id": "w-s2",
+                "kind": "window",
+                "offset": 4.2,
+                "width": 1.1,
+                "height": 1.65,
+                "sill": 0.85,
+                "material": "joinery-white"
+              }
+            ]
+          },
+          {
+            "id": "F-02",
+            "start": [
+              3.25,
+              1.4
+            ],
+            "end": [
+              3.25,
+              10.6
+            ],
+            "thickness": 0.34,
+            "material": "brick-stock",
+            "openings": []
+          },
+          {
+            "id": "F-03",
+            "start": [
+              3.25,
+              10.6
+            ],
+            "end": [
+              -3.25,
+              10.6
+            ],
+            "thickness": 0.34,
+            "material": "brick-stock",
+            "openings": [
+              {
+                "id": "w-b1",
+                "kind": "window",
+                "offset": 1.1,
+                "width": 1.1,
+                "height": 1.5,
+                "sill": 0.9,
+                "material": "joinery-white"
+              },
+              {
+                "id": "w-b2",
+                "kind": "window",
+                "offset": 4.1,
+                "width": 1.1,
+                "height": 1.5,
+                "sill": 0.9,
+                "material": "joinery-white"
+              }
+            ]
+          },
+          {
+            "id": "F-04",
+            "start": [
+              -3.25,
+              10.6
+            ],
+            "end": [
+              -3.25,
+              1.4
+            ],
+            "thickness": 0.34,
+            "material": "brick-stock",
+            "openings": []
+          }
+        ],
+        "slabs": [
+          {
+            "id": "slab-first",
+            "polygon": [
+              [
+                -3.08,
+                1.5699999999999998
+              ],
+              [
+                3.08,
+                1.5699999999999998
+              ],
+              [
+                3.08,
+                10.43
+              ],
+              [
+                -3.08,
+                10.43
+              ]
+            ],
+            "thickness": 0.25,
+            "material": "render-stucco"
+          }
+        ]
+      }
+    ],
+    "roofs": [
+      {
+        "id": "roof-house",
+        "kind": "gable",
+        "footprint": [
+          [
+            -3.25,
+            1.4
+          ],
+          [
+            3.25,
+            1.4
+          ],
+          [
+            3.25,
+            10.6
+          ],
+          [
+            -3.25,
+            10.6
+          ]
+        ],
+        "baseElevation": 5.8,
+        "pitch": 38,
+        "overhang": 0.15,
+        "ridgeBearing": 90,
+        "material": "roof-slate"
+      }
+    ],
+    "placements": [
+      {
+        "id": "bench-yard",
+        "asset": "polyhaven/painted_wooden_bench",
+        "position": [
+          1.9,
+          0,
+          16.4
+        ],
+        "rotationY": 180,
+        "scale": 1
+      },
+      {
+        "id": "table-terrace",
+        "asset": "polyhaven/outdoor_table_chair_set_01",
+        "position": [
+          -1.1,
+          0,
+          12.4
+        ],
+        "rotationY": 25,
+        "scale": 1
+      },
+      {
+        "id": "planter-door",
+        "asset": "polyhaven/planter_box_01",
+        "position": [
+          -1.9,
+          0,
+          0.75
+        ],
+        "rotationY": 0,
+        "scale": 1
+      },
+      {
+        "id": "planter-bay",
+        "asset": "polyhaven/planter_box_03",
+        "position": [
+          1.9,
+          0,
+          0.75
+        ],
+        "rotationY": 0,
+        "scale": 1
+      }
+    ],
+    "runs": [
+      {
+        "id": "rail-west",
+        "kind": "fence",
+        "path": [
+          [
+            -3.25,
+            0.05
+          ],
+          [
+            -0.85,
+            0.05
+          ]
+        ],
+        "width": 0.07,
+        "height": 1.05,
+        "spacing": 1.1,
+        "material": "steel-rail"
+      },
+      {
+        "id": "rail-east",
+        "kind": "fence",
+        "path": [
+          [
+            0.85,
+            0.05
+          ],
+          [
+            3.25,
+            0.05
+          ]
+        ],
+        "width": 0.07,
+        "height": 1.05,
+        "spacing": 1.1,
+        "material": "steel-rail"
+      }
+    ]
+  },
+  "context": {
+    "scatter": [
+      {
+        "id": "yard-planting",
+        "assets": [
+          "polyhaven/tree_small_02",
+          "polyhaven/shrub_01",
+          "polyhaven/shrub_02",
+          "polyhaven/shrub_04"
+        ],
+        "area": [
+          [
+            -2.9,
+            17
+          ],
+          [
+            2.9,
+            17
+          ],
+          [
+            2.9,
+            23.4
+          ],
+          [
+            -2.9,
+            23.4
+          ]
+        ],
+        "density": 12,
+        "seed": 7,
+        "material": "planting-green",
+        "scaleRange": [
+          0.8,
+          1.2
+        ],
+        "arrangement": "random",
+        "rowSpacing": [
+          6,
+          6
+        ],
+        "height": 3.2,
+        "exclude": []
+      }
+    ],
+    "masses": [
+      {
+        "id": "nb-w1",
+        "footprint": [
+          [
+            -9.75,
+            1.4
+          ],
+          [
+            -3.25,
+            1.4
+          ],
+          [
+            -3.25,
+            10.6
+          ],
+          [
+            -9.75,
+            10.6
+          ]
+        ],
+        "height": 5.8,
+        "roofKind": "gable",
+        "pitch": 38,
+        "ridgeBearing": 90,
+        "material": "neighbour-brick"
+      },
+      {
+        "id": "nb-w2",
+        "footprint": [
+          [
+            -16.25,
+            1.4
+          ],
+          [
+            -9.75,
+            1.4
+          ],
+          [
+            -9.75,
+            10.6
+          ],
+          [
+            -16.25,
+            10.6
+          ]
+        ],
+        "height": 5.8,
+        "roofKind": "gable",
+        "pitch": 38,
+        "ridgeBearing": 90,
+        "material": "neighbour-brick"
+      },
+      {
+        "id": "nb-e1",
+        "footprint": [
+          [
+            3.25,
+            1.4
+          ],
+          [
+            9.75,
+            1.4
+          ],
+          [
+            9.75,
+            10.6
+          ],
+          [
+            3.25,
+            10.6
+          ]
+        ],
+        "height": 5.8,
+        "roofKind": "gable",
+        "pitch": 38,
+        "ridgeBearing": 90,
+        "material": "neighbour-brick"
+      },
+      {
+        "id": "nb-e2",
+        "footprint": [
+          [
+            9.75,
+            1.4
+          ],
+          [
+            16.25,
+            1.4
+          ],
+          [
+            16.25,
+            10.6
+          ],
+          [
+            9.75,
+            10.6
+          ]
+        ],
+        "height": 5.8,
+        "roofKind": "gable",
+        "pitch": 38,
+        "ridgeBearing": 90,
+        "material": "neighbour-brick"
+      },
+      {
+        "id": "nb-rear",
+        "footprint": [
+          [
+            -16,
+            30
+          ],
+          [
+            16,
+            30
+          ],
+          [
+            16,
+            39
+          ],
+          [
+            -16,
+            39
+          ]
+        ],
+        "height": 5.8,
+        "roofKind": "gable",
+        "pitch": 38,
+        "ridgeBearing": 90,
+        "material": "neighbour-brick"
+      }
+    ],
+    "roads": [
+      {
+        "id": "street",
+        "path": [
+          [
+            -45,
+            -5.5
+          ],
+          [
+            45,
+            -5.5
+          ]
+        ],
+        "width": 7,
+        "material": "asphalt-road"
+      },
+      {
+        "id": "pavement",
+        "path": [
+          [
+            -45,
+            -1.2
+          ],
+          [
+            45,
+            -1.2
+          ]
+        ],
+        "width": 3.4,
+        "material": "pavement-stone"
+      },
+      {
+        "id": "pavement-far",
+        "path": [
+          [
+            -45,
+            -10.7
+          ],
+          [
+            45,
+            -10.7
+          ]
+        ],
+        "width": 3.4,
+        "material": "pavement-stone"
+      }
+    ]
+  },
+  "shots": [
+    {
+      "id": "street-elevation",
+      "name": "Street elevation",
+      "camera": {
+        "position": [
+          0,
+          3.4,
+          -12.5
+        ],
+        "target": [
+          0,
+          4.6,
+          4.5
+        ],
+        "focalLength": 35
+      },
+      "render": {
+        "width": 1920,
+        "height": 1080,
+        "samples": 600
+      }
+    },
+    {
+      "id": "row-oblique",
+      "name": "Down the row",
+      "camera": {
+        "position": [
+          -17,
+          2.9,
+          -8.5
+        ],
+        "target": [
+          9,
+          3.6,
+          4.5
+        ],
+        "focalLength": 45
+      },
+      "render": {
+        "width": 1920,
+        "height": 1080,
+        "samples": 600
+      }
+    },
+    {
+      "id": "yard-threequarter",
+      "name": "Yard three-quarter",
+      "camera": {
+        "position": [
+          2.4,
+          1.85,
+          21.5
+        ],
+        "target": [
+          -0.6,
+          3.2,
+          11.2
+        ],
+        "focalLength": 32
+      },
+      "solar": {
+        "date": "2026-09-15",
+        "time": "12:40",
+        "hdri": "kloppenheim_02"
+      },
+      "render": {
+        "width": 1920,
+        "height": 1080,
+        "samples": 600
+      }
+    }
+  ],
+  "animation": {
+    "duration": 10,
+    "loop": true,
+    "tracks": [
+      {
+        "id": "sun-path",
+        "target": "solar.minutes",
+        "keyframes": [
+          {
+            "at": 0,
+            "value": 420,
+            "easing": "out"
+          },
+          {
+            "at": 5,
+            "value": 780,
+            "easing": "inOut"
+          },
+          {
+            "at": 10,
+            "value": 1140,
+            "easing": "in"
+          }
+        ]
+      }
+    ]
+  }
+}
