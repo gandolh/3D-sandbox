@@ -13,6 +13,7 @@ export const PolygonSchema = PlanSchema.array().min(3);
 const Meters = z.number().finite();
 const PositiveMeters = z.number().finite().positive();
 const PositiveMetersOrUndefined = z.number().finite().positive().optional();
+const PositiveSeconds = z.number().finite().positive();
 const Degrees = z.number().finite();
 
 /* ── materials ─────────────────────────────────────────────────── */
@@ -233,6 +234,41 @@ export const SolarTime = z.strictObject({
   hdri: z.string().max(128).optional(),
 });
 
+/* ── animation ─────────────────────────────────────────────────── */
+
+export const Easing = z.enum(["linear", "in", "out", "inOut"]);
+
+export const Keyframe = z.strictObject({
+  /** Seconds along the track. */
+  at: z.number().finite().nonnegative(),
+  value: z.number().finite(),
+  /** How the value approaches this keyframe from the one before it. */
+  easing: Easing.default("inOut"),
+});
+
+/**
+ * One animated property.
+ *
+ * `target` is an enum rather than a free path because these documents are
+ * written by a language model: a typo in a dotted string is a track that
+ * silently drives nothing, and a typo in an enum fails at parse. The set grows
+ * as the generator learns to read more of them — camera and placement
+ * transforms next — and growing it is additive, so it does not bump the schema.
+ */
+export const Track = z.strictObject({
+  id: Id,
+  /** Minutes past local midnight. Solar time is already a single scalar. */
+  target: z.enum(["solar.minutes"]),
+  keyframes: Keyframe.array().min(2),
+});
+
+export const Animation = z.strictObject({
+  /** Length of the timeline, in seconds. */
+  duration: PositiveSeconds,
+  loop: z.boolean().default(false),
+  tracks: Track.array().default([]),
+});
+
 export const Shot = z.strictObject({
   id: Id,
   name: z.string().min(1),
@@ -271,6 +307,12 @@ export const SceneDocument = z.strictObject({
   subject: Subject.prefault({}),
   context: Context.prefault({}),
   shots: Shot.array().default([]),
+  /**
+   * Animation time, as distinct from solar time — the playhead a track is
+   * keyframed against. Optional: most scenes are stills, and a document with no
+   * animation should not carry an empty one.
+   */
+  animation: Animation.optional(),
 });
 
 export type Material = z.infer<typeof Material>;
@@ -290,6 +332,10 @@ export type Site = z.infer<typeof Site>;
 export type SolarTime = z.infer<typeof SolarTime>;
 export type Shot = z.infer<typeof Shot>;
 export type Run = z.infer<typeof Run>;
+export type Keyframe = z.infer<typeof Keyframe>;
+export type Track = z.infer<typeof Track>;
+export type Animation = z.infer<typeof Animation>;
+export type Easing = z.infer<typeof Easing>;
 export type SceneDocument = z.infer<typeof SceneDocument>;
 /** What an author writes, before defaults are applied. */
 export type SceneDocumentInput = z.input<typeof SceneDocument>;

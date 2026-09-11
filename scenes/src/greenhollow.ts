@@ -489,6 +489,31 @@ const greenhollow: SceneDocumentInput = {
     ],
   },
 
+  /**
+   * A sun-path study: 06:00 to 20:00 over twelve seconds.
+   *
+   * Solar time is one scalar, so the whole study is one track over it — which
+   * is the reason animation time and solar time were drawn as distinct notions
+   * in the first place. Eased at both ends so the low sun, where the shadows
+   * are longest and most of the interest is, gets more of the twelve seconds
+   * than noon does.
+   */
+  animation: {
+    duration: 12,
+    loop: true,
+    tracks: [
+      {
+        id: "sun-path",
+        target: "solar.minutes",
+        keyframes: [
+          { at: 0, value: 6 * 60, easing: "out" },
+          { at: 6, value: 13 * 60, easing: "inOut" },
+          { at: 12, value: 20 * 60, easing: "in" },
+        ],
+      },
+    ],
+  },
+
   // 600 samples, not the 2,000 that was invented before the renderer had ever
   // run: measured convergence says 300 is within 1.8 RMS of 1,500 and the curve
   // falls as 1/√N after that. See corpus/wiki/running-on-a-gpu.md.

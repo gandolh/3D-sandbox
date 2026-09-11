@@ -1,6 +1,13 @@
 import { useMemo } from "react";
 import { dayBounds, sunPosition, utcToLocalClock } from "@solstice/solar";
+import { evaluate, minutesToClock } from "@solstice/animation";
 import { setSolar, useStore } from "../state/store.js";
+
+const transport = (action: "play" | "pause" | "seek", at?: number): void => {
+  window.dispatchEvent(
+    new CustomEvent("solstice:transport", { detail: at === undefined ? { action } : { action, at } }),
+  );
+};
 
 const HOURS = 24;
 const toMinutes = (hhmm: string): number => {
@@ -15,23 +22,50 @@ const toClock = (minutes: number): string => {
 /**
  * Animation time and solar time share one track.
  *
- * Solar time is a single scalar on the document, so dragging the playhead *is*
- * a sun-path study — the same tween an animation keyframe would drive.
+ * Solar time is a single scalar on the document, so a sun-path study is one
+ * tween over it — which is why the same strip serves both. Dragging sets the
+ * clock directly; playing hands it to `Player`, which drives the engine rather
+ * than the document, because an edit per frame would regenerate the scene per
+ * frame.
  */
 export function Timeline() {
   const doc = useStore((s) => s.document);
+  const playhead = useStore((s) => s.playhead);
+  const playing = useStore((s) => s.playing);
+  const animation = doc?.animation;
+
+  /**
+   * What the readout shows: the played time while a track drives the sun, the
+   * document's time otherwise.
+   *
+   * Playback never writes to the document — an edit per frame would regenerate
+   * the scene per frame — so reading `doc.solar` during playback leaves the
+   * numbers frozen while the viewport plainly shows morning. The document is
+   * still the truth; it is just not the truth about *right now*.
+   *
+   * Only **while playing**, though. Preferring the playhead whenever an
+   * animation merely exists killed the solar scrub: dragging it edited the
+   * document and the readout went on showing the playhead. Paused, the document
+   * wins — and `seek` commits to it, so scrubbing the playhead stays live too.
+   */
+  const played =
+    playing && animation !== undefined
+      ? evaluate(animation, playhead)["solar.minutes"]
+      : undefined;
+  const minutes = played ?? (doc === null ? 0 : toMinutes(doc.solar.time));
+
   const solarState = useMemo(() => {
     if (doc === null) return null;
+    const solar = { ...doc.solar, time: minutesToClock(minutes) };
     return {
-      position: sunPosition(doc.site, doc.solar),
-      bounds: dayBounds(doc.site, doc.solar),
+      position: sunPosition(doc.site, solar),
+      bounds: dayBounds(doc.site, solar),
+      clock: solar.time,
     };
-  }, [doc]);
+  }, [doc, minutes]);
 
   if (doc === null || solarState === null) return null;
   const { position, bounds } = solarState;
-
-  const minutes = toMinutes(doc.solar.time);
   const pct = (minutes / (HOURS * 60)) * 100;
   const bandStart =
     bounds.sunrise === null
@@ -46,7 +80,7 @@ export function Timeline() {
     <div className="shrink-0 border-t border-line bg-chrome px-4 pt-2.5 pb-3">
       <div className="mb-2 flex flex-wrap items-center gap-x-4 gap-y-1">
         <span className="font-mono text-[12px] font-medium text-ink tabular-nums">
-          {doc.solar.time}
+          {solarState.clock}
         </span>
         <span className="flex flex-wrap gap-x-3 font-mono text-[10px] text-muted">
           <span>{doc.solar.date.toUpperCase()}</span>
@@ -67,6 +101,32 @@ export function Timeline() {
           )}
         </span>
       </div>
+
+      {animation !== undefined && (
+        <div className="mb-1.5 flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => transport(playing ? "pause" : "play", playing ? undefined : playhead)}
+            aria-label={playing ? "Pause" : "Play"}
+            className="rounded-sm border border-line bg-panel px-2 py-0.5 font-mono text-[11px] text-ink hover:border-accent"
+          >
+            {playing ? "❚❚" : "▶"}
+          </button>
+          <input
+            type="range"
+            aria-label="Animation time"
+            min={0}
+            max={animation.duration}
+            step={0.05}
+            value={playhead}
+            onChange={(event) => transport("seek", Number(event.target.value))}
+            className="h-1 flex-1 cursor-ew-resize accent-accent"
+          />
+          <span className="w-20 text-right font-mono text-[10px] text-subtle tabular-nums">
+            {playhead.toFixed(1)} / {animation.duration.toFixed(1)}s
+          </span>
+        </div>
+      )}
 
       <div className="relative h-6">
         <div className="absolute inset-0 overflow-hidden rounded-sm border border-line bg-viewport">

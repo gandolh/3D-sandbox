@@ -58,6 +58,9 @@ generator loads glTF through an injectable `AssetSource` (so it still runs
 headlessly with nothing downloaded), and placements collide with each other —
 drop a bowl over a table and it rests on the table. **207 tests pass.**
 
+**Time runs.** Solar time is a scalar you can keyframe, and a track over it is a
+sun-path study — the distinction the glossary drew from the start, now real.
+
 **Surfaces are real.** Materials load PBR maps from Poly Haven and ambientCG,
 projected in world metres (`Material.textureScale`) so a texture tiles the same
 on a 6 m wall as on a 0.9 m pier. The pergola's vine is 1,816 tilted leaf
@@ -74,9 +77,10 @@ camera-facing billboards because a path tracer has no "the camera" to face.
 **Briefs 01–13 are done.** An audit against the original brief on 2026-09-11 put
 five more in `todo/`, in rough order of how much they matter:
 
-- **[14 — animation time](../briefs/todo/14-animation-time.md).** The one real
-  gap. `animejs` and `motion` are in no `package.json`; the glossary defines
-  *animation time* and `Timeline.tsx` claims to implement it; neither is true.
+- **[14 — animation time](../briefs/done/14-animation-time.md) — done.** A
+  sun-path study plays over `greenhollow`; `packages/animation` evaluates tracks
+  headlessly and anime.js drives the clock. Playback drives the **engine**, never
+  the document — an edit per frame would regenerate the scene per frame.
 - **[15 — finish a render](../briefs/done/15-finish-a-render.md) — done.** The
   first render that ever completed came out **fully black**: no
   `preserveDrawingBuffer`, so `toBlob` read a cleared buffer a frame too late.
@@ -107,6 +111,9 @@ deferred until a field first changes meaning.
 generator loads glTF through an injectable `AssetSource` (so it still runs
 headlessly with nothing downloaded), and placements collide with each other —
 drop a bowl over a table and it rests on the table. **207 tests pass.**
+
+**Time runs.** Solar time is a scalar you can keyframe, and a track over it is a
+sun-path study — the distinction the glossary drew from the start, now real.
 
 **Surfaces are real.** Materials load PBR maps from Poly Haven and ambientCG,
 projected in world metres (`Material.textureScale`) so a texture tiles the same

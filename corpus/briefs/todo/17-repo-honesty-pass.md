@@ -20,7 +20,7 @@ whoever opens it next. Found by auditing the project against what it claims,
   app *can* hold testable logic, and `store.ts` and `AssetLoader.ts` both have
   some.
 - **`Timeline.tsx` describes a feature that does not exist** (see
-  [brief 14](./14-animation-time.md)). If 14 lands first this fixes itself; if
+  [brief 14](../done/14-animation-time.md)). If 14 lands first this fixes itself; if
   not, the comment goes.
 
 ## Files you OWN

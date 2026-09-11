@@ -29,6 +29,8 @@ _Avoid_: time of day, daylight, sun settings
 **Animation time**:
 The timeline playhead, in seconds, over which scene properties are keyframed —
 including the solar scalar, which is how a sun-path study becomes one tween.
+Evaluated by `packages/animation`; driven by anime.js; applied to the **engine**,
+never to the document, because an edit per frame regenerates the scene per frame.
 _Avoid_: timeline, playback, time
 
 **Shot**:

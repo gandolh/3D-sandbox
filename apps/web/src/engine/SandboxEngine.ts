@@ -11,6 +11,7 @@ import {
 } from "@solstice/geometry";
 import type { CuboidCollider } from "@solstice/physics";
 import { resolveSolar } from "@solstice/solar";
+import { minutesToClock } from "@solstice/animation";
 import {
   PathTraceSession,
   buildSkyEnvironment,
@@ -165,8 +166,34 @@ export class SandboxEngine {
     if (this.lastDocument !== null) this.setDocument(this.lastDocument, options);
   }
 
+  /**
+   * Light the scene at a clock time, without touching the document.
+   *
+   * This is the playback path, and it exists because the document path cannot
+   * be. `setSolar` goes through `editDocument`, which structured-clones the
+   * whole document, re-parses it through Zod, re-lints it and bumps `revision`
+   * — and the viewport regenerates the entire scene on a revision change. At
+   * sixty frames a second that is sixty full scene rebuilds, which is not slow
+   * so much as impossible.
+   *
+   * So playback drives the engine and leaves the document alone; the transport
+   * commits the final time once, when it stops.
+   */
+  setSolarMinutes(minutes: number): void {
+    if (this.lastDocument === null) return;
+    this.applySolar(
+      resolveSolar(this.lastDocument, {
+        ...this.lastDocument.solar,
+        time: minutesToClock(minutes),
+      }),
+    );
+  }
+
   setSolar(doc: SceneDocument): void {
-    const solved = resolveSolar(doc);
+    this.applySolar(resolveSolar(doc));
+  }
+
+  private applySolar(solved: ReturnType<typeof resolveSolar>): void {
     this.lastSolar = solved;
     const { position, lighting } = solved;
     const distance = 120;

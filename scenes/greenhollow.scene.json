@@ -1236,5 +1236,32 @@
         "samples": 600
       }
     }
-  ]
+  ],
+  "animation": {
+    "duration": 12,
+    "loop": true,
+    "tracks": [
+      {
+        "id": "sun-path",
+        "target": "solar.minutes",
+        "keyframes": [
+          {
+            "at": 0,
+            "value": 360,
+            "easing": "out"
+          },
+          {
+            "at": 6,
+            "value": 780,
+            "easing": "inOut"
+          },
+          {
+            "at": 12,
+            "value": 1200,
+            "easing": "in"
+          }
+        ]
+      }
+    ]
+  }
 }

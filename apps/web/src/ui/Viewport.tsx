@@ -7,17 +7,22 @@ import {
   getState,
   select,
   setAssetSizes,
+  setPlayhead,
+  setPlaying,
   setStatus,
   useStore,
 } from "../state/store.js";
 import { translateWall } from "../lib/entities.js";
 import { collidersFor, sizesFromMap } from "../lib/physics.js";
 import { loadAssets } from "../engine/AssetLoader.js";
+import { Player } from "../engine/Player.js";
+import { minutesToClock } from "@solstice/animation";
 import type { Shot } from "@solstice/schema";
 
 export function Viewport() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const engineRef = useRef<SandboxEngine | null>(null);
+  const playerRef = useRef<Player | null>(null);
   const [stats, setStats] = useState({ triangles: 0, instances: 0 });
   const [render, setRender] = useState<RenderProgress | null>(null);
 
@@ -59,6 +64,14 @@ export function Viewport() {
     // the engine out of global state without threading a ref through the tree.
     const onRenderRequest = (event: Event): void => {
       const request = (event as CustomEvent<RenderRequest>).detail;
+      // A render owns the frame, and playback drives the sun. Left running they
+      // would fight over the lighting mid-accumulation, and the samples already
+      // taken would be of a different time of day than the ones after.
+      if (player.playing) {
+        player.stop();
+        setPlaying(false);
+        commit();
+      }
       void engine.startRender(request).then((blob) => {
         if (blob === null) return;
         const url = URL.createObjectURL(blob);
@@ -77,6 +90,67 @@ export function Viewport() {
     };
     window.addEventListener("solstice:render", onRenderRequest);
     window.addEventListener("solstice:frame", onFrame);
+
+    // The playhead drives the engine directly, never the document: an edit
+    // clones, re-parses, re-lints and regenerates the scene, which is fine once
+    // and impossible sixty times a second.
+    let lastMinutes: number | null = null;
+    const player = new Player(
+      (sample, seconds) => {
+        const minutes = sample["solar.minutes"];
+        if (minutes !== undefined) {
+          engine.setSolarMinutes(minutes);
+          lastMinutes = minutes;
+        }
+        setPlayhead(seconds);
+      },
+      () => {
+        setPlaying(false);
+        commit();
+      },
+    );
+
+    /**
+     * Write where the playhead left the sun back into the document.
+     *
+     * Playback deliberately bypasses the document, so without this the engine
+     * and the document disagree the moment you stop — and Save would record the
+     * time the document last happened to hold rather than the one on screen.
+     * Once, on stop; never during.
+     */
+    const commit = (): void => {
+      if (lastMinutes === null) return;
+      const time = minutesToClock(lastMinutes);
+      const current = getState().document;
+      if (current === null || current.solar.time === time) return;
+      editDocument((draft) => {
+        draft.solar = { ...draft.solar, time };
+      });
+    };
+    playerRef.current = player;
+
+    const onTransport = (event: Event): void => {
+      const detail = (event as CustomEvent<{ action: "play" | "pause" | "seek"; at?: number }>).detail;
+      if (detail.action === "play") {
+        player.play(detail.at ?? 0);
+        setPlaying(true);
+        return;
+      }
+      if (detail.action === "seek") {
+        player.seek(detail.at ?? 0);
+        setPlayhead(detail.at ?? 0);
+        // Commit while paused, so the readout, the document and the viewport
+        // agree. During playback this would be an edit per frame; while
+        // scrubbing it is an edit per drag event, which is what the solar
+        // slider beside it has always cost.
+        commit();
+        return;
+      }
+      player.stop();
+      setPlaying(false);
+      commit();
+    };
+    window.addEventListener("solstice:transport", onTransport);
 
     // Models arrive after the first frame. The scene is already standing by
     // then, built from proxies — which is the point: the viewport is usable
@@ -101,6 +175,9 @@ export function Viewport() {
 
     return () => {
       assetLoad.abort();
+      player.dispose();
+      playerRef.current = null;
+      window.removeEventListener("solstice:transport", onTransport);
       window.removeEventListener("solstice:render", onRenderRequest);
       window.removeEventListener("solstice:frame", onFrame);
       engine.dispose();
@@ -111,6 +188,10 @@ export function Viewport() {
   useEffect(() => {
     if (doc !== null) engineRef.current?.setDocument(doc, { includeContext: showContext });
   }, [doc, revision, showContext]);
+
+  useEffect(() => {
+    playerRef.current?.setAnimation(doc?.animation ?? null);
+  }, [doc?.animation]);
 
   useEffect(() => {
     engineRef.current?.select(selection);

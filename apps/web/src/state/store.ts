@@ -25,6 +25,9 @@ export interface AppState {
   showColliders: boolean;
   /** Shot id to render, or null for "whatever the viewport is looking at". */
   shotId: string | null;
+  /** Animation playhead, in seconds. Driven at frame rate — see `setPlayhead`. */
+  playhead: number;
+  playing: boolean;
   /**
    * Loaded asset sizes, `id → [x, y, z]` metres. Empty until the models arrive,
    * and empty forever in a build that ships none — which is why physics treats a
@@ -43,6 +46,8 @@ let state: AppState = {
   showContext: true,
   showColliders: false,
   shotId: null,
+  playhead: 0,
+  playing: false,
   assetSizes: new Map(),
   theme: "dark",
   status: "Loading…",
@@ -97,6 +102,18 @@ export const setShowContext = (showContext: boolean): void =>
 export const setStatus = (status: string): void => set({ status });
 
 export const setShotId = (shotId: string | null): void => set({ shotId });
+
+/**
+ * Move the playhead. Called every frame during playback, so it must stay cheap.
+ *
+ * It is safe because `useStore` is `useSyncExternalStore` with a selector:
+ * components whose selected value is unchanged do not re-render, so only the
+ * timeline reacts. The scene itself is driven straight from the engine — going
+ * through the document would clone, re-parse, re-lint and regenerate the whole
+ * scene sixty times a second.
+ */
+export const setPlayhead = (playhead: number): void => set({ playhead });
+export const setPlaying = (playing: boolean): void => set({ playing });
 
 export const setAssetSizes = (
   assetSizes: ReadonlyMap<string, readonly [number, number, number]>,

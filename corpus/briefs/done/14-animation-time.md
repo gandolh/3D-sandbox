@@ -71,3 +71,35 @@ that was asked for, and the code currently claims to have crossed it.
 - The sun visibly travels across `greenhollow` on play, shadows following.
 - Scrubbing still works and still sets the document.
 - Starting a render during playback stops playback rather than racing it.
+
+---
+
+## Outcome (2026-09-11)
+
+Done. `greenhollow` carries a sun-path study — 06:00 to 20:00 over twelve
+seconds — and playing it visibly moves the sun: 09:33 at ALT 23.8°, 13:00 at
+47.8°, 14:50 at 45.0°, shadows swinging with it.
+
+The design decision that mattered was one the brief did not anticipate.
+**Playback cannot go through the document.** `setSolar` calls `editDocument`,
+which structured-clones the whole document, re-parses it through Zod, re-lints
+it and bumps `revision` — and the viewport regenerates the entire scene on a
+revision change. At sixty frames a second that is sixty full scene rebuilds. So
+the playhead drives the **engine** (`setSolarMinutes`), and the transport commits
+to the document once, on stop. Same split that keeps React out of the scene graph.
+
+anime.js earns its place as the clock: `createTimer` gives play, pause, seek,
+loop and a stable delta across a dropped frame, all of which are quietly wrong in
+the obvious hand-rolled `requestAnimationFrame` version. It never touches the
+scene graph. Evaluation is `packages/animation` — pure, headless, 14 tests.
+
+**`motion` was deliberately not installed.** It was agreed during the grilling,
+but its only use here would be chrome transitions, and this project already
+carries one dependency imported nowhere (`xatlas-web`, see
+[brief 17](../todo/17-repo-honesty-pass.md)). One decorative dependency is a
+mistake worth not repeating.
+
+One regression made and caught in the browser: preferring the playhead for the
+readout whenever an animation *existed* killed the solar scrub — dragging it
+edited the document while the readout went on showing the playhead. It now
+prefers the playhead only while playing.
