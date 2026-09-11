@@ -1,10 +1,11 @@
-import { setShowContext, setTheme, useStore } from "../state/store.js";
+import { setShowColliders, setShowContext, setTheme, useStore } from "../state/store.js";
 import type { RenderSettings } from "../engine/PathTracer.js";
 
 export function Toolbar({ onSave }: { onSave: () => void }) {
   const doc = useStore((s) => s.document);
   const theme = useStore((s) => s.theme);
   const showContext = useStore((s) => s.showContext);
+  const showColliders = useStore((s) => s.showColliders);
 
   return (
     <header className="flex h-[46px] shrink-0 items-center gap-3 border-b border-line bg-chrome px-3.5">
@@ -23,6 +24,16 @@ export function Toolbar({ onSave }: { onSave: () => void }) {
           className="accent-accent"
         />
         Context
+      </label>
+
+      <label className="flex cursor-pointer items-center gap-1.5 font-mono text-[10px] tracking-wider text-muted uppercase">
+        <input
+          type="checkbox"
+          checked={showColliders}
+          onChange={(event) => setShowColliders(event.target.checked)}
+          className="accent-accent"
+        />
+        Colliders
       </label>
 
       <button

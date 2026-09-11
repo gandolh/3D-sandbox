@@ -13,6 +13,10 @@ updated: 2026-09-11
   footprint is unsolved and will surface in the generator slice.
 - **Stairs.** Not modelled. A single-storey house does not need them; a second
   storey will.
-- **Test strategy beyond the schema.** Vitest covers the linter well because it is
-  pure. How the geometry generator gets tested — golden triangle counts, bounding
-  boxes, or snapshot meshes — is undecided.
+- **The asset manifest.** Everything placed is a proxy box or a proxy cone.
+  Turning those into real Poly Haven glTF is the largest single upgrade available,
+  and it is gated on the download-and-commit workflow, not on code.
+- **Path-tracer performance on real hardware.** Never yet run on a GPU. Sample
+  budgets, denoising and whether shots need a lower default are all unknown.
+- **Placements do not collide with each other.** The physics world derives only
+  static geometry, so two chairs dropped at the same spot occupy the same space.

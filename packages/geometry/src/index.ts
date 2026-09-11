@@ -7,7 +7,7 @@ import { ensureStandardAttributes } from "./attributes.js";
 import { extrudePolygon } from "./polygon.js";
 import { buildWall } from "./subject/walls.js";
 import { UnsupportedRoofError, buildRoof } from "./subject/roofs.js";
-import { buildScatterMesh } from "./context/scatter.js";
+import { buildScatterMesh, mergeSimple } from "./context/scatter.js";
 import { buildMass, buildRoad } from "./context/masses.js";
 
 export * from "./random.js";
@@ -46,6 +46,27 @@ export interface GenerateOptions {
   includeContext?: boolean;
   /** Include the ground plane. */
   includeTerrain?: boolean;
+}
+
+/**
+ * Stand-in for an unloaded asset: a chair-sized box on a plinth.
+ *
+ * Crude on purpose, like the scatter proxies. The asset manifest does not exist
+ * yet, and a placeholder that looked like furniture would survive into a
+ * screenshot and then into someone's expectations.
+ */
+function proxyPlacementGeometry(): THREE.BufferGeometry {
+  const seat = new THREE.BoxGeometry(0.5, 0.12, 0.5);
+  seat.translate(0, 0.44, 0);
+  const back = new THREE.BoxGeometry(0.5, 0.5, 0.08);
+  back.translate(0, 0.75, -0.21);
+  const legs = new THREE.BoxGeometry(0.44, 0.44, 0.44);
+  legs.translate(0, 0.22, 0);
+  const merged = mergeSimple([seat, back, legs]);
+  seat.dispose();
+  back.dispose();
+  legs.dispose();
+  return ensureStandardAttributes(merged);
 }
 
 const triangleCount = (geometry: THREE.BufferGeometry): number => {
@@ -123,6 +144,16 @@ export function generateScene(
       const geometry = extrudePolygon(slab.polygon, level.elevation - slab.thickness, slab.thickness);
       attach(levelGroup, stats.subject, geometry, slab.material, `slab:${slab.id}`);
     }
+  }
+
+  // Placements were generated as nothing at all until now. Proxy boxes so the
+  // scene has something to place and the physics aid has something to drop.
+  for (const placement of doc.subject.placements) {
+    const proxy = proxyPlacementGeometry();
+    proxy.scale(placement.scale, placement.scale, placement.scale);
+    proxy.rotateY(THREE.MathUtils.degToRad(placement.rotationY));
+    proxy.translate(...placement.position);
+    attach(subject, stats.subject, proxy, doc.site.terrain.material, `placement:${placement.id}`);
   }
 
   for (const roof of doc.subject.roofs) {

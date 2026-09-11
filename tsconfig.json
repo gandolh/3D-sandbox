@@ -11,6 +11,9 @@
       "path": "./packages/solar"
     },
     {
+      "path": "./packages/physics"
+    },
+    {
       "path": "./apps/api"
     }
   ]

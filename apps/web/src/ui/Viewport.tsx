@@ -4,6 +4,7 @@ import type { RenderProgress, RenderSettings } from "../engine/PathTracer.js";
 import { RenderOverlay } from "./RenderOverlay.jsx";
 import { editDocument, getState, select, setStatus, useStore } from "../state/store.js";
 import { translateWall } from "../lib/entities.js";
+import { collidersFor } from "../lib/physics.js";
 
 export function Viewport() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -15,6 +16,7 @@ export function Viewport() {
   const revision = useStore((s) => s.revision);
   const selection = useStore((s) => s.selection);
   const showContext = useStore((s) => s.showContext);
+  const showColliders = useStore((s) => s.showColliders);
 
   // The engine outlives every render; React only feeds it.
   useEffect(() => {
@@ -70,6 +72,11 @@ export function Viewport() {
   useEffect(() => {
     engineRef.current?.select(selection);
   }, [selection]);
+
+  useEffect(() => {
+    if (doc === null) return;
+    engineRef.current?.setColliderOverlay(showColliders ? collidersFor(doc) : null);
+  }, [doc, revision, showColliders]);
 
   return (
     <div className="relative min-w-0 flex-1 bg-viewport">

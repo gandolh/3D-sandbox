@@ -115,7 +115,14 @@ const villa: SceneDocumentInput = {
         material: "roof-clay-tile",
       },
     ],
-    placements: [],
+    // Positions are deliberately imperfect — the drop-to-floor aid exists to
+    // settle them, and a scene where everything is already at y = 0 proves
+    // nothing.
+    placements: [
+      { id: "chair-01", asset: "polyhaven/ArmChair_01", position: [-1.6, 1.4, 2.2], rotationY: 24 },
+      { id: "chair-02", asset: "polyhaven/ArmChair_01", position: [1.5, 0.9, 2.6], rotationY: -140 },
+      { id: "table-01", asset: "polyhaven/CoffeeTable_01", position: [0, 2.1, 1.1], rotationY: 0, scale: 1.2 },
+    ],
   },
 
   context: {

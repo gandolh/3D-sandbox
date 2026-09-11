@@ -1,4 +1,5 @@
-import { editDocument, useStore } from "../state/store.js";
+import { editDocument, getState, setStatus, useStore } from "../state/store.js";
+import { physicsFor } from "../lib/physics.js";
 import {
   findEntity,
   setWallBearing,
@@ -33,6 +34,8 @@ export function Inspector() {
               levelIndex={entity.levelIndex}
               wallIndex={entity.wallIndex}
             />
+          ) : entity.kind === "placement" ? (
+            <PlacementInspector index={entity.index} />
           ) : (
             <div className="pt-2">
               <Header kind={entity.kind} id={selection ?? ""} />
@@ -200,6 +203,84 @@ function WallInspector({
           </small>
         </span>
       </div>
+    </div>
+  );
+}
+
+
+/**
+ * Placements are the one thing physics is here to help with.
+ *
+ * "Drop to floor" settles the object under gravity and writes the resting
+ * position back to the document — the simulation itself is never persisted, only
+ * the transform it arrived at.
+ */
+function PlacementInspector({ index }: { index: number }) {
+  const doc = useStore((s) => s.document);
+  const revision = useStore((s) => s.revision);
+  const placement = doc?.subject.placements[index];
+  if (doc === undefined || doc === null || placement === undefined) return null;
+
+  const edit = (mutate: (p: NonNullable<typeof placement>) => void): void =>
+    editDocument((draft) => {
+      const target = draft.subject.placements[index];
+      if (target !== undefined) mutate(target);
+    });
+
+  const drop = async (): Promise<void> => {
+    const current = getState().document;
+    if (current === null) return;
+    setStatus(`Dropping ${placement.id}…`);
+    const world = await physicsFor(current, revision);
+    const half: [number, number, number] = [
+      0.3 * placement.scale,
+      0.45 * placement.scale,
+      0.3 * placement.scale,
+    ];
+    const from: [number, number, number] = [
+      placement.position[0],
+      Math.max(placement.position[1], half[1] + 0.05) + 2,
+      placement.position[2],
+    ];
+    const result = world.dropToRest(from, { halfExtents: half });
+
+    edit((p) => {
+      p.position = [result.position[0], result.position[1] - half[1], result.position[2]];
+    });
+    setStatus(
+      result.settled
+        ? `${placement.id} settled on ${result.restingOn ?? "nothing"} after ${result.steps} steps`
+        : `${placement.id} did not settle in ${result.steps} steps`,
+    );
+  };
+
+  return (
+    <div>
+      <Header kind="placement" id={placement.id} />
+      <Field label="X" unit="m" value={placement.position[0]}
+        onCommit={(v) => edit((p) => { p.position = [v, p.position[1], p.position[2]]; })} />
+      <Field label="Y" unit="m" value={placement.position[1]}
+        onCommit={(v) => edit((p) => { p.position = [p.position[0], v, p.position[2]]; })} />
+      <Field label="Z" unit="m" value={placement.position[2]}
+        onCommit={(v) => edit((p) => { p.position = [p.position[0], p.position[1], v]; })} />
+      <Field label="Rotation" unit="°" step={5} value={placement.rotationY}
+        onCommit={(v) => edit((p) => { p.rotationY = v; })} />
+      <Field label="Scale" value={placement.scale} step={0.05}
+        onCommit={(v) => v > 0 && edit((p) => { p.scale = v; })} />
+
+      <button
+        type="button"
+        onClick={() => void drop()}
+        className="mt-3 w-full rounded-sm border border-accent/60 bg-accent-soft px-3 py-2 text-[12px] font-medium text-accent"
+      >
+        Drop to floor
+      </button>
+
+      <Divider>Asset</Divider>
+      <p className="font-mono text-[10.5px] break-all text-muted">{placement.asset}</p>
+      <p className="mt-1 text-[10.5px] text-subtle">
+        Proxy geometry — the asset manifest does not exist yet.
+      </p>
     </div>
   );
 }

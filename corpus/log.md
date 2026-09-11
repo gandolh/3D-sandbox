@@ -135,3 +135,28 @@ is an environment limit, not a measurement — but nobody has seen this on real
 hardware, and the shot defaults are untested at speed.
 
 Brief: [06-path-traced-render.md](./briefs/done/06-path-traced-render.md).
+
+## [2026-09-11] done | Brief 07 — Physics as an authoring aid
+
+`@solstice/physics` derives rapier colliders from the scene document and answers
+two questions while someone is placing things: where would this land, and does it
+overlap anything. Nothing it computes is persisted.
+
+**Openings are cut out of wall colliders** — solid spans either side of a door,
+a lintel above, a spandrel under a window. One box per wall would have made a
+doorway impassable. Because openings are positioned along their wall by offset,
+this is arithmetic rather than geometry, which is the semantic document paying
+for itself.
+
+Three fixes on the way: ray probes must run after the dropped body is removed, or
+they hit it at time-of-impact zero; a floor slab and the ground beneath it are
+coplanar so all ray hits are gathered and a named entity beats the terrain; and
+rapier lets a settled body sink into what it rests on, so resting positions are
+snapped to the probed surface.
+
+Also fixed: the generator produced **nothing at all** for placements. They now get
+proxy boxes, and the reference scene has three.
+
+This completes the agreed sequence. All seven briefs done, 163 tests.
+
+Brief: [07-physics-authoring.md](./briefs/done/07-physics-authoring.md).

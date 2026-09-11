@@ -1,4 +1,4 @@
-import type { Level, SceneDocument, Wall } from "@solstice/schema";
+import type { Level, Placement, SceneDocument, Wall } from "@solstice/schema";
 
 /** Where a mesh name like `wall:W-03` points in the document. */
 export interface WallRef {
@@ -9,8 +9,15 @@ export interface WallRef {
   wallIndex: number;
 }
 
+export interface PlacementRef {
+  kind: "placement";
+  placement: Placement;
+  index: number;
+}
+
 export type EntityRef =
   | WallRef
+  | PlacementRef
   | { kind: "roof"; id: string; index: number }
   | { kind: "slab"; id: string }
   | { kind: "other"; id: string };
@@ -26,6 +33,9 @@ export function findEntity(doc: SceneDocument, id: string): EntityRef | null {
   }
   for (const [index, roof] of doc.subject.roofs.entries()) {
     if (roof.id === id) return { kind: "roof", id, index };
+  }
+  for (const [index, placement] of doc.subject.placements.entries()) {
+    if (placement.id === id) return { kind: "placement", placement, index };
   }
   return null;
 }

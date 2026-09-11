@@ -23,7 +23,11 @@ that is rebuilt by rescanning. `Save` writes through it. **121 tests pass.**
 
 **Render works.** `three-gpu-pathtracer` accumulates samples behind an explicit
 Render action, lit by a sky radiance map computed from the sun; the result
-downloads. **132 tests pass.**
+downloads.
+
+**Physics works** as an authoring aid: colliders derived from the semantic
+document with openings cut out of walls, drop-to-rest that snaps to the surface,
+and a collider overlay. **163 tests pass.**
 
 ⚠️ It has only ever run on software WebGL, where it managed 0.22 samples in 74
 seconds. Nobody has seen it on a GPU yet — that is the first thing to check on
@@ -42,16 +46,24 @@ credential helper, no GitHub SSH key. Commits are accumulating locally on `main`
 | 04 | [Viewport and app shell](../briefs/done/04-viewport-shell.md) | done |
 | 05 | [Fastify persistence API](../briefs/done/05-persistence-api.md) | done |
 | 06 | [Path-traced render](../briefs/done/06-path-traced-render.md) | done |
+| 07 | [Physics as an authoring aid](../briefs/done/07-physics-authoring.md) | done |
 
 ## Next
 
-Brief 07 (**physics as an authoring aid**) is the last of the agreed sequence:
-rapier during editing so placement is physical — drop a chair and it settles,
-objects cannot interpenetrate walls — with colliders derived from the semantic
-document and never persisted.
+**The agreed sequence is complete.** Document model → editor and viewport →
+solar time → path-traced render → physics, all seven briefs done, 163 tests.
 
-Before that, **run a render on a machine with a GPU**. Everything downstream of
-that (denoising, sample budgets, shot selection) is guesswork until someone has.
+Two things want doing before new features:
+
+1. **Run a render on a machine with a GPU.** It has only ever run on software
+   WebGL. Denoising, sample budgets and shot selection are all guesswork until
+   someone has seen it at speed.
+2. **Push.** Seven commits are stranded on local `main` for want of GitHub
+   credentials — see the blocker entry in [log.md](../log.md).
+
+After that, the honest backlog is in
+[open-questions.md](./open-questions.md): hip roofs, schema migrations, and the
+asset manifest that turns proxy boxes into furniture.
 
 The canonical solar moment is **21 Jun 2026 17:42 EEST at 44.4268 N, 26.1025 E →
 altitude 32.949°, azimuth 271.654°**. That figure is pinned by a test and quoted

@@ -1,0 +1,14 @@
+{
+  "name": "@solstice/physics",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": { ".": "./dist/index.js" },
+  "types": "./dist/index.d.ts",
+  "files": ["dist"],
+  "scripts": { "build": "tsc --build" },
+  "dependencies": {
+    "@dimforge/rapier3d-compat": "0.20.0",
+    "@solstice/schema": "0.1.0"
+  }
+}

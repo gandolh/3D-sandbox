@@ -67,6 +67,13 @@ export function SceneTree() {
             </Fragment>
           ))}
 
+          {doc.subject.placements.length > 0 && (
+            <Node label="Placements" depth={1} glyph="◇" badge={`${doc.subject.placements.length}`} />
+          )}
+          {doc.subject.placements.map((placement) => (
+            <Node key={placement.id} id={placement.id} label={placement.id} depth={2} glyph="◦" />
+          ))}
+
           {doc.subject.roofs.map((roof) => (
             <Node
               key={roof.id}

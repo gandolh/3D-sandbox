@@ -22,6 +22,7 @@ export interface AppState {
   /** Bumped whenever geometry must be regenerated. */
   revision: number;
   showContext: boolean;
+  showColliders: boolean;
   theme: "dark" | "light";
   status: string;
 }
@@ -32,6 +33,7 @@ let state: AppState = {
   findings: [],
   revision: 0,
   showContext: true,
+  showColliders: false,
   theme: "dark",
   status: "Loading…",
 };
@@ -75,6 +77,9 @@ export const setTheme = (theme: "dark" | "light"): void => {
   document.documentElement.dataset["theme"] = theme;
   set({ theme });
 };
+
+export const setShowColliders = (showColliders: boolean): void =>
+  set({ showColliders });
 
 export const setShowContext = (showContext: boolean): void =>
   set({ showContext, revision: state.revision + 1 });

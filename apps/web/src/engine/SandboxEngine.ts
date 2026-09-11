@@ -4,6 +4,7 @@ import { TransformControls } from "three/addons/controls/TransformControls.js";
 import { Sky } from "three/addons/objects/Sky.js";
 import type { SceneDocument } from "@solstice/schema";
 import { generateScene, type GeneratedScene } from "@solstice/geometry";
+import type { CuboidCollider } from "@solstice/physics";
 import { resolveSolar } from "@solstice/solar";
 import {
   PathTraceSession,
@@ -49,6 +50,7 @@ export class SandboxEngine {
   private resizeObserver: ResizeObserver | null = null;
   private render: PathTraceSession | null = null;
   private lastSolar: ReturnType<typeof resolveSolar> | null = null;
+  private readonly colliderOverlay = new THREE.Group();
 
   constructor(
     private readonly canvas: HTMLCanvasElement,
@@ -98,7 +100,9 @@ export class SandboxEngine {
 
     this.sky.scale.setScalar(4500);
     this.selectionBox.visible = false;
-    this.scene.add(this.sky, this.sun, this.sun.target, this.ambient, this.selectionBox);
+    this.colliderOverlay.visible = false;
+    this.colliderOverlay.name = "collider-overlay";
+    this.scene.add(this.sky, this.sun, this.sun.target, this.ambient, this.selectionBox, this.colliderOverlay);
 
     canvas.addEventListener("pointerdown", this.onPointerDown);
     this.observeResize();
@@ -143,6 +147,47 @@ export class SandboxEngine {
     uniforms["mieCoefficient"]!.value = 0.005;
     uniforms["mieDirectionalG"]!.value = 0.8;
     uniforms["sunPosition"]!.value.copy(this.sun.position).normalize();
+  }
+
+  /**
+   * Draw the derived colliders as wireframes.
+   *
+   * Worth seeing rather than trusting: colliders are *derived* from the
+   * document, so an opening that is cut in the mesh but not in the collider is
+   * exactly the kind of divergence that is invisible until something falls
+   * through a wall.
+   */
+  setColliderOverlay(colliders: readonly CuboidCollider[] | null): void {
+    for (const child of [...this.colliderOverlay.children]) {
+      this.colliderOverlay.remove(child);
+      const mesh = child as THREE.LineSegments;
+      mesh.geometry.dispose();
+      (mesh.material as THREE.Material).dispose();
+    }
+
+    if (colliders === null) {
+      this.colliderOverlay.visible = false;
+      return;
+    }
+
+    for (const collider of colliders) {
+      const [hx, hy, hz] = collider.halfExtents;
+      const box = new THREE.BoxGeometry(hx * 2, hy * 2, hz * 2);
+      const lines = new THREE.LineSegments(
+        new THREE.EdgesGeometry(box),
+        new THREE.LineBasicMaterial({
+          color: collider.source === "wall" ? 0xe8a33d : 0x5f9ea0,
+          transparent: true,
+          opacity: 0.75,
+        }),
+      );
+      box.dispose();
+      lines.position.set(...collider.position);
+      lines.rotation.y = collider.rotationY;
+      lines.name = `collider:${collider.id}`;
+      this.colliderOverlay.add(lines);
+    }
+    this.colliderOverlay.visible = true;
   }
 
   /* ── selection ──────────────────────────────────────────────── */
