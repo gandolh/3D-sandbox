@@ -4,7 +4,7 @@ import { bounds, degToRad, type SceneDocument, type Level, type Wall } from "@so
 export interface CuboidCollider {
   id: string;
   /** Which document entity produced it. */
-  source: "wall" | "slab" | "terrain" | "mass";
+  source: "wall" | "slab" | "terrain" | "mass" | "placement";
   /** The entity's own id, so a hit can be reported in the document's language. */
   entity: string;
   halfExtents: [number, number, number];
@@ -26,7 +26,12 @@ const EPSILON = 1e-4;
  * things on floors, and a pitched trimesh collider is real work for no authoring
  * benefit.
  */
-export function deriveColliders(doc: SceneDocument): CuboidCollider[] {
+/** Size of a placement whose asset is not loaded. See `deriveColliders`. */
+export interface PlacementSizes {
+  get(assetId: string): readonly [number, number, number] | undefined;
+}
+
+export function deriveColliders(doc: SceneDocument, sizes?: PlacementSizes): CuboidCollider[] {
   const out: CuboidCollider[] = [];
 
   // Terrain as a thin slab whose top surface sits at y = 0.
@@ -39,6 +44,33 @@ export function deriveColliders(doc: SceneDocument): CuboidCollider[] {
     position: [0, -0.5, 0],
     rotationY: 0,
   });
+
+  // Placements collide with each other, so a bowl dropped over a table rests on
+  // it rather than through it. This was not possible before real assets: a proxy
+  // box has no honest size, and a collider built from a guess is worse than
+  // none — it would settle things onto a surface that is not there.
+  //
+  // A placement whose asset is not loaded contributes nothing. Deliberately: an
+  // invisible collider around a visible proxy is the exact failure this avoids.
+  if (sizes !== undefined) {
+    for (const placement of doc.subject.placements) {
+      const size = sizes.get(placement.asset);
+      if (size === undefined) continue;
+      const [sx, sy, sz] = size;
+      const scale = placement.scale;
+      out.push({
+        id: `placement:${placement.id}`,
+        source: "placement",
+        entity: placement.id,
+        halfExtents: [(sx * scale) / 2, (sy * scale) / 2, (sz * scale) / 2],
+        // The document positions a placement by where it stands, and
+        // `prepareAsset` grounds geometry on y = 0 to match — so the collider's
+        // centre is half its height above the stated position.
+        position: [placement.position[0], placement.position[1] + (sy * scale) / 2, placement.position[2]],
+        rotationY: placement.rotationY,
+      });
+    }
+  }
 
   for (const level of doc.subject.levels) {
     for (const wall of level.walls) out.push(...wallColliders(wall, level));

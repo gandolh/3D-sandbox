@@ -53,13 +53,20 @@ rather than post into a 404. See [log.md](../log.md).
 **Blocked:** `git push` has no credentials on this machine — no `gh`, no
 credential helper, no GitHub SSH key. Commits are accumulating locally on `main`.
 
+**Placements are real.** A dev-only Vite middleware serves `assets-src/`, the
+generator loads glTF through an injectable `AssetSource` (so it still runs
+headlessly with nothing downloaded), and placements collide with each other —
+drop a bowl over a table and it rests on the table. Context vegetation does
+*not* work: Poly Haven's trees are 4.6–17.4 M triangles each and need impostors
+first. **194 tests pass.**
+
 ## Next
 
-Three briefs are queued, in order: **10** the asset manifest and real models
-(which also arms `asset-resolves` — it has never once run on a real scene), **11**
-textures and an alpha-cut vine, **12** a sample-convergence study to replace the
-guessed 2,000-sample default. Brief 10 needs assets downloaded by hand; it emits
-a download list for that.
+**10 is done.** Queued: **13** vegetation impostors — the blocker for the context
+tier looking like anything but cones — then **11** textures and an alpha-cut vine,
+then **12** a sample-convergence study to replace the guessed 2,000-sample
+default. 13 before 11 because nothing else in the scene can improve while the
+forest is proxy geometry.
 
 ## Briefs
 
@@ -72,6 +79,13 @@ a download list for that.
 | 05 | [Fastify persistence API](../briefs/done/05-persistence-api.md) | done |
 | 06 | [Path-traced render](../briefs/done/06-path-traced-render.md) | done |
 | 07 | [Physics as an authoring aid](../briefs/done/07-physics-authoring.md) | done |
+
+**Placements are real.** A dev-only Vite middleware serves `assets-src/`, the
+generator loads glTF through an injectable `AssetSource` (so it still runs
+headlessly with nothing downloaded), and placements collide with each other —
+drop a bowl over a table and it rests on the table. Context vegetation does
+*not* work: Poly Haven's trees are 4.6–17.4 M triangles each and need impostors
+first. **194 tests pass.**
 
 ## Next
 

@@ -25,6 +25,12 @@ export interface AppState {
   showColliders: boolean;
   /** Shot id to render, or null for "whatever the viewport is looking at". */
   shotId: string | null;
+  /**
+   * Loaded asset sizes, `id → [x, y, z]` metres. Empty until the models arrive,
+   * and empty forever in a build that ships none — which is why physics treats a
+   * placement with no size as having no collider rather than guessing one.
+   */
+  assetSizes: ReadonlyMap<string, readonly [number, number, number]>;
   theme: "dark" | "light";
   status: string;
 }
@@ -37,6 +43,7 @@ let state: AppState = {
   showContext: true,
   showColliders: false,
   shotId: null,
+  assetSizes: new Map(),
   theme: "dark",
   status: "Loading…",
 };
@@ -90,6 +97,10 @@ export const setShowContext = (showContext: boolean): void =>
 export const setStatus = (status: string): void => set({ status });
 
 export const setShotId = (shotId: string | null): void => set({ shotId });
+
+export const setAssetSizes = (
+  assetSizes: ReadonlyMap<string, readonly [number, number, number]>,
+): void => set({ assetSizes });
 
 /**
  * Apply an edit to the document, then re-validate.

@@ -75,3 +75,32 @@ substitution from what exists, not per-asset licence hunting on Sketchfab.
 - The download list is a real file a person can work from.
 - Dropping one placement onto another rests it on top, with a test.
 - Verified in the browser on the GPU: Greenhollow renders with real models.
+
+---
+
+## Outcome (2026-09-11)
+
+Done. `asset-resolves` is armed and fails the build on an invented slug; the
+eight dead slugs are substituted; `npm run assets` emits a download list, a
+runnable script and the committed `verified.json`; placements load real glTF and
+collide with each other.
+
+Four things the brief did not anticipate, three of them only visible by running it:
+
+- **Poly Haven's trees cannot be scattered at all.** `pine_tree_01` is 17.4 M
+  triangles against the whole scene's 3,130, and the mesh is 905 MB at *every*
+  resolution. That is now [brief 13](../todo/13-vegetation-impostors.md) and a
+  decision about impostors over decimation.
+- **The strictness rule I wrote contradicted the heavy-asset split an hour later.**
+  Treating "downloaded" as the standard made every build fail, because not
+  downloading the heavy assets is the designed state. The rule now asks whether a
+  slug *exists*.
+- **A placement dropped to the floor landed on itself** — its own static collider
+  is still in the world. `dropToRest` grew `ignoreEntity`. Found in the browser,
+  reported as "bench-vine settled on bench-vine".
+- **The inspector claimed "proxy geometry — the manifest does not exist yet"**
+  while displaying a loaded model. It now shows the asset's real bounds.
+
+Assets are served from `assets-src/` by a dev-only Vite middleware. A production
+build ships no models and falls back to proxies — a 135 MB static deploy is worse
+than grey boxes, and impostors are what will make bundling them reasonable.

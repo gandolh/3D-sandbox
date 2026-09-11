@@ -8,6 +8,7 @@ import { extrudePolygon } from "./polygon.js";
 import { buildWall } from "./subject/walls.js";
 import { UnsupportedRoofError, buildRoof } from "./subject/roofs.js";
 import { buildRun } from "./subject/runs.js";
+import type { AssetSource } from "./assets.js";
 import { buildScatterMesh, mergeSimple } from "./context/scatter.js";
 import { buildMass, buildRoad } from "./context/masses.js";
 
@@ -18,6 +19,7 @@ export * from "./materials.js";
 export * from "./subject/walls.js";
 export * from "./subject/roofs.js";
 export * from "./subject/runs.js";
+export * from "./assets.js";
 export * from "./context/scatter.js";
 export * from "./context/masses.js";
 
@@ -48,6 +50,11 @@ export interface GenerateOptions {
   includeContext?: boolean;
   /** Include the ground plane. */
   includeTerrain?: boolean;
+  /**
+   * Loaded assets. Absent — or missing an id — means the proxy, which is why
+   * this generator runs identically in a Node test with nothing downloaded.
+   */
+  assets?: AssetSource;
 }
 
 /**
@@ -151,11 +158,16 @@ export function generateScene(
   // Placements were generated as nothing at all until now. Proxy boxes so the
   // scene has something to place and the physics aid has something to drop.
   for (const placement of doc.subject.placements) {
-    const proxy = proxyPlacementGeometry();
-    proxy.scale(placement.scale, placement.scale, placement.scale);
-    proxy.rotateY(THREE.MathUtils.degToRad(placement.rotationY));
-    proxy.translate(...placement.position);
-    attach(subject, stats.subject, proxy, doc.site.terrain.material, `placement:${placement.id}`);
+    // A real asset when one is loaded, the proxy otherwise. The fallback is
+    // deliberately unmistakable: a placeholder that looked like furniture would
+    // survive into a screenshot and then into someone's expectations.
+    const loaded = options.assets?.get(placement.asset);
+    const geometry = loaded === undefined ? proxyPlacementGeometry() : loaded.geometry.clone();
+
+    geometry.scale(placement.scale, placement.scale, placement.scale);
+    geometry.rotateY(THREE.MathUtils.degToRad(placement.rotationY));
+    geometry.translate(...placement.position);
+    attach(subject, stats.subject, geometry, doc.site.terrain.material, `placement:${placement.id}`);
   }
 
   for (const run of doc.subject.runs) {

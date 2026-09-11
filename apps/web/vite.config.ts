@@ -1,6 +1,73 @@
-import { defineConfig } from "vite";
+import { createReadStream } from "node:fs";
+import { stat } from "node:fs/promises";
+import { extname, join, normalize, resolve } from "node:path";
+import { defineConfig, type Plugin } from "vite";
+import { readManifest } from "../../assets/manifest.ts";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
+
+/**
+ * Serve `assets-src/` at `/assets-src/` in dev.
+ *
+ * The downloads live at the repo root, outside this app, and they are
+ * gitignored — 17 assets come to 135 MB. Copying them into `public/` would
+ * duplicate that and put it in the bundle; serving them from where they already
+ * are costs nothing.
+ *
+ * **Dev only.** A production build ships no models, so the deployed client falls
+ * back to proxies. That is the honest state until vegetation impostors (brief
+ * 13) make the asset set small enough to bundle — a 135 MB static deploy is
+ * worse than grey boxes.
+ */
+function assetsSrc(): Plugin {
+  const root = resolve(import.meta.dirname, "..", "..", "assets-src");
+  const types: Record<string, string> = {
+    ".gltf": "model/gltf+json",
+    ".glb": "model/gltf-binary",
+    ".bin": "application/octet-stream",
+    ".jpg": "image/jpeg",
+    ".png": "image/png",
+  };
+
+  return {
+    name: "solstice-assets-src",
+    apply: "serve",
+    configureServer(server) {
+      server.middlewares.use("/assets-src", (req, res, next) => {
+        // The index is served rather than generated into a file: a committed
+        // index of gitignored downloads would be wrong on every fresh clone.
+        if ((req.url ?? "").startsWith("/index.json")) {
+          void readManifest(root).then((entries) => {
+            res.setHeader("content-type", "application/json");
+            res.end(
+              JSON.stringify({
+                models: entries
+                  .filter((e) => e.gltf !== undefined)
+                  .map((e) => ({ id: e.id, path: `${e.source}/${e.slug}/${e.gltf}` })),
+              }),
+            );
+          });
+          return;
+        }
+        const rel = normalize(decodeURIComponent((req.url ?? "/").split("?")[0] ?? "/"));
+        const file = join(root, rel);
+        // Never serve outside the asset root, whatever the request says.
+        if (!file.startsWith(root)) {
+          res.statusCode = 403;
+          res.end();
+          return;
+        }
+        stat(file)
+          .then((info) => {
+            if (!info.isFile()) return next();
+            res.setHeader("content-type", types[extname(file).toLowerCase()] ?? "application/octet-stream");
+            createReadStream(file).pipe(res);
+          })
+          .catch(() => next());
+      });
+    },
+  };
+}
 
 export default defineConfig({
   // Relative base so the built client works under a Caddy sub-path later
@@ -19,7 +86,7 @@ export default defineConfig({
   define: {
     __API_BASE__: JSON.stringify(process.env["SOLSTICE_API_BASE"] ?? "/api"),
   },
-  plugins: [react(), tailwindcss()],
+  plugins: [react(), tailwindcss(), assetsSrc()],
   server: {
     port: 5173,
     proxy: { "/api": { target: "http://localhost:5174", changeOrigin: true } },

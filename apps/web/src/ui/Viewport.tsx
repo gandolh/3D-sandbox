@@ -2,9 +2,17 @@ import { useEffect, useRef, useState } from "react";
 import { SandboxEngine, type RenderRequest } from "../engine/SandboxEngine.js";
 import type { RenderProgress } from "../engine/PathTracer.js";
 import { RenderOverlay } from "./RenderOverlay.jsx";
-import { editDocument, getState, select, setStatus, useStore } from "../state/store.js";
+import {
+  editDocument,
+  getState,
+  select,
+  setAssetSizes,
+  setStatus,
+  useStore,
+} from "../state/store.js";
 import { translateWall } from "../lib/entities.js";
-import { collidersFor } from "../lib/physics.js";
+import { collidersFor, sizesFromMap } from "../lib/physics.js";
+import { loadAssets } from "../engine/AssetLoader.js";
 import type { Shot } from "@solstice/schema";
 
 export function Viewport() {
@@ -18,6 +26,7 @@ export function Viewport() {
   const selection = useStore((s) => s.selection);
   const showContext = useStore((s) => s.showContext);
   const showColliders = useStore((s) => s.showColliders);
+  const assetSizes = useStore((s) => s.assetSizes);
   // The only thing that changes the viewport camera's focal length is framing a
   // shot, so the picker's selection is an accurate read of it.
   const shotId = useStore((s) => s.shotId);
@@ -69,7 +78,25 @@ export function Viewport() {
     window.addEventListener("solstice:render", onRenderRequest);
     window.addEventListener("solstice:frame", onFrame);
 
+    // Models arrive after the first frame. The scene is already standing by
+    // then, built from proxies — which is the point: the viewport is usable
+    // immediately and improves, rather than waiting on 135 MB of glTF.
+    const assetLoad = new AbortController();
+    void loadAssets(assetLoad.signal).then((assets) => {
+      if (assetLoad.signal.aborted) return;
+      engine.setAssets(assets, { includeContext: getState().showContext });
+
+      const sizes = new Map<string, readonly [number, number, number]>();
+      for (const id of new Set(getState().document?.subject.placements.map((p) => p.asset) ?? [])) {
+        const asset = assets.get(id);
+        if (asset !== undefined) sizes.set(id, asset.size);
+      }
+      setAssetSizes(sizes);
+      if (sizes.size > 0) setStatus(`${sizes.size} model(s) loaded`);
+    });
+
     return () => {
+      assetLoad.abort();
       window.removeEventListener("solstice:render", onRenderRequest);
       window.removeEventListener("solstice:frame", onFrame);
       engine.dispose();
@@ -87,7 +114,9 @@ export function Viewport() {
 
   useEffect(() => {
     if (doc === null) return;
-    engineRef.current?.setColliderOverlay(showColliders ? collidersFor(doc) : null);
+    engineRef.current?.setColliderOverlay(
+      showColliders ? collidersFor(doc, sizesFromMap(assetSizes)) : null,
+    );
   }, [doc, revision, showColliders]);
 
   return (

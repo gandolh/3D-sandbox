@@ -107,3 +107,42 @@ judgement call at the time; it is now the rule:
   does** — and that is the change that finally requires a migration mechanism.
 
 This keeps migrations deferred honestly rather than by accident.
+
+## Context vegetation is impostors, not decimated meshes (2026-09-11)
+
+Poly Haven's trees are unusable as downloaded, and the numbers are not close:
+`pine_tree_01` is **17,427,094 triangles**, `fir_tree_01` 7.9 M, `tree_small_02`
+4.65 M. The whole of Greenhollow is 3,130. Villa's forest is 284 instances — at
+17.4 M each, 4.9 **billion** triangles.
+
+Downloading smaller does not help: the mesh is 904.9 MB at 1k exactly as at 8k,
+because resolution only ever described the textures. The info API advertises
+`lods: true`, but the files API serves none — they are a Blender-addon feature,
+not a download.
+
+So the context tier gets **billboard impostors**: the tree is rendered once to an
+angle atlas, and scatter places camera-facing alpha quads. The path tracer
+already samples `alphaMap` and honours `alphaTest`, so nothing in the renderer
+has to change.
+
+- *Rejected*: decimating with `gltf-transform simplify` / meshoptimizer. It is
+  the obvious answer and the wrong one **for foliage specifically** — leaves are
+  thousands of disconnected alpha cards, and the 250× reduction needed here
+  shreds them into confetti. Decimation works on connected surfaces; a canopy is
+  not one.
+- *Rejected*: a different low-poly CC0 source. It would solve trees and reintroduce
+  the licence-checking problem the CC0-site-wide rule exists to avoid.
+- *Consequence*: the **subject** tier may use the real asset. That is what the two
+  fidelity tiers were drawn for, and this is the first time the line has had to
+  carry weight.
+
+## A subject placement carries a triangle budget (2026-09-11)
+
+One hero tree beside the house is 17.4 M triangles in the BVH — heavy but
+survivable on a GPU, and legitimate under the tier split. "Legitimate" needs a
+number, though, or the tier boundary is a vibe.
+
+Polycount goes into the manifest (Poly Haven reports it; it is not something we
+have to measure), and a lint rule warns when a level's subject placements exceed
+the budget. The budget is a warning, not an error: it is a judgement about this
+machine, and a machine with more memory is allowed a different one.

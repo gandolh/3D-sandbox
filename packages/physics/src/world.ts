@@ -1,6 +1,6 @@
 import RAPIER from "@dimforge/rapier3d-compat";
 import type { SceneDocument } from "@solstice/schema";
-import { deriveColliders, type CuboidCollider } from "./colliders.js";
+import { deriveColliders, type CuboidCollider, type PlacementSizes } from "./colliders.js";
 
 export interface DropOptions {
   /** Half-extents of the box being placed. */
@@ -9,6 +9,16 @@ export interface DropOptions {
   maxSteps?: number;
   /** Linear speed below which the object counts as at rest, m/s. */
   restSpeed?: number;
+  /**
+   * A document entity whose colliders this drop should not see — normally the
+   * thing being dropped.
+   *
+   * Placements became colliders so that things stack. That immediately means a
+   * placement dropped to the floor lands on *itself*: its own static box is
+   * still in the world, half a metre below where it starts. Without this, the
+   * viewport reports "bench-vine settled on bench-vine" and never moves it.
+   */
+  ignoreEntity?: string;
 }
 
 export interface DropResult {
@@ -56,9 +66,9 @@ export class PhysicsWorld {
     }
   }
 
-  static async create(doc: SceneDocument): Promise<PhysicsWorld> {
+  static async create(doc: SceneDocument, sizes?: PlacementSizes): Promise<PhysicsWorld> {
     await initPhysics();
-    return new PhysicsWorld(deriveColliders(doc));
+    return new PhysicsWorld(deriveColliders(doc, sizes));
   }
 
   /** For tests and for the viewport's collider overlay. */
@@ -69,6 +79,12 @@ export class PhysicsWorld {
 
   get colliderCount(): number {
     return this.colliders.length;
+  }
+
+  /** Rapier handles belonging to one document entity. */
+  private collidersOf(entity: string | undefined): number[] {
+    if (entity === undefined) return [];
+    return [...this.byHandle].filter(([, c]) => c.entity === entity).map(([handle]) => handle);
   }
 
   /**
@@ -90,6 +106,12 @@ export class PhysicsWorld {
       RAPIER.ColliderDesc.cuboid(...halfExtents),
       body,
     );
+
+    // Disabled rather than removed, so the world stays reusable across drops —
+    // it is cached per document revision and a second drop must see the same
+    // geometry as the first.
+    const muted = this.collidersOf(options.ignoreEntity);
+    for (const handle of muted) this.world.getCollider(handle)?.setEnabled(false);
 
     let steps = 0;
     let settled = false;
@@ -121,6 +143,10 @@ export class PhysicsWorld {
     // aid, where "on the floor" should mean exactly on the floor.
     const surface = this.surfaceBelow(position, halfExtents);
     if (surface !== null) position[1] = surface.y + halfExtents[1];
+
+    // Put back whatever this drop was told to ignore, before anything else
+    // queries the world.
+    for (const handle of muted) this.world.getCollider(handle)?.setEnabled(true);
 
     return { position, settled, steps, restingOn: surface?.entity ?? null };
   }

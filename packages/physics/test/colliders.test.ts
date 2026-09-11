@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Level, Wall } from "@solstice/schema";
+import { Level, SceneDocument, Wall } from "@solstice/schema";
 import { deriveColliders, wallColliders, type CuboidCollider } from "../src/colliders.js";
 import { baseScene } from "./fixtures.js";
 
@@ -124,5 +124,51 @@ describe("scene colliders", () => {
   it("includes neighbouring masses so nothing is placed inside one", () => {
     const doc = baseScene();
     expect(deriveColliders(doc).filter((c) => c.source === "mass")).toHaveLength(1);
+  });
+});
+
+describe("placement colliders", () => {
+  const sizes = {
+    get: (id: string) => (id === "a/table" ? ([1.2, 0.75, 0.8] as const) : undefined),
+  };
+
+  const withPlacements = (scale = 1): SceneDocument => {
+    const doc = baseScene();
+    return {
+      ...doc,
+      subject: {
+        ...doc.subject,
+        placements: [
+          { id: "table-01", asset: "a/table", position: [2, 0, 3], rotationY: 30, scale },
+          { id: "ghost-01", asset: "a/not-loaded", position: [5, 0, 5], rotationY: 0, scale: 1 },
+        ],
+      },
+    };
+  };
+
+  it("produces nothing without sizes — the behaviour before assets existed", () => {
+    expect(deriveColliders(withPlacements()).filter((c) => c.source === "placement")).toHaveLength(0);
+  });
+
+  it("skips a placement whose asset is not loaded", () => {
+    // An invisible collider around a visible proxy is worse than no collider:
+    // things would settle onto a surface that is not there.
+    const ids = deriveColliders(withPlacements(), sizes)
+      .filter((c) => c.source === "placement")
+      .map((c) => c.entity);
+    expect(ids).toEqual(["table-01"]);
+  });
+
+  it("centres the box half its height above the stated position", () => {
+    const table = deriveColliders(withPlacements(), sizes).find((c) => c.entity === "table-01");
+    expect(table?.halfExtents).toEqual([0.6, 0.375, 0.4]);
+    expect(table?.position).toEqual([2, 0.375, 3]);
+    expect(table?.rotationY).toBe(30);
+  });
+
+  it("scales extents and the lift together", () => {
+    const table = deriveColliders(withPlacements(2), sizes).find((c) => c.entity === "table-01");
+    expect(table?.halfExtents).toEqual([1.2, 0.75, 0.8]);
+    expect(table?.position[1]).toBe(0.75);
   });
 });

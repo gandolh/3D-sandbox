@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import type { SceneDocument } from "@solstice/schema";
 import { PhysicsWorld, initPhysics } from "../src/world.js";
 import { deriveColliders } from "../src/colliders.js";
 import { baseScene } from "./fixtures.js";
@@ -144,3 +145,97 @@ describe("resting positions are snapped to the surface", () => {
     expect(result.position[1]).toBeCloseTo(tall[1], 4);
   });
 })
+
+describe("placements collide with each other", () => {
+  const sizes = {
+    get: (id: string) => (id === "a/table" ? ([1.4, 0.75, 0.9] as const) : undefined),
+  };
+
+  const withTable = (): SceneDocument => {
+    const doc = baseScene();
+    return {
+      ...doc,
+      subject: {
+        ...doc.subject,
+        placements: [
+          { id: "table-01", asset: "a/table", position: [2, 0, 2], rotationY: 0, scale: 1 },
+        ],
+      },
+    };
+  };
+
+  it("rests a dropped box on a table rather than through it", async () => {
+    // The whole reason this was deferred: a proxy box has no honest size, so
+    // there was nothing truthful to build a collider from.
+    const world = await PhysicsWorld.create(withTable(), sizes);
+    const result = world.dropToRest([2, 3, 2], { halfExtents: [0.08, 0.08, 0.08] });
+    expect(result.restingOn).toBe("table-01");
+    expect(result.position[1]).toBeCloseTo(0.75 + 0.08, 3);
+    world.dispose();
+  });
+
+  it("falls to the floor when it misses the table", async () => {
+    const world = await PhysicsWorld.create(withTable(), sizes);
+    const result = world.dropToRest([2, 3, 4.2], { halfExtents: [0.08, 0.08, 0.08] });
+    expect(result.restingOn).not.toBe("table-01");
+    expect(result.position[1]).toBeCloseTo(0.08, 2);
+    world.dispose();
+  });
+
+  it("ignores placements when no sizes are supplied", async () => {
+    const world = await PhysicsWorld.create(withTable());
+    const result = world.dropToRest([2, 3, 2], { halfExtents: [0.08, 0.08, 0.08] });
+    expect(result.restingOn).not.toBe("table-01");
+    world.dispose();
+  });
+});
+
+describe("ignoreEntity", () => {
+  const sizes = {
+    get: (id: string) => (id === "a/bench" ? ([1.6, 0.85, 0.6] as const) : undefined),
+  };
+
+  const withBench = (): SceneDocument => {
+    const doc = baseScene();
+    return {
+      ...doc,
+      subject: {
+        ...doc.subject,
+        placements: [
+          { id: "bench-01", asset: "a/bench", position: [2, 0.5, 2], rotationY: 0, scale: 1 },
+        ],
+      },
+    };
+  };
+
+  it("lands on its own collider without it", async () => {
+    // The bug this exists for. The bench's static box spans y 0.5–1.35, and it
+    // is still in the world while the bench is being dropped — so the bench
+    // settles on top of itself and the viewport reports "bench-vine settled on
+    // bench-vine".
+    const world = await PhysicsWorld.create(withBench(), sizes);
+    const result = world.dropToRest([2, 2.5, 2], { halfExtents: [0.8, 0.425, 0.3] });
+    expect(result.restingOn).toBe("bench-01");
+    expect(result.position[1]).toBeCloseTo(1.35 + 0.425, 2);
+    world.dispose();
+  });
+
+  it("reaches the floor when told to ignore itself", async () => {
+    const world = await PhysicsWorld.create(withBench(), sizes);
+    const result = world.dropToRest([2, 0.5, 2], {
+      halfExtents: [0.8, 0.425, 0.3],
+      ignoreEntity: "bench-01",
+    });
+    expect(result.restingOn).not.toBe("bench-01");
+    expect(result.position[1]).toBeCloseTo(0.425, 2);
+    world.dispose();
+  });
+
+  it("re-enables what it muted, so a second drop is unaffected", async () => {
+    const world = await PhysicsWorld.create(withBench(), sizes);
+    world.dropToRest([2, 0.5, 2], { halfExtents: [0.8, 0.425, 0.3], ignoreEntity: "bench-01" });
+    const after = world.dropToRest([2, 3, 2], { halfExtents: [0.08, 0.08, 0.08] });
+    expect(after.restingOn).toBe("bench-01");
+    world.dispose();
+  });
+});

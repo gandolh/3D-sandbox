@@ -1,5 +1,5 @@
 import { editDocument, getState, setStatus, useStore } from "../state/store.js";
-import { physicsFor } from "../lib/physics.js";
+import { physicsFor, sizesFromMap } from "../lib/physics.js";
 import {
   findEntity,
   setWallBearing,
@@ -218,7 +218,9 @@ function WallInspector({
 function PlacementInspector({ index }: { index: number }) {
   const doc = useStore((s) => s.document);
   const revision = useStore((s) => s.revision);
+  const assetSizes = useStore((s) => s.assetSizes);
   const placement = doc?.subject.placements[index];
+  const assetSize = placement === undefined ? undefined : assetSizes.get(placement.asset);
   if (doc === undefined || doc === null || placement === undefined) return null;
 
   const edit = (mutate: (p: NonNullable<typeof placement>) => void): void =>
@@ -231,18 +233,27 @@ function PlacementInspector({ index }: { index: number }) {
     const current = getState().document;
     if (current === null) return;
     setStatus(`Dropping ${placement.id}…`);
-    const world = await physicsFor(current, revision);
-    const half: [number, number, number] = [
-      0.3 * placement.scale,
-      0.45 * placement.scale,
-      0.3 * placement.scale,
-    ];
+    const world = await physicsFor(current, revision, sizesFromMap(getState().assetSizes));
+    // The asset's real size when it is loaded; the old guess when it is not.
+    // A guessed box is why placements could not collide before — it settles
+    // things onto a surface that is not where the model's surface is.
+    const size = getState().assetSizes.get(placement.asset);
+    const half: [number, number, number] =
+      size === undefined
+        ? [0.3 * placement.scale, 0.45 * placement.scale, 0.3 * placement.scale]
+        : [
+            (size[0] * placement.scale) / 2,
+            (size[1] * placement.scale) / 2,
+            (size[2] * placement.scale) / 2,
+          ];
     const from: [number, number, number] = [
       placement.position[0],
       Math.max(placement.position[1], half[1] + 0.05) + 2,
       placement.position[2],
     ];
-    const result = world.dropToRest(from, { halfExtents: half });
+    // Without this the placement lands on its own static collider and never
+    // moves — "bench-vine settled on bench-vine".
+    const result = world.dropToRest(from, { halfExtents: half, ignoreEntity: placement.id });
 
     edit((p) => {
       p.position = [result.position[0], result.position[1] - half[1], result.position[2]];
@@ -279,7 +290,9 @@ function PlacementInspector({ index }: { index: number }) {
       <Divider>Asset</Divider>
       <p className="font-mono text-[10.5px] break-all text-muted">{placement.asset}</p>
       <p className="mt-1 text-[10.5px] text-subtle">
-        Proxy geometry — the asset manifest does not exist yet.
+        {assetSize === undefined
+          ? "Proxy geometry — this asset is not downloaded."
+          : `${assetSize[0].toFixed(2)} × ${assetSize[1].toFixed(2)} × ${assetSize[2].toFixed(2)} m`}
       </p>
     </div>
   );

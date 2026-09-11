@@ -3,7 +3,7 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { TransformControls } from "three/addons/controls/TransformControls.js";
 import { Sky } from "three/addons/objects/Sky.js";
 import type { SceneDocument, Shot } from "@solstice/schema";
-import { generateScene, type GeneratedScene } from "@solstice/geometry";
+import { generateScene, type AssetSource, type GeneratedScene } from "@solstice/geometry";
 import type { CuboidCollider } from "@solstice/physics";
 import { resolveSolar } from "@solstice/solar";
 import {
@@ -61,6 +61,8 @@ export class SandboxEngine {
   private lastSolar: ReturnType<typeof resolveSolar> | null = null;
   /** Kept so a shot's solar override can be re-resolved against the site. */
   private lastDocument: SceneDocument | null = null;
+  /** Real models when they have loaded; until then the generator uses proxies. */
+  private assets: AssetSource | null = null;
   private readonly colliderOverlay = new THREE.Group();
 
   constructor(
@@ -127,7 +129,10 @@ export class SandboxEngine {
     this.generated?.root.removeFromParent();
 
     this.lastDocument = doc;
-    this.generated = generateScene(doc, { includeContext: options.includeContext });
+    this.generated = generateScene(doc, {
+      includeContext: options.includeContext,
+      ...(this.assets === null ? {} : { assets: this.assets }),
+    });
     this.scene.add(this.generated.root);
     this.setSolar(doc);
     this.reattachSelection();
@@ -136,6 +141,15 @@ export class SandboxEngine {
       triangles: this.generated.stats.triangles,
       instances: this.generated.stats.instances,
     });
+  }
+
+  /**
+   * Hand the engine its loaded models. Regenerates, because the scene standing
+   * on screen was built from proxies.
+   */
+  setAssets(assets: AssetSource, options: { includeContext: boolean }): void {
+    this.assets = assets;
+    if (this.lastDocument !== null) this.setDocument(this.lastDocument, options);
   }
 
   setSolar(doc: SceneDocument): void {
