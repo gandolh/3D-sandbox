@@ -274,3 +274,27 @@ Briefs [10](briefs/done/10-asset-manifest-and-models.md),
 [11](briefs/done/11-textures-and-foliage.md),
 [12](briefs/done/12-render-convergence.md),
 [13](briefs/done/13-vegetation-impostors.md) all closed. 207 tests.
+
+## 2026-09-11 — Audited against the original brief; five briefs queued
+
+Asked whether the goal was met. Mostly yes, and the audit found one real gap and
+a handful of untruths.
+
+**Met**: three.js in the browser, a Fastify API that `Save` writes through, every
+version exact (only `engines.node` is a range), a parametric editor, physics
+derived from the semantic document, solar time, and path-traced renders of a
+house with its yard and its surroundings.
+
+**The gap**: *animation time*. The opening request named `animejs`. The glossary
+defines animation time. `Timeline.tsx` says the playhead "**is** a sun-path study
+— the same tween an animation keyframe would drive". None of it exists:
+`animejs` and `motion` are in no `package.json`, the document has no keyframes,
+and the only `requestAnimationFrame` in the app is the render loop. The user
+deferred a play mode to "later" during the grilling, so it is not a broken
+promise — but the code claims to have built it. → [brief 14](briefs/todo/14-animation-time.md)
+
+**Also found**: no render has ever run to completion, so `toBlob` and the
+download have never executed (→ 15); `three-gpu-pathtracer` already ships a
+`DenoiseMaterial` nobody wired up (→ 16); `xatlas-web` is an unused dependency,
+`overview.md` still says the app and API are "not yet built", and there is no
+README (→ 17); two trees are unbaked and the vine is thin from underneath (→ 18).

@@ -71,12 +71,23 @@ camera-facing billboards because a path tracer has no "the camera" to face.
 
 ## Next
 
-**Briefs 10–13 are all done.** Nothing is queued.
+**Briefs 01–13 are done.** An audit against the original brief on 2026-09-11 put
+five more in `todo/`, in rough order of how much they matter:
 
-The honest backlog is [open-questions.md](open-questions.md): a denoiser (the
-convergence study says yes), vine leaf density up close, baking `pine_tree_01`
-and `fir_tree_01` so villa's forest is more than one species, and the schema
-migration mechanism whenever a field first changes meaning.
+- **[14 — animation time](../briefs/todo/14-animation-time.md).** The one real
+  gap. `animejs` and `motion` are in no `package.json`; the glossary defines
+  *animation time* and `Timeline.tsx` claims to implement it; neither is true.
+- **[15 — finish a render](../briefs/todo/15-finish-a-render.md).** No render has
+  ever completed. `toBlob` and the download after it have never executed.
+- **[16 — denoise](../briefs/todo/16-denoiser.md).** Already a dependency:
+  `three-gpu-pathtracer` ships `DenoiseMaterial`.
+- **[17 — repo honesty pass](../briefs/todo/17-repo-honesty-pass.md).** A dead
+  dependency, a stale overview, no README, one web test file for eighteen sources.
+- **[18 — finish the vegetation](../briefs/todo/18-vegetation-finishing.md).**
+  Two trees unbaked, the vine thin from underneath.
+
+Schema migrations stay in [open-questions.md](open-questions.md), correctly
+deferred until a field first changes meaning.
 
 ## Briefs
 
