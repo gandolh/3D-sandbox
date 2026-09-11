@@ -1,0 +1,512 @@
+{
+  "schemaVersion": 1,
+  "id": "villa-carpathia",
+  "title": "Villa Carpathia",
+  "site": {
+    "latitude": 44.4268,
+    "longitude": 26.1025,
+    "timezone": "Europe/Bucharest",
+    "northOffset": 0,
+    "terrain": {
+      "kind": "flat",
+      "size": [
+        140,
+        140
+      ],
+      "material": "grass-meadow"
+    }
+  },
+  "solar": {
+    "date": "2026-06-21",
+    "time": "17:42",
+    "hdri": "kloppenheim_06"
+  },
+  "materials": {
+    "plaster-lime-04": {
+      "label": "Lime Plaster 04",
+      "source": "polyhaven",
+      "slug": "plaster_brick_pattern",
+      "roughness": 0.82
+    },
+    "roof-clay-tile": {
+      "label": "Clay Roof Tile",
+      "source": "polyhaven",
+      "slug": "roof_tiles_14",
+      "roughness": 0.68
+    },
+    "slab-concrete": {
+      "label": "Board-formed Concrete",
+      "source": "ambientcg",
+      "slug": "Concrete034",
+      "roughness": 0.9
+    },
+    "grass-meadow": {
+      "label": "Meadow Grass",
+      "source": "polyhaven",
+      "slug": "coast_sand_rocks_02",
+      "roughness": 1
+    },
+    "asphalt-road": {
+      "label": "Worn Asphalt",
+      "source": "ambientcg",
+      "slug": "Asphalt026A",
+      "roughness": 0.95
+    },
+    "render-neighbour": {
+      "label": "Neutral Render",
+      "source": "procedural",
+      "baseColor": "#C9C3B6",
+      "roughness": 0.85
+    }
+  },
+  "subject": {
+    "levels": [
+      {
+        "id": "ground-floor",
+        "name": "Ground Floor",
+        "elevation": 0,
+        "height": 2.7,
+        "walls": [
+          {
+            "id": "W-01",
+            "start": [
+              -3.2,
+              -4.8
+            ],
+            "end": [
+              3.2,
+              -4.8
+            ],
+            "thickness": 0.24,
+            "material": "plaster-lime-04",
+            "openings": [
+              {
+                "id": "d-01",
+                "kind": "door",
+                "offset": 2.7,
+                "width": 1,
+                "height": 2.1,
+                "sill": 0
+              }
+            ]
+          },
+          {
+            "id": "W-02",
+            "start": [
+              3.2,
+              -4.8
+            ],
+            "end": [
+              3.2,
+              4.8
+            ],
+            "thickness": 0.24,
+            "material": "plaster-lime-04",
+            "openings": [
+              {
+                "id": "w-21",
+                "kind": "window",
+                "offset": 1.6,
+                "width": 1.4,
+                "height": 1.2,
+                "sill": 0.9
+              },
+              {
+                "id": "w-22",
+                "kind": "window",
+                "offset": 6.6,
+                "width": 1.4,
+                "height": 1.2,
+                "sill": 0.9
+              }
+            ]
+          },
+          {
+            "id": "W-03",
+            "start": [
+              3.2,
+              4.8
+            ],
+            "end": [
+              -3.2,
+              4.8
+            ],
+            "thickness": 0.24,
+            "material": "plaster-lime-04",
+            "openings": [
+              {
+                "id": "w-11",
+                "kind": "window",
+                "offset": 1.1,
+                "width": 1.4,
+                "height": 1.2,
+                "sill": 0.9
+              },
+              {
+                "id": "w-12",
+                "kind": "window",
+                "offset": 3.9,
+                "width": 1.4,
+                "height": 1.2,
+                "sill": 0.9
+              }
+            ]
+          },
+          {
+            "id": "W-04",
+            "start": [
+              -3.2,
+              4.8
+            ],
+            "end": [
+              -3.2,
+              -4.8
+            ],
+            "thickness": 0.24,
+            "material": "plaster-lime-04",
+            "openings": []
+          }
+        ],
+        "slabs": [
+          {
+            "id": "slab-ground",
+            "polygon": [
+              [
+                -3.2,
+                -4.8
+              ],
+              [
+                3.2,
+                -4.8
+              ],
+              [
+                3.2,
+                4.8
+              ],
+              [
+                -3.2,
+                4.8
+              ]
+            ],
+            "thickness": 0.25,
+            "material": "slab-concrete"
+          }
+        ]
+      }
+    ],
+    "roofs": [
+      {
+        "id": "roof-main",
+        "kind": "gable",
+        "footprint": [
+          [
+            -3.6,
+            -5.2
+          ],
+          [
+            3.6,
+            -5.2
+          ],
+          [
+            3.6,
+            5.2
+          ],
+          [
+            -3.6,
+            5.2
+          ]
+        ],
+        "baseElevation": 2.7,
+        "pitch": 32,
+        "overhang": 0.4,
+        "ridgeBearing": 0,
+        "material": "roof-clay-tile"
+      }
+    ],
+    "placements": []
+  },
+  "context": {
+    "scatter": [
+      {
+        "id": "forest",
+        "assets": [
+          "polyhaven/pine_tree_01",
+          "polyhaven/fir_tree_01",
+          "polyhaven/tree_small_02"
+        ],
+        "area": [
+          [
+            -60,
+            -60
+          ],
+          [
+            60,
+            -60
+          ],
+          [
+            60,
+            60
+          ],
+          [
+            -60,
+            60
+          ]
+        ],
+        "density": 2.1,
+        "seed": 20260621,
+        "scaleRange": [
+          0.8,
+          1.25
+        ],
+        "exclude": [
+          [
+            [
+              -14,
+              -16
+            ],
+            [
+              14,
+              -16
+            ],
+            [
+              14,
+              16
+            ],
+            [
+              -14,
+              16
+            ]
+          ]
+        ]
+      }
+    ],
+    "masses": [
+      {
+        "id": "n-01",
+        "footprint": [
+          [
+            -46,
+            22
+          ],
+          [
+            -35,
+            22
+          ],
+          [
+            -35,
+            31
+          ],
+          [
+            -46,
+            31
+          ]
+        ],
+        "height": 6.2,
+        "roofKind": "gable",
+        "pitch": 30,
+        "material": "render-neighbour"
+      },
+      {
+        "id": "n-02",
+        "footprint": [
+          [
+            -30,
+            24
+          ],
+          [
+            -20,
+            24
+          ],
+          [
+            -20,
+            32
+          ],
+          [
+            -30,
+            32
+          ]
+        ],
+        "height": 5.8,
+        "roofKind": "gable",
+        "pitch": 30,
+        "material": "render-neighbour"
+      },
+      {
+        "id": "n-03",
+        "footprint": [
+          [
+            -13,
+            23
+          ],
+          [
+            -1,
+            23
+          ],
+          [
+            -1,
+            32
+          ],
+          [
+            -13,
+            32
+          ]
+        ],
+        "height": 6.6,
+        "roofKind": "gable",
+        "pitch": 30,
+        "material": "render-neighbour"
+      },
+      {
+        "id": "n-04",
+        "footprint": [
+          [
+            6,
+            24
+          ],
+          [
+            16,
+            24
+          ],
+          [
+            16,
+            32
+          ],
+          [
+            6,
+            32
+          ]
+        ],
+        "height": 5.4,
+        "roofKind": "gable",
+        "pitch": 30,
+        "material": "render-neighbour"
+      },
+      {
+        "id": "n-05",
+        "footprint": [
+          [
+            23,
+            22
+          ],
+          [
+            34,
+            22
+          ],
+          [
+            34,
+            32
+          ],
+          [
+            23,
+            32
+          ]
+        ],
+        "height": 7.1,
+        "roofKind": "gable",
+        "pitch": 30,
+        "material": "render-neighbour"
+      },
+      {
+        "id": "n-06",
+        "footprint": [
+          [
+            40,
+            25
+          ],
+          [
+            49,
+            25
+          ],
+          [
+            49,
+            33
+          ],
+          [
+            40,
+            33
+          ]
+        ],
+        "height": 5.6,
+        "roofKind": "gable",
+        "pitch": 30,
+        "material": "render-neighbour"
+      }
+    ],
+    "roads": [
+      {
+        "id": "street",
+        "path": [
+          [
+            -60,
+            17
+          ],
+          [
+            -20,
+            17.4
+          ],
+          [
+            20,
+            17.2
+          ],
+          [
+            60,
+            17.6
+          ]
+        ],
+        "width": 6,
+        "material": "asphalt-road"
+      }
+    ]
+  },
+  "shots": [
+    {
+      "id": "sw-threequarter",
+      "name": "South-west",
+      "camera": {
+        "position": [
+          -14.5,
+          6.2,
+          -12.8
+        ],
+        "target": [
+          0,
+          2.4,
+          0
+        ],
+        "focalLength": 35
+      },
+      "render": {
+        "width": 1920,
+        "height": 1080,
+        "samples": 2000
+      }
+    },
+    {
+      "id": "garden-elevation",
+      "name": "Garden elevation",
+      "camera": {
+        "position": [
+          0,
+          3.2,
+          22
+        ],
+        "target": [
+          0,
+          2.6,
+          0
+        ],
+        "focalLength": 85
+      },
+      "solar": {
+        "date": "2026-06-21",
+        "time": "07:15",
+        "hdri": "kloppenheim_02"
+      },
+      "render": {
+        "width": 2560,
+        "height": 1440,
+        "samples": 3000
+      }
+    }
+  ]
+}

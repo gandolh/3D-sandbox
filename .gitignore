@@ -1,0 +1,9 @@
+node_modules/
+dist/
+*.tsbuildinfo
+
+# Raw asset downloads: 1k/2k committed, 4k too heavy for git
+assets-src/**/*_4k.*
+assets-src/**/*-4k.*
+
+.DS_Store
