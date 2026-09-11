@@ -1,0 +1,178 @@
+import * as THREE from "three";
+import { Evaluator } from "three-bvh-csg";
+import type { SceneDocument } from "@solstice/schema";
+
+import { buildMaterials, resolveMaterial, type MaterialTable } from "./materials.js";
+import { extrudePolygon } from "./polygon.js";
+import { buildWall } from "./subject/walls.js";
+import { UnsupportedRoofError, buildRoof } from "./subject/roofs.js";
+import { buildScatterMesh } from "./context/scatter.js";
+import { buildMass, buildRoad } from "./context/masses.js";
+
+export * from "./random.js";
+export * from "./polygon.js";
+export * from "./materials.js";
+export * from "./subject/walls.js";
+export * from "./subject/roofs.js";
+export * from "./context/scatter.js";
+export * from "./context/masses.js";
+
+export interface TierStats {
+  meshes: number;
+  triangles: number;
+}
+
+export interface SceneStats {
+  subject: TierStats;
+  context: TierStats;
+  /** Scatter instances across every field — the number that drives BVH cost. */
+  instances: number;
+  get triangles(): number;
+}
+
+export interface GeneratedScene {
+  root: THREE.Group;
+  subject: THREE.Group;
+  context: THREE.Group;
+  stats: SceneStats;
+  /** Free every geometry and material this generator created. */
+  dispose(): void;
+}
+
+export interface GenerateOptions {
+  /** Include the `context` tier. Off makes editing large scenes responsive. */
+  includeContext?: boolean;
+  /** Include the ground plane. */
+  includeTerrain?: boolean;
+}
+
+const triangleCount = (geometry: THREE.BufferGeometry): number => {
+  const position = geometry.getAttribute("position");
+  if (position === undefined) return 0;
+  return (geometry.index === null ? position.count : geometry.index.count) / 3;
+};
+
+/**
+ * Compile a scene document into three.js objects.
+ *
+ * Pure CPU work — no WebGL context is created, nothing here touches a canvas.
+ * That is deliberate: it makes the generator testable headlessly, which is the
+ * only reason triangle counts and scatter determinism have real tests rather
+ * than a screenshot someone squinted at.
+ */
+export function generateScene(
+  doc: SceneDocument,
+  options: GenerateOptions = {},
+): GeneratedScene {
+  const includeContext = options.includeContext ?? true;
+  const includeTerrain = options.includeTerrain ?? true;
+
+  const materials = buildMaterials(doc);
+  const owned: THREE.BufferGeometry[] = [];
+  const evaluator = new Evaluator();
+  evaluator.useGroups = false;
+
+  const root = new THREE.Group();
+  root.name = `scene:${doc.id}`;
+  const subject = new THREE.Group();
+  subject.name = "subject";
+  const context = new THREE.Group();
+  context.name = "context";
+  root.add(subject, context);
+
+  const stats: SceneStats = {
+    subject: { meshes: 0, triangles: 0 },
+    context: { meshes: 0, triangles: 0 },
+    instances: 0,
+    get triangles() {
+      return this.subject.triangles + this.context.triangles;
+    },
+  };
+
+  const attach = (
+    group: THREE.Group,
+    tier: TierStats,
+    geometry: THREE.BufferGeometry,
+    materialId: string,
+    name: string,
+  ): THREE.Mesh => {
+    owned.push(geometry);
+    const mesh = new THREE.Mesh(geometry, resolveMaterial(materials, materialId));
+    mesh.name = name;
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    group.add(mesh);
+    tier.meshes++;
+    tier.triangles += triangleCount(geometry);
+    return mesh;
+  };
+
+  /* ── subject ─────────────────────────────────────────────────── */
+
+  for (const level of doc.subject.levels) {
+    const levelGroup = new THREE.Group();
+    levelGroup.name = `level:${level.id}`;
+    subject.add(levelGroup);
+
+    for (const wall of level.walls) {
+      attach(levelGroup, stats.subject, buildWall(wall, level, evaluator), wall.material, `wall:${wall.id}`);
+    }
+    for (const slab of level.slabs) {
+      const geometry = extrudePolygon(slab.polygon, level.elevation - slab.thickness, slab.thickness);
+      attach(levelGroup, stats.subject, geometry, slab.material, `slab:${slab.id}`);
+    }
+  }
+
+  for (const roof of doc.subject.roofs) {
+    try {
+      attach(subject, stats.subject, buildRoof(roof), roof.material, `roof:${roof.id}`);
+    } catch (error) {
+      if (!(error instanceof UnsupportedRoofError)) throw error;
+      // A roof kind we cannot build yet is skipped, loudly, rather than
+      // silently producing something wrong that looks plausible.
+      console.warn(`[geometry] ${error.message}`);
+    }
+  }
+
+  /* ── terrain ─────────────────────────────────────────────────── */
+
+  if (includeTerrain) {
+    const [sx, sz] = doc.site.terrain.size;
+    const ground = new THREE.PlaneGeometry(sx, sz);
+    ground.rotateX(-Math.PI / 2);
+    attach(context, stats.context, ground, doc.site.terrain.material, "terrain");
+  }
+
+  /* ── context ─────────────────────────────────────────────────── */
+
+  if (includeContext) {
+    for (const field of doc.context.scatter) {
+      const material = resolveMaterial(materials, doc.site.terrain.material);
+      const { mesh, instances } = buildScatterMesh(field, material);
+      owned.push(mesh.geometry);
+      context.add(mesh);
+      stats.context.meshes++;
+      stats.context.triangles += triangleCount(mesh.geometry) * instances.length;
+      stats.instances += instances.length;
+    }
+    for (const mass of doc.context.masses) {
+      attach(context, stats.context, buildMass(mass), mass.material, `mass:${mass.id}`);
+    }
+    for (const road of doc.context.roads) {
+      attach(context, stats.context, buildRoad(road), road.material, `road:${road.id}`);
+    }
+  }
+
+  return {
+    root,
+    subject,
+    context,
+    stats,
+    dispose() {
+      for (const geometry of owned) geometry.dispose();
+      for (const material of materials.values()) material.dispose();
+      owned.length = 0;
+      materials.clear();
+    },
+  };
+}

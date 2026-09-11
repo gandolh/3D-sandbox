@@ -11,7 +11,7 @@
     "node": ">=22.12"
   },
   "scripts": {
-    "build": "npm run build --workspace @solstice/schema",
+    "build": "tsc --build",
     "scenes": "npm run build --workspace @solstice/scenes",
     "typecheck": "tsc --build --force",
     "test": "vitest run",

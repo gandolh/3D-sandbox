@@ -21,7 +21,11 @@ packages/schema          ← depends on nothing but zod
 ```
 
 `packages/schema` is the bottom of the stack and must stay free of three.js,
-React, and Fastify. Both apps depend on it; it depends on neither.
+React, and Fastify. `packages/geometry` sits above it and depends on three.js but
+**never on a WebGL context** — geometry construction and CSG are pure CPU work, so
+the generator is testable headlessly in Node. That is why triangle counts, opening
+cuts and scatter determinism have real tests rather than a screenshot someone
+squinted at.
 
 ## The pipeline
 
