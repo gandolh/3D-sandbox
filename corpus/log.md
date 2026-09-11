@@ -330,3 +330,42 @@ crossed quads so the canopy reads from underneath.
 
 Deferred on purpose: baking `pine_tree_01` and `fir_tree_01`, at the user's
 request to spend less machine time. 231 tests.
+
+## [2026-09-11] done | A shot list you can leave running
+
+Brief 19. `Render all` queues every declared shot in document order and says
+what it will cost first — greenhollow's four shots are 2,400 samples, about 58
+minutes at the measured 0.69 samples/s. `renderQueue` and `estimateQueue` are
+pure and headless; the estimate scales by pixel count, because the rate is
+per-pixel work and samples alone would call a 960 × 540 shot as slow as a
+1920 × 1080 one.
+
+**The end-to-end rewrote the design.** A two-shot queue reported "Rendered 2 of
+2" and left **one PNG**. Chromium gates automatic downloads after the first from
+a page and does it non-deterministically: the second sometimes never arrived,
+once arrived ninety seconds late, the third onwards never — with no error, no
+exception and no console message any of those times. The `<a download>` path had
+been correct since brief 06 only because a single render needs exactly one
+download; queueing is what exposed it.
+
+Renders now write through a `FileSystemDirectoryHandle` picked on the button's
+own click, where a failure throws. Verified at three shots: three files, 148–169
+KB, real PNG signatures, three distinct cameras.
+
+Also closed on the same pass:
+
+- **The denoiser question is answered no**, and the reason is now on the record
+  rather than left open: a trained denoiser earns its weights by rescuing low
+  sample counts, and brief 12 measured 300 samples as within 1.8 RMS of 1,500.
+  There is no low-sample regime here for it to rescue.
+- **Corpus honesty.** `overview.md` still claimed the app could not animate,
+  five briefs after it could. `status.md` claimed `git push` was blocked — it is
+  in sync with origin — duplicated four paragraphs verbatim, and stopped its
+  brief table at 07 with eighteen written. `lint.sh` passed clean throughout,
+  correctly: it checks frontmatter, links, size and paths, and none of those is
+  whether a sentence is still true.
+- **The deploy could not be executed.** `/var/www` is root-owned and the
+  Caddyfile install needs sudo with a password on the box; the dry run is clean
+  and the two commands a human must run are in `status.md`. Worth noting the
+  Caddyfile is estate-wide — installing it rewrites routes for all 18 stacks,
+  which is a larger action than "deploy solstice" and belongs in a human's hand.

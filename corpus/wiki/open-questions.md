@@ -13,13 +13,18 @@ updated: 2026-09-11
   to `tree_small_02`'s atlas and renders as one species. The bake harness works
   and the procedure is in [assets.md](assets.md); it is 1.4 GB of download and
   two GPU bakes, deferred for machine time rather than for any unknown.
-- **Whether a *tuned* or trained denoiser would help.** The bundled edge-aware
-  blur measurably does not — see
-  [render-performance.md](render-performance.md) — but its uniforms were left at
-  their defaults and `oidn-web` was never tried.
+  Worth keeping in proportion: the only consumer is `villa-carpathia`, the
+  regression fixture, so this is a flaw in a test file and not in anything
+  anyone looks at. It gets baked if a scene ever wants conifers; otherwise the
+  honest close is to delete the species claim from villa rather than leave a
+  standing question about a fixture.
 
-_Vine density was brief 18; the denoiser question was brief 16, which answered
-"no" for the pass that ships._
+_Vine density was brief 18. The denoiser closed on 2026-09-11: brief 16 measured
+the bundled pass as actively harmful, and the remaining thread — whether a
+trained denoiser like `oidn-web` would do better — died with the convergence
+curve. A trained denoiser earns multi-MB of WASM and weights by making *low*
+sample counts usable, and brief 12 showed 300 samples already sit within 1.8 RMS
+of 1,500. There is no low-sample regime here left for it to rescue._
 
 _Hip roofs and stairs were parked on 2026-09-11. The schema admits `hip` and the
 generator throws on it; stairs need a second storey. Nothing is blocked on

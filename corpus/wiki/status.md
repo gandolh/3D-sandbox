@@ -50,8 +50,6 @@ unauthenticated writer over the scene files, and authoring is a repo-time
 activity by design. `SOLSTICE_API_BASE` empty is what makes `Save` download
 rather than post into a 404. See [log.md](../log.md).
 
-**Blocked:** `git push` has no credentials on this machine — no `gh`, no
-credential helper, no GitHub SSH key. Commits are accumulating locally on `main`.
 
 **Placements are real.** A dev-only Vite middleware serves `assets-src/`, the
 generator loads glTF through an injectable `AssetSource` (so it still runs
@@ -96,6 +94,34 @@ against the original brief produced five more; all are closed:
   half done.** The vine's clusters are crossed quads now and read from below;
   the two tree bakes are deferred for machine time, not for any unknown.
 
+**The deploy is written, dry-run clean, and still not executed** — and now for a
+known reason rather than an untested one. `/var/www` on the box is root-owned
+and `/etc/caddy/Caddyfile` needs sudo with a password, so the two steps a human
+has to run are:
+
+```
+node cli.ts solstice pre-deploy    # then the sudo line it prints, on the box
+node cli.ts solstice deploy
+```
+
+The generated Caddyfile is **estate-wide**: installing it rewrites the routes
+for all 18 stacks, which is a larger action than deploying Solstice and is the
+right thing to keep in a person's hand. SSH to the box works
+(`~/.ssh/hetzner_vps`); only the privileged half is blocked.
+
+**A shot list renders unattended.** [19](../briefs/done/19-render-the-whole-shot-list.md)
+queues every declared shot in document order and quotes the cost before it
+starts — greenhollow's four is 2,400 samples, about 58 minutes. Running it found
+that Chromium gates automatic downloads after the first one from a page,
+non-deterministically and silently, so a four-shot queue reported four successes
+and left one file. Renders are written through a directory the user picks on the
+button's own click; `<a download>` remains the fallback for the single-render
+case that always worked. **239 tests pass.**
+
+Rendering an animation *track* as a frame sequence stays unbuilt on purpose: at
+0.69 samples/s for a 1920 × 1080 / 600-sample shot, seconds of motion is hours
+of GPU.
+
 Schema migrations stay in [open-questions.md](open-questions.md), correctly
 deferred until a field first changes meaning.
 
@@ -110,22 +136,15 @@ deferred until a field first changes meaning.
 | 05 | [Fastify persistence API](../briefs/done/05-persistence-api.md) | done |
 | 06 | [Path-traced render](../briefs/done/06-path-traced-render.md) | done |
 | 07 | [Physics as an authoring aid](../briefs/done/07-physics-authoring.md) | done |
-
-**Placements are real.** A dev-only Vite middleware serves `assets-src/`, the
-generator loads glTF through an injectable `AssetSource` (so it still runs
-headlessly with nothing downloaded), and placements collide with each other —
-drop a bowl over a table and it rests on the table. **207 tests pass.**
-
-**Time runs.** Solar time is a scalar you can keyframe, and a track over it is a
-sun-path study — the distinction the glossary drew from the start, now real.
-
-**Surfaces are real.** Materials load PBR maps from Poly Haven and ambientCG,
-projected in world metres (`Material.textureScale`) so a texture tiles the same
-on a 6 m wall as on a 0.9 m pier. The pergola's vine is 1,816 tilted leaf
-clusters rather than a slab, so light comes through it in patches.
-
-**Context vegetation is real.** `tree_small_02` bakes to a 3.9 MB angle atlas and
-scatters as crossed alpha-tested quads — 2,062,487 triangles per tree down to
-four, path-traced with correct alpha shadows. Crossed quads rather than
-camera-facing billboards because a path tracer has no "the camera" to face.
-`pine_tree_01` and `fir_tree_01` are unbaked, so villa's forest is one species.
+| 08 | [Shots render what they declare](../briefs/done/08-shots-render-what-they-declare.md) | done |
+| 09 | [The homestead scene](../briefs/done/09-the-homestead-scene.md) | done |
+| 10 | [Asset manifest and models](../briefs/done/10-asset-manifest-and-models.md) | done |
+| 11 | [Textures and foliage](../briefs/done/11-textures-and-foliage.md) | done |
+| 12 | [Render convergence](../briefs/done/12-render-convergence.md) | done |
+| 13 | [Vegetation impostors](../briefs/done/13-vegetation-impostors.md) | done |
+| 14 | [Animation time](../briefs/done/14-animation-time.md) | done |
+| 15 | [Finish a render](../briefs/done/15-finish-a-render.md) | done |
+| 16 | [Denoiser](../briefs/done/16-denoiser.md) | done |
+| 17 | [Repo honesty pass](../briefs/done/17-repo-honesty-pass.md) | done |
+| 18 | [Finish the vegetation](../briefs/done/18-vegetation-finishing.md) | done (tree bakes deferred) |
+| 19 | [Render the whole shot list](../briefs/done/19-render-the-whole-shot-list.md) | done |

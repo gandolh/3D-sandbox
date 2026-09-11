@@ -26,6 +26,13 @@ export function RenderOverlay({
           <span className="font-medium tracking-wider text-accent uppercase">
             {building ? "Building BVH" : progress.phase === "done" ? "Complete" : "Path tracing"}
           </span>
+          {/* Only present in a queue. Where you are in an hour of rendering is
+              the one number the sample count cannot tell you. */}
+          {progress.queue !== undefined && (
+            <span className="shrink-0 rounded-sm border border-line px-1.5 py-px text-[10px] tracking-wider text-muted uppercase tabular-nums">
+              Shot {progress.queue.index} / {progress.queue.total}
+            </span>
+          )}
           <span className="text-ink tabular-nums">
             {building
               ? `${Math.round(progress.build * 100)}%`

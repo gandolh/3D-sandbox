@@ -44,8 +44,10 @@ path-trace a named shot at its own camera, clock and resolution. Trees and
 shrubs are real models — the heavy ones as baked impostors — and surfaces carry
 real PBR maps.
 
-What it cannot do is **animate**. Solar time is a value you scrub, not a track
-you play. See [status.md](./status.md).
+Solar time is also a track you can **play**: a keyframed sun-path study runs on
+a timeline, and the render captures whatever instant you stop on. What it cannot
+do is render a *sequence* — one shot, one still, one frozen moment.
+See [status.md](./status.md).
 
 ## Where to go next
 

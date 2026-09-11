@@ -18,6 +18,13 @@ export interface RenderSettings {
   denoise?: boolean;
   /** What is being rendered, for the overlay. See `RenderProgress.label`. */
   label?: string;
+  /**
+   * Where this render sits in a queue of them, 1-based.
+   *
+   * Optional, and absent for a single render rather than defaulting to 1-of-1:
+   * an overlay that says "shot 1 of 1" on every ordinary render is noise.
+   */
+  queue?: { index: number; total: number };
 }
 
 export interface RenderProgress {
@@ -33,6 +40,8 @@ export interface RenderProgress {
   build: number;
   samples: number;
   targetSamples: number;
+  /** Position in a multi-shot queue, 1-based. Absent for a single render. */
+  queue?: { index: number; total: number };
   elapsedMs: number;
 }
 
@@ -202,6 +211,7 @@ export class PathTraceSession {
       samples: this.tracer.samples,
       targetSamples: this.settings.samples,
       ...(this.settings.label === undefined ? {} : { label: this.settings.label }),
+      ...(this.settings.queue === undefined ? {} : { queue: this.settings.queue }),
       elapsedMs: performance.now() - this.startedAt,
     };
   }

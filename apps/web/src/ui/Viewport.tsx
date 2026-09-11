@@ -16,6 +16,7 @@ import { translateWall } from "../lib/entities.js";
 import { collidersFor, sizesFromMap } from "../lib/physics.js";
 import { loadAssets } from "../engine/AssetLoader.js";
 import { Player } from "../engine/Player.js";
+import type { RenderRequestEvent } from "../engine/queue.js";
 import { minutesToClock } from "@solstice/animation";
 import type { Shot } from "@solstice/schema";
 
@@ -62,8 +63,57 @@ export function Viewport() {
     }
     // The toolbar's Render button is far from the engine; a custom event keeps
     // the engine out of global state without threading a ref through the tree.
+    // Name the file after the shot: a render nobody can trace back to its
+    // framing is just a picture.
+    const filename = (request: RenderRequest): string =>
+      `${request.shot?.id ?? "viewport"}-${Date.now()}.png`;
+
+    /**
+     * Write one finished render, and say whether it actually landed.
+     *
+     * Two paths, and the reason is measured rather than defensive. Chromium
+     * gates automatic downloads after the first one from a page, and what that
+     * gate does is **not deterministic**. Observed on 2026-09-11, over one page
+     * load each: the first `<a download>` landed at once; the second sometimes
+     * never arrived and once arrived ninety seconds late; the third onwards
+     * never arrived at all. No error, no exception, no console message in any
+     * of those cases — while the overlay counted happily to the end. That is
+     * the black-render bug's shape again: the interface reporting success for
+     * something that did not happen.
+     *
+     * An hour of GPU must not depend on that. So a queue asks for a directory
+     * once, on the button's own click, and writes into it — a write that fails
+     * throws, which is the whole point. The anchor stays as the fallback for a
+     * single render and for browsers without File System Access, where one
+     * download is exactly the case that works.
+     */
+    const save = async (
+      blob: Blob,
+      request: RenderRequest,
+      directory: FileSystemDirectoryHandle | null,
+    ): Promise<boolean> => {
+      const name = filename(request);
+      if (directory !== null) {
+        const handle = await directory.getFileHandle(name, { create: true });
+        const writable = await handle.createWritable();
+        await writable.write(blob);
+        await writable.close();
+        return true;
+      }
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = name;
+      anchor.click();
+      URL.revokeObjectURL(url);
+      return true;
+    };
+
     const onRenderRequest = (event: Event): void => {
-      const request = (event as CustomEvent<RenderRequest>).detail;
+      const detail = (event as CustomEvent<RenderRequestEvent>).detail;
+      const queue = Array.isArray(detail.requests) ? detail.requests : [detail.requests];
+      const directory = detail.directory ?? null;
+      if (queue.length === 0) return;
       // A render owns the frame, and playback drives the sun. Left running they
       // would fight over the lighting mid-accumulation, and the samples already
       // taken would be of a different time of day than the ones after.
@@ -72,18 +122,38 @@ export function Viewport() {
         setPlaying(false);
         commit();
       }
-      void engine.startRender(request).then((blob) => {
-        if (blob === null) return;
-        const url = URL.createObjectURL(blob);
-        const anchor = document.createElement("a");
-        anchor.href = url;
-        // Name the file after the shot: a render nobody can trace back to its
-        // framing is just a picture.
-        anchor.download = `${request.shot?.id ?? "viewport"}-${Date.now()}.png`;
-        anchor.click();
-        URL.revokeObjectURL(url);
-        setStatus("Render downloaded");
-      });
+      void (async () => {
+        let done = 0;
+        for (const [index, request] of queue.entries()) {
+          const blob = await engine.startRender(
+            queue.length === 1
+              ? request
+              : { ...request, queue: { index: index + 1, total: queue.length } },
+          );
+          // Null means cancelled, and cancelling one shot cancels the queue —
+          // otherwise the only way out of an hour of renders is to close the tab.
+          if (blob === null) break;
+          // Written the instant it lands rather than collected and saved at the
+          // end: a queue abandoned at shot 3 must still leave shots 1 and 2 on
+          // disk, because those took fifteen minutes each.
+          try {
+            await save(blob, request, directory);
+          } catch (error) {
+            // A write that fails must not be counted as a render that landed.
+            setStatus(`Could not write ${filename(request)}: ${String(error)}`);
+            break;
+          }
+          done += 1;
+          setStatus(
+            queue.length === 1
+              ? "Render downloaded"
+              : `Rendered ${String(done)} of ${String(queue.length)}`,
+          );
+        }
+        if (queue.length > 1 && done < queue.length) {
+          setStatus(`Queue stopped after ${String(done)} of ${String(queue.length)}`);
+        }
+      })();
     };
     const onFrame = (event: Event): void => {
       engine.frameShot((event as CustomEvent<Shot>).detail);

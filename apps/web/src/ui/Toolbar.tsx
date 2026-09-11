@@ -6,6 +6,13 @@ import {
   useStore,
 } from "../state/store.js";
 import type { RenderRequest } from "../engine/SandboxEngine.js";
+import {
+  estimateQueue,
+  formatDuration,
+  pickRenderDirectory,
+  renderQueue,
+} from "../engine/queue.js";
+import { setStatus } from "../state/store.js";
 
 export function Toolbar({ onSave }: { onSave: () => void }) {
   const doc = useStore((s) => s.document);
@@ -96,7 +103,9 @@ export function Toolbar({ onSave }: { onSave: () => void }) {
             shot === undefined
               ? { width: 1280, height: 720, samples: 256 }
               : { ...shot.render, shot };
-          window.dispatchEvent(new CustomEvent("solstice:render", { detail: request }));
+          window.dispatchEvent(
+            new CustomEvent("solstice:render", { detail: { requests: request } }),
+          );
         }}
         title={
           shot === undefined
@@ -107,6 +116,49 @@ export function Toolbar({ onSave }: { onSave: () => void }) {
       >
         Render
       </button>
+      {shots.length > 1 && (
+        <button
+          type="button"
+          onClick={() => {
+            // Asked for here, inside the click, because `showDirectoryPicker`
+            // needs a user gesture and the render loop is several promises
+            // downstream of it. Also the one honest moment to ask: before an
+            // hour of GPU, not after the first image is already lost.
+            void (async () => {
+              let directory: FileSystemDirectoryHandle | null = null;
+              try {
+                directory = await pickRenderDirectory();
+              } catch {
+                // Dismissing the picker means "don't render", not "render into
+                // Downloads and lose all but the first".
+                setStatus("Render queue cancelled — no folder chosen");
+                return;
+              }
+              if (directory === null) {
+                setStatus("This browser cannot write a folder — images may be blocked after the first");
+              }
+              window.dispatchEvent(
+                new CustomEvent("solstice:render", {
+                  detail: { requests: renderQueue(shots), directory },
+                }),
+              );
+            })();
+          }}
+          // The estimate is the point of the button, not decoration: four shots
+          // at 600 samples is about an hour, and a control that commits the
+          // machine to that without saying so is a worse control than one that
+          // does. Quoted from one measured GPU — see the wiki — so it says
+          // "about", and the title carries the caveat the label has no room for.
+          title={`Path-trace all ${String(shots.length)} shots in order — ${String(
+            estimateQueue(renderQueue(shots)).samples,
+          )} samples, about ${formatDuration(
+            estimateQueue(renderQueue(shots)).seconds,
+          )} on the machine this was measured on. Each image downloads as it finishes; cancelling stops the queue.`}
+          className="rounded-sm border border-line bg-panel px-3 py-1.5 text-[12px] text-ink"
+        >
+          Render all · ~{formatDuration(estimateQueue(renderQueue(shots)).seconds)}
+        </button>
+      )}
     </header>
   );
 }
