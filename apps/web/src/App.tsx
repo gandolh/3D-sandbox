@@ -22,28 +22,48 @@ export function App() {
     loadDocument(parsed.data);
   }, []);
 
-  // Persistence is brief 05; until then Save writes the canonical file to disk
-  // through the browser so the round-trip format can be verified by eye.
-  const onSave = (): void => {
+  /**
+   * Save writes through the API, which validates again before the file is
+   * touched. When the API is not running — the common case while working on the
+   * viewport alone — it falls back to downloading the canonical file, so the
+   * round-trip format stays inspectable either way.
+   */
+  const onSave = async (): Promise<void> => {
     const doc = getState().document;
     if (doc === null) return;
     if (lintScene(doc).some((f) => f.severity === "error")) {
       setStatus("Not saved — the document has errors");
       return;
     }
-    const blob = new Blob([serializeScene(doc)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement("a");
-    anchor.href = url;
-    anchor.download = `${doc.id}.scene.json`;
-    anchor.click();
-    URL.revokeObjectURL(url);
-    setStatus("Saved");
+
+    setStatus("Saving…");
+    try {
+      const response = await fetch(`/api/scenes/${doc.id}`, {
+        method: "PUT",
+        headers: { "content-type": "application/json" },
+        body: serializeScene(doc),
+      });
+      if (response.ok) {
+        const body = (await response.json()) as { bytes?: number };
+        setStatus(`Saved · ${body.bytes ?? 0} bytes`);
+        return;
+      }
+      setStatus(`API refused the save (${response.status})`);
+    } catch {
+      const blob = new Blob([serializeScene(doc)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = `${doc.id}.scene.json`;
+      anchor.click();
+      URL.revokeObjectURL(url);
+      setStatus("API unreachable — downloaded instead");
+    }
   };
 
   return (
     <div className="flex h-full flex-col">
-      <Toolbar onSave={onSave} />
+      <Toolbar onSave={() => void onSave()} />
       <div className="flex min-h-0 flex-1">
         <SceneTree />
         <Viewport />

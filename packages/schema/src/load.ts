@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { SceneDocument } from "./document.js";
 import { errorsOf, formatFinding, lintScene, type LintFinding, type LintOptions } from "./lint/index.js";
 
@@ -29,12 +30,30 @@ export interface LoadResult {
  * malformed scene should be impossible to persist, not merely discouraged.
  */
 export function loadScene(input: unknown, options: LintOptions = {}): LoadResult {
-  const document = SceneDocument.parse(input);
+  const parsed = SceneDocument.safeParse(input);
+  if (!parsed.success) {
+    // Shape failures are surfaced as findings too, so every caller deals with
+    // one error type. A route handler should not have to know that Zod exists.
+    throw new SceneValidationError("document", schemaFindings(parsed.error));
+  }
+
+  const document = parsed.data;
   const findings = lintScene(document, options);
   if (errorsOf(findings).length > 0) {
     throw new SceneValidationError(document.id, findings);
   }
   return { document, findings };
+}
+
+/** Zod issues as lint findings, so the two validation layers report alike. */
+function schemaFindings(error: z.ZodError): LintFinding[] {
+  return error.issues.map((issue) => ({
+    rule: "schema",
+    severity: "error" as const,
+    path: issue.path.length === 0 ? "<root>" : issue.path.join("."),
+    message: issue.message,
+    entities: [],
+  }));
 }
 
 /** Canonical on-disk form: stable key order via the schema, two-space indent. */

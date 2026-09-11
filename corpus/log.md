@@ -94,3 +94,22 @@ entity id out of the prose message, which worked and would have broken silently 
 the first reworded error.
 
 Brief: [04-viewport-shell.md](./briefs/done/04-viewport-shell.md).
+
+## [2026-09-11] done | Brief 05 — Fastify persistence API
+
+`apps/api`: seven routes, files as truth, a derived index rebuilt by rescanning.
+Every write goes through `loadScene`, so a document with errors returns 422 and
+the file on disk is untouched — verified live, not just in tests. Path traversal
+is rejected at the id, which is the security boundary because the id becomes a
+filename.
+
+Uses Node's built-in `node:sqlite` rather than a native driver — see
+[decisions.md](./wiki/decisions.md). Zero native dependencies matters more than a
+stable API for a cache that can be deleted at will.
+
+Two defects found and fixed on the way: `loadScene` let Zod's own error escape, so
+a malformed payload returned 500 instead of 422; and the API's scene summary
+computed scatter counts separately from the lint rule and got them wrong
+(2 instead of 284). `estimateScatterInstances` is now one shared function.
+
+Brief: [05-persistence-api.md](./briefs/done/05-persistence-api.md).

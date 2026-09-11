@@ -95,3 +95,12 @@ _2026-09-11_ — One lockfile, `save-exact=true`, no `^` or `~` anywhere.
 **Why**: the user asked for fixed versions. The stack has live compatibility
 edges — `@types/three` trails `three` by a minor, and R3F's React ceiling was the
 kind of thing a caret range hides until it breaks.
+
+## `node:sqlite`, not a native SQLite driver
+_2026-09-11_ — The derived index uses Node's built-in `node:sqlite`.
+Rejected: `better-sqlite3@13.0.3`, which has a stable API but is a native module.
+**Why**: the index is derived and disposable — deleting it costs a rescan and
+nothing else — so an experimental API carries almost no risk here, while a native
+module means a compile step on every machine and on the VPS. It prints an
+`ExperimentalWarning`; that is the entire cost. Revisit if the index ever holds
+anything that cannot be recomputed.

@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   SceneDocument,
+  ScatterField,
+  estimateScatterInstances,
   SceneValidationError,
   hasErrors,
   lintScene,
@@ -307,5 +309,77 @@ describe("entity resolution", () => {
   it("does not repeat an id that appears twice in the chain", () => {
     const doc = SceneDocument.parse(baseScene());
     expect(resolveEntities(doc, "subject.levels[0]")).toEqual(["L1"]);
+  });
+});
+
+describe("loadScene presents one error type", () => {
+  // A route handler should not have to know Zod exists. Shape failures and
+  // semantic failures both arrive as SceneValidationError with findings.
+  it("wraps a shape failure as findings, not a ZodError", () => {
+    expect(() => loadScene({ hello: 1 })).toThrow(SceneValidationError);
+    try {
+      loadScene({ hello: 1 });
+    } catch (error) {
+      const findings = (error as SceneValidationError).findings;
+      expect(findings.length).toBeGreaterThan(0);
+      expect(findings.every((f) => f.rule === "schema")).toBe(true);
+      expect(findings.every((f) => f.severity === "error")).toBe(true);
+    }
+  });
+
+  it("names the offending path", () => {
+    const doc = baseScene();
+    doc.site.latitude = 200;
+    try {
+      loadScene(doc);
+    } catch (error) {
+      const findings = (error as SceneValidationError).findings;
+      expect(findings.some((f) => f.path.includes("latitude"))).toBe(true);
+    }
+  });
+
+  it("reports a root-level failure as <root>", () => {
+    try {
+      loadScene("not an object");
+    } catch (error) {
+      expect((error as SceneValidationError).findings[0]!.path).toBe("<root>");
+    }
+  });
+});
+
+describe("estimateScatterInstances", () => {
+  const field = (density: number, exclude: number[][][] = []) =>
+    ScatterField.parse({
+      id: "f",
+      assets: ["a"],
+      area: [[-50, -50], [50, -50], [50, 50], [-50, 50]],
+      density,
+      exclude,
+    });
+
+  it("is net area over 100, times density", () => {
+    const { net, instances } = estimateScatterInstances(field(2));
+    expect(net).toBeCloseTo(10_000);
+    expect(instances).toBe(200);
+  });
+
+  it("subtracts exclusions", () => {
+    const clearing = [[[-20, -20], [20, -20], [20, 20], [-20, 20]]];
+    const { net, instances } = estimateScatterInstances(field(2, clearing));
+    expect(net).toBeCloseTo(8_400);
+    expect(instances).toBe(168);
+  });
+
+  it("matches the reference scene's 284 trees", () => {
+    // The lint budget and the API's scene summary both read this number. If they
+    // ever disagree, one of them is describing a different scene.
+    const forest = ScatterField.parse({
+      id: "forest",
+      assets: ["a"],
+      area: [[-60, -60], [60, -60], [60, 60], [-60, 60]],
+      density: 2.1,
+      exclude: [[[-14, -16], [14, -16], [14, 16], [-14, 16]]],
+    });
+    expect(estimateScatterInstances(forest).instances).toBe(284);
   });
 });

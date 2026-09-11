@@ -7,3 +7,6 @@ assets-src/**/*_4k.*
 assets-src/**/*-4k.*
 
 .DS_Store
+
+# Derived index — disposable, rebuilt by rescanning scenes/
+apps/api/.data/
