@@ -160,3 +160,20 @@ proxy boxes, and the reference scene has three.
 This completes the agreed sequence. All seven briefs done, 163 tests.
 
 Brief: [07-physics-authoring.md](./briefs/done/07-physics-authoring.md).
+
+## 2026-09-11 — The path tracer runs on a real GPU
+
+Answered "can the agent browser use the GPU under WSL2": yes, but only headed.
+
+Chromium enumerates GPUs through `/dev/dri`, which WSL2 does not have — it
+exposes `/dev/dxg` instead, which Chromium has no concept of. So headless falls
+back to SwiftShader silently, whatever GPU flags are passed. WSLg's X server on
+`:0` already has Mesa bound to the `d3d12` driver, so a headed browser with
+`--ozone-platform=x11 --use-gl=angle --use-angle=gl` inherits that context.
+
+Measured on `villa-carpathia`: **3.2 samples/sec** against 0.003 on SwiftShader.
+A 2,000-sample shot is ~10 minutes, not effectively never.
+
+Wrote [wiki/running-on-a-gpu.md](wiki/running-on-a-gpu.md) and cleared the
+warning in [wiki/status.md](wiki/status.md). No code changed — this was an
+environment finding, not a defect.

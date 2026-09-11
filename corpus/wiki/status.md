@@ -29,9 +29,11 @@ downloads.
 document with openings cut out of walls, drop-to-rest that snaps to the surface,
 and a collider overlay. **163 tests pass.**
 
-⚠️ It has only ever run on software WebGL, where it managed 0.22 samples in 74
-seconds. Nobody has seen it on a GPU yet — that is the first thing to check on
-real hardware.
+**It has now run on a real GPU** — 3.2 samples/sec at 511×759 (538 samples in
+168 s), against 0.22 samples in 74 s on SwiftShader, roughly a thousandfold. The
+GPU is reachable from WSL2, but only through X11: see
+[running-on-a-gpu.md](running-on-a-gpu.md) for why headless falls back to
+software and what flags avoid it.
 
 **Blocked:** `git push` has no credentials on this machine — no `gh`, no
 credential helper, no GitHub SSH key. Commits are accumulating locally on `main`.
