@@ -66,7 +66,26 @@ interface Download {
   url: string;
   /** Path under `assets-src/<source>/<slug>/`. */
   target: string;
+  bytes: number;
 }
+
+/**
+ * Above this, an asset is not fetched by default.
+ *
+ * Poly Haven's photoreal vegetation is mesh-heavy beyond anything the two-tier
+ * decision anticipated: `pine_tree_01.bin` is **905 MB** — every needle —
+ * against 2.7 MB for an armchair. The wiki's estimate of "50–200k triangles for
+ * a photoreal tree" is out by about two orders of magnitude.
+ *
+ * Instancing does not save you here: a 905 MB mesh is 905 MB whether it appears
+ * once or 284 times, and it has to reach the GPU and get a BVH built over it
+ * either way. These need decimating to a scatter LOD before they are usable,
+ * which is its own brief — so the script lists them, loudly, and does not pull
+ * them.
+ */
+const HEAVY_BYTES = 50 * 1024 * 1024;
+
+const totalBytes = (d: Download[]): number => d.reduce((n, f) => n + f.bytes, 0);
 
 interface Resolved extends Wanted {
   ok: boolean;
@@ -86,17 +105,25 @@ async function resolvePolyHaven(w: Wanted): Promise<Resolved> {
   const downloads: Download[] = [];
 
   if (w.kind === "model") {
-    const gltf = (files["gltf"] as Record<string, { gltf?: { url?: string; include?: Record<string, { url?: string }> } }> | undefined)?.[RES]?.gltf;
+    const gltf = (files["gltf"] as Record<string, { gltf?: { url?: string; size?: number; include?: Record<string, { url?: string; size?: number }> } }> | undefined)?.[RES]?.gltf;
     if (gltf?.url === undefined) return { ...w, ok: false, downloads: [], note: `no ${RES} glTF` };
-    downloads.push({ url: gltf.url, target: `${w.slug}_${RES}.gltf` });
-    // A glTF is useless without the images it names.
+    downloads.push({ url: gltf.url, target: `${w.slug}_${RES}.gltf`, bytes: gltf.size ?? 0 });
+    // A glTF is useless without the images it names — or its .bin.
     for (const [rel, file] of Object.entries(gltf.include ?? {})) {
-      if (file.url !== undefined) downloads.push({ url: file.url, target: rel });
+      if (file.url !== undefined) {
+        downloads.push({ url: file.url, target: rel, bytes: file.size ?? 0 });
+      }
     }
   } else {
     for (const map of PH_MAPS) {
-      const url = (files[map] as Record<string, Record<string, { url?: string }>> | undefined)?.[RES]?.["jpg"]?.url;
-      if (url !== undefined) downloads.push({ url, target: url.split("/").pop() ?? `${map}.jpg` });
+      const entry = (files[map] as Record<string, Record<string, { url?: string; size?: number }>> | undefined)?.[RES]?.["jpg"];
+      if (entry?.url !== undefined) {
+        downloads.push({
+          url: entry.url,
+          target: entry.url.split("/").pop() ?? `${map}.jpg`,
+          bytes: entry.size ?? 0,
+        });
+      }
     }
     if (downloads.length === 0) return { ...w, ok: false, downloads: [], note: `no ${RES} maps` };
   }
@@ -124,7 +151,9 @@ async function resolveAmbientCg(w: Wanted): Promise<Resolved> {
     ...w,
     ok: true,
     // A zip, so the script has to unpack it — flagged by the extension.
-    downloads: [{ url: pick.downloadLink, target: `${w.slug}_${RES.toUpperCase()}-JPG.zip` }],
+    downloads: [
+      { url: pick.downloadLink, target: `${w.slug}_${RES.toUpperCase()}-JPG.zip`, bytes: 0 },
+    ],
   };
 }
 
@@ -140,13 +169,20 @@ for (const w of [...wanted.values()].sort((a, b) => `${a.source}/${a.slug}`.loca
 await mkdir(outDir, { recursive: true });
 
 const missing = resolved.filter((r) => !r.ok);
-const bytes = (n: number): string => `${(n / 1024 / 1024).toFixed(1)} MB`;
+const heavy = resolved.filter((r) => r.ok && totalBytes(r.downloads) > HEAVY_BYTES);
+const fetchable = resolved.filter((r) => r.ok && totalBytes(r.downloads) <= HEAVY_BYTES);
+const bytes = (n: number): string => (n === 0 ? "—" : `${(n / 1024 / 1024).toFixed(1)} MB`);
 
 const rows = resolved
-  .map(
-    (r) =>
-      `| \`${r.source}/${r.slug}\` | ${r.kind} | ${r.ok ? `${r.downloads.length} file(s)` : `**${r.note}**`} | ${[...r.usedBy].join(", ")} |`,
-  )
+  .map((r) => {
+    const size = r.ok ? bytes(totalBytes(r.downloads)) : "";
+    const state = r.ok
+      ? totalBytes(r.downloads) > HEAVY_BYTES
+        ? `**too heavy** — ${size}`
+        : `${r.downloads.length} file(s), ${size}`
+      : `**${r.note}**`;
+    return `| \`${r.source}/${r.slug}\` | ${r.kind} | ${state} | ${[...r.usedBy].join(", ")} |`;
+  })
   .join("\n");
 
 await writeFile(
@@ -167,6 +203,25 @@ Run \`bash assets-src/download.sh\` to fetch everything into place.
 ${rows}
 
 ${missing.length === 0 ? "Every referenced asset resolved." : `## Unresolved\n\n${missing.map((m) => `- \`${m.source}/${m.slug}\` — ${m.note}`).join("\n")}\n\nThese must be fixed in the scene, not worked around here.`}
+
+## Too heavy to fetch by default
+
+${
+  heavy.length === 0
+    ? "None."
+    : `Poly Haven's photoreal vegetation carries far more mesh than the two-tier
+decision anticipated — the wiki's "50–200k triangles for a photoreal tree" is out
+by about two orders of magnitude.
+
+${heavy.map((h) => `- \`${h.source}/${h.slug}\` — **${bytes(totalBytes(h.downloads))}**, of which ${bytes(totalBytes(h.downloads.filter((d) => d.target.endsWith(".bin"))))} is mesh`).join("\n")}
+
+Instancing does not help: a 905 MB mesh is 905 MB whether it appears once or 284
+times, and a BVH has to be built over it either way. These want decimating to a
+scatter LOD first. \`download.sh\` skips them; \`download-heavy.sh\` fetches them
+if you want the originals to decimate from.`
+}
+
+Fetched by \`download.sh\`: **${bytes(fetchable.reduce((n, r) => n + totalBytes(r.downloads), 0))}** across ${fetchable.length} assets.
 `,
 );
 
@@ -176,8 +231,7 @@ const script = [
   "set -euo pipefail",
   'cd "$(dirname "$0")"',
   "",
-  ...resolved.flatMap((r) => {
-    if (!r.ok) return [`# SKIP ${r.source}/${r.slug} — ${r.note}`, ""];
+  ...fetchable.flatMap((r) => {
     const dir = `${r.source}/${r.slug}`;
     const lines = [`echo "→ ${dir}"`, `mkdir -p "${dir}"`];
     for (const d of r.downloads) {
@@ -187,16 +241,53 @@ const script = [
       lines.push(`[ -f "${target}" ] || curl -fsSL -o "${target}" "${d.url}"`);
       if (d.target.endsWith(".zip")) {
         lines.push(`unzip -oq "${target}" -d "${dir}" && rm "${target}"`);
+        // ambientCG ships a whole DCC bundle in every zip. Keep the maps a
+        // renderer can use and drop the rest: `.blend`/`.usdc`/`.mtlx`/`.tres`
+        // are for other tools, the bare `.png` is a catalogue thumbnail, and
+        // `NormalDX` is the DirectX-convention normal map — three.js wants the
+        // OpenGL one, and carrying both doubles the largest file in the set.
+        lines.push(
+          `find "${dir}" -type f \\( -name '*.blend' -o -name '*.usdc' -o -name '*.mtlx' -o -name '*.tres' -o -name '*NormalDX*' -o -name '${r.slug}.png' \\) -delete`,
+        );
       }
     }
     return [...lines, ""];
   }),
+  ...missing.map((m) => `# UNRESOLVED ${m.source}/${m.slug} — ${m.note}`),
+  ...heavy.map(
+    (h) => `# SKIPPED ${h.source}/${h.slug} — ${bytes(totalBytes(h.downloads))}, see download-heavy.sh`,
+  ),
   'echo "done — now run: npm run check"',
   "",
 ].join("\n");
 
 await writeFile(join(outDir, "download.sh"), script);
 await chmod(join(outDir, "download.sh"), 0o755);
+
+const heavyScript = [
+  "#!/usr/bin/env bash",
+  "# The assets `download.sh` skips for size. Generated — re-run `npm run assets`.",
+  "# These are decimation *sources*, not things to commit: see DOWNLOADS.md.",
+  "set -euo pipefail",
+  'cd "$(dirname "$0")"',
+  "",
+  ...heavy.flatMap((r) => {
+    const dir = `${r.source}/${r.slug}`;
+    const lines = [`echo "→ ${dir}  (${bytes(totalBytes(r.downloads))})"`, `mkdir -p "${dir}"`];
+    for (const d of r.downloads) {
+      const target = `${dir}/${d.target}`;
+      if (d.target.includes("/")) {
+        lines.push(`mkdir -p "${dir}/${d.target.replace(/\/[^/]+$/, "")}"`);
+      }
+      lines.push(`[ -f "${target}" ] || curl -fsSL -o "${target}" "${d.url}"`);
+    }
+    return [...lines, ""];
+  }),
+  "",
+].join("\n");
+
+await writeFile(join(outDir, "download-heavy.sh"), heavyScript);
+await chmod(join(outDir, "download-heavy.sh"), 0o755);
 
 /**
  * Slugs confirmed to exist at their source.

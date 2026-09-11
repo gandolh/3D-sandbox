@@ -11,25 +11,42 @@ Run `bash assets-src/download.sh` to fetch everything into place.
 
 | Asset | Kind | Files | Used by |
 |---|---|---|---|
-| `ambientcg/Asphalt026A` | material | 1 file(s) | greenhollow, villa-carpathia |
-| `ambientcg/Concrete034` | material | 1 file(s) | greenhollow, villa-carpathia |
-| `ambientcg/Gravel023` | material | 1 file(s) | greenhollow |
-| `polyhaven/ArmChair_01` | model | 5 file(s) | villa-carpathia |
-| `polyhaven/coast_sand_rocks_02` | material | 4 file(s) | greenhollow, villa-carpathia |
-| `polyhaven/CoffeeTable_01` | model | 5 file(s) | villa-carpathia |
-| `polyhaven/fir_tree_01` | model | 14 file(s) | villa-carpathia |
-| `polyhaven/outdoor_table_chair_set_01` | model | 8 file(s) | greenhollow |
-| `polyhaven/painted_wooden_bench` | model | 5 file(s) | greenhollow |
-| `polyhaven/pine_tree_01` | model | 14 file(s) | villa-carpathia |
-| `polyhaven/planter_box_01` | model | 5 file(s) | greenhollow |
-| `polyhaven/planter_box_02` | model | 5 file(s) | greenhollow |
-| `polyhaven/planter_box_03` | model | 5 file(s) | greenhollow |
-| `polyhaven/plaster_brick_pattern` | material | 4 file(s) | greenhollow, villa-carpathia |
-| `polyhaven/roof_tiles_14` | material | 4 file(s) | greenhollow, villa-carpathia |
-| `polyhaven/shrub_01` | model | 5 file(s) | greenhollow |
-| `polyhaven/shrub_02` | model | 5 file(s) | greenhollow |
-| `polyhaven/shrub_03` | model | 5 file(s) | greenhollow |
-| `polyhaven/shrub_04` | model | 5 file(s) | greenhollow |
-| `polyhaven/tree_small_02` | model | 11 file(s) | greenhollow, villa-carpathia |
+| `ambientcg/Asphalt026A` | material | 1 file(s), — | greenhollow, villa-carpathia |
+| `ambientcg/Concrete034` | material | 1 file(s), — | greenhollow, villa-carpathia |
+| `ambientcg/Gravel023` | material | 1 file(s), — | greenhollow |
+| `polyhaven/ArmChair_01` | model | 5 file(s), 2.7 MB | villa-carpathia |
+| `polyhaven/coast_sand_rocks_02` | material | 4 file(s), 11.5 MB | greenhollow, villa-carpathia |
+| `polyhaven/CoffeeTable_01` | model | 5 file(s), 2.1 MB | villa-carpathia |
+| `polyhaven/fir_tree_01` | model | **too heavy** — 486.6 MB | villa-carpathia |
+| `polyhaven/outdoor_table_chair_set_01` | model | 8 file(s), 3.1 MB | greenhollow |
+| `polyhaven/painted_wooden_bench` | model | 5 file(s), 7.6 MB | greenhollow |
+| `polyhaven/pine_tree_01` | model | **too heavy** — 936.7 MB | villa-carpathia |
+| `polyhaven/planter_box_01` | model | 5 file(s), 7.6 MB | greenhollow |
+| `polyhaven/planter_box_02` | model | 5 file(s), 7.7 MB | greenhollow |
+| `polyhaven/planter_box_03` | model | 5 file(s), 7.8 MB | greenhollow |
+| `polyhaven/plaster_brick_pattern` | material | 4 file(s), 10.2 MB | greenhollow, villa-carpathia |
+| `polyhaven/roof_tiles_14` | material | 4 file(s), 4.0 MB | greenhollow, villa-carpathia |
+| `polyhaven/shrub_01` | model | 5 file(s), 10.3 MB | greenhollow |
+| `polyhaven/shrub_02` | model | 5 file(s), 4.6 MB | greenhollow |
+| `polyhaven/shrub_03` | model | 5 file(s), 4.3 MB | greenhollow |
+| `polyhaven/shrub_04` | model | 5 file(s), 4.2 MB | greenhollow |
+| `polyhaven/tree_small_02` | model | **too heavy** — 110.0 MB | greenhollow, villa-carpathia |
 
 Every referenced asset resolved.
+
+## Too heavy to fetch by default
+
+Poly Haven's photoreal vegetation carries far more mesh than the two-tier
+decision anticipated — the wiki's "50–200k triangles for a photoreal tree" is out
+by about two orders of magnitude.
+
+- `polyhaven/fir_tree_01` — **486.6 MB**, of which 456.3 MB is mesh
+- `polyhaven/pine_tree_01` — **936.7 MB**, of which 904.9 MB is mesh
+- `polyhaven/tree_small_02` — **110.0 MB**, of which 90.7 MB is mesh
+
+Instancing does not help: a 905 MB mesh is 905 MB whether it appears once or 284
+times, and a BVH has to be built over it either way. These want decimating to a
+scatter LOD first. `download.sh` skips them; `download-heavy.sh` fetches them
+if you want the originals to decimate from.
+
+Fetched by `download.sh`: **87.6 MB** across 17 assets.

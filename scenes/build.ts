@@ -21,26 +21,29 @@ import { knownAssets } from "../assets/manifest.ts";
 import verified from "../assets/verified.json" with { type: "json" };
 
 /**
- * What `asset-resolves` is checked against — and it is **always** checked
- * against something. Eight of Greenhollow's asset slugs were invented and
- * nothing caught them, because the rule had never been wired up at all; an
- * arming condition that can quietly evaluate to "off" would reintroduce exactly
- * that.
+ * What `asset-resolves` is checked against: everything known to be **real**,
+ * whether or not it is on this machine.
  *
- * Two states, both armed:
+ * The rule that matters is *this slug exists*. Eight of Greenhollow's were
+ * invented and nothing caught them, because the rule had never been armed at
+ * all. Whether a file has been fetched is a different question, and not one a
+ * scene document can be wrong about.
  *
- * - Nothing downloaded — the common case on a fresh clone and in CI. Checked
- *   against `assets/verified.json`, the committed list of slugs confirmed to
- *   exist at their source. Offline, so it cannot be skipped.
- * - Assets present. Checked against what is actually on disk, which is stricter:
- *   a scene may not name something that has not been fetched.
+ * An earlier version made "downloaded" the stricter standard: if anything was
+ * present, a scene could only name what was present. That is incoherent here,
+ * because *not* downloading some assets is the designed state — Poly Haven's
+ * three trees are 1.5 GB of mesh and `download.sh` deliberately skips them. The
+ * strict rule and the heavy-asset split were written an hour apart and
+ * contradicted each other; every build failed.
+ *
+ * A missing *file* is the generator's problem, and it already has an answer:
+ * fall back to the proxy. A missing *asset* is the author's problem, and that
+ * is what this catches.
  */
 const downloaded = await knownAssets();
-const assets = downloaded.size > 0 ? downloaded : new Set(verified.assets);
+const assets = new Set([...verified.assets, ...downloaded]);
 console.log(
-  downloaded.size > 0
-    ? `  manifest: ${downloaded.size} assets downloaded in assets-src/`
-    : `  manifest: nothing downloaded — checking against ${assets.size} verified slugs`,
+  `  manifest: ${downloaded.size} downloaded, ${verified.assets.length} verified — ${assets.size} known`,
 );
 
 const here = dirname(fileURLToPath(import.meta.url));

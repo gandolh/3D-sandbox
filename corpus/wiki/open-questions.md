@@ -9,6 +9,12 @@ updated: 2026-09-11
   version to migrate from. What *counts* as a bump is now settled — see
   [decisions.md](decisions.md) — so this stays deferred deliberately rather than
   by accident, until a change actually removes or redefines a field.
+- **How context vegetation gets decimated.** Poly Haven's trees carry 90–905 MB
+  of mesh each — see [assets.md](assets.md) — so the three the scenes name cannot
+  be used as downloaded, and instancing does not help. Something has to reduce
+  them to a scatter LOD: a build step over the glTF, a different source, or
+  billboards at distance. Nothing is chosen, and it blocks the context tier
+  looking like anything other than proxy cones.
 - **Whether a denoiser is needed at all.** Deferred behind the convergence study
   (brief 12): the study says where samples stop buying quality, and that number
   says whether denoising is worth the change. Asking first would be guessing.
