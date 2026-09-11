@@ -240,3 +240,37 @@ the real sub-path artifact: `No API in this build — downloaded instead`.
 Also confirmed end to end that the sub-path build is sound — `SOLSTICE_BASE`
 drives `base`, `index.html` references `/solstice/assets/…`, and the built bundle
 path-traces Greenhollow on the real GPU from a static file server.
+
+## 2026-09-11 — Briefs 10 to 13: the scene stopped being grey boxes
+
+Four briefs in one run, and the measurements mattered more than the code.
+
+**The asset rule had never run.** `asset-resolves` only fires when `knownAssets`
+is supplied and only tests supplied it, so eight of Greenhollow's thirteen slugs
+did not exist. Armed in two layers, neither of which can evaluate to "off".
+
+**Poly Haven's trees cannot be scattered.** `pine_tree_01` is 17.4 M triangles
+and 905 MB at *every* resolution — resolution only ever described the textures.
+So they are baked to angle atlases. Crossed quads rather than camera-facing
+billboards, because a path tracer has no "the camera" to face: rays arrive from
+every direction at once. That is the design the brief got wrong and reality
+corrected.
+
+**UVs had to be fixed before textures could help.** Boxes carry 0–1 UVs across
+every face, so the first real texture would have stretched one brick across a
+6.4 m wall. World-metre projection plus `Material.textureScale`.
+
+**Loading the maps exposed two authoring lies.** `grass-lawn` pointed at a sand
+texture and `plaster-lime` at a brick one; a green hex and a cream hex had hidden
+both since the scene was written.
+
+**The 2,000-sample default was worth about 45 minutes a shot.** Measured
+convergence puts 300 within 1.8 RMS of 1,500. Budgets are 600. And the study
+answered the denoiser question it was deferred behind: yes.
+
+Bugs found only by running it: a placement dropped to the floor landed on its own
+collider; the inspector claimed "proxy geometry" while showing a loaded model.
+Briefs [10](briefs/done/10-asset-manifest-and-models.md),
+[11](briefs/done/11-textures-and-foliage.md),
+[12](briefs/done/12-render-convergence.md),
+[13](briefs/done/13-vegetation-impostors.md) all closed. 207 tests.

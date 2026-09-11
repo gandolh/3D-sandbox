@@ -71,9 +71,12 @@ camera-facing billboards because a path tracer has no "the camera" to face.
 
 ## Next
 
-**10, 11 and 13 are done.** Queued: **12**, a sample-convergence study to replace
-the guessed 2,000-sample default — now more pressing than it was, since the scene
-carries far more geometry and alpha than when that number was invented.
+**Briefs 10–13 are all done.** Nothing is queued.
+
+The honest backlog is [open-questions.md](open-questions.md): a denoiser (the
+convergence study says yes), vine leaf density up close, baking `pine_tree_01`
+and `fir_tree_01` so villa's forest is more than one species, and the schema
+migration mechanism whenever a field first changes meaning.
 
 ## Briefs
 

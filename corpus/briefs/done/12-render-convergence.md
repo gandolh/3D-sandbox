@@ -43,3 +43,31 @@ that stays deferred behind this.
 - A table of sample count against time and against visible quality, in the wiki.
 - Shot budgets updated to what the study supports.
 - A stated answer on denoising, with the reason.
+
+---
+
+## Outcome (2026-09-11)
+
+Done. Numbers and method in
+[running-on-a-gpu.md](../../wiki/running-on-a-gpu.md); shot budgets cut from
+2,000–3,000 to **600**.
+
+The method deviated from the brief in one way worth keeping: rather than five
+separate renders, this was **one progressive render sampled at intervals**. A
+path trace accumulates, so the frame at sample N *is* the N-sample render — and
+taking them from one run removes any chance of the scene, the clock or the
+camera differing between rows. It is also five times cheaper.
+
+The headline: **300 samples is within 1.8 RMS of 1,500, at a fifth of the time.**
+The 2,000-sample default I invented before the renderer had ever run meant about
+45 minutes per shot at 1920 × 1080 on this machine.
+
+Two things the brief asked for and got:
+
+- The caveat that the reference is not converged either. Consecutive deltas fall
+  2.70 → 1.71 → 1.38, roughly 1/√N, so measuring against 1,500 flatters the low
+  counts. The curve is the honest reading, not the column.
+- **A stated answer on denoising: yes, worth a brief.** The residual at 300–700
+  is fine-grained noise on flat, indirectly-lit surfaces, which is exactly what a
+  denoiser removes, and 1/√N says brute force never will be efficient at it.
+  Measured, not assumed — which is why this was deferred behind it.

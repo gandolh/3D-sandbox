@@ -489,6 +489,9 @@ const greenhollow: SceneDocumentInput = {
     ],
   },
 
+  // 600 samples, not the 2,000 that was invented before the renderer had ever
+  // run: measured convergence says 300 is within 1.8 RMS of 1,500 and the curve
+  // falls as 1/√N after that. See corpus/wiki/running-on-a-gpu.md.
   shots: [
     {
       id: "overview",
@@ -497,7 +500,7 @@ const greenhollow: SceneDocumentInput = {
       // pergola running up the middle, garage right, porch and greenhouse left,
       // orchard at the back.
       camera: { position: [40, 34, -22], target: [0, 0, 28], focalLength: 30 },
-      render: { width: 1920, height: 1080, samples: 1200 },
+      render: { width: 1920, height: 1080, samples: 600 },
     },
     {
       id: "approach",
@@ -509,7 +512,7 @@ const greenhollow: SceneDocumentInput = {
       // frame rather than as the subject, and the vanishing point stays on the
       // front door.
       camera: { position: [0, 1.72, 0.8], target: [0, 1.55, 23], focalLength: 35 },
-      render: { width: 1920, height: 1080, samples: 2000 },
+      render: { width: 1920, height: 1080, samples: 600 },
     },
     {
       id: "garden-threequarter",
@@ -520,7 +523,7 @@ const greenhollow: SceneDocumentInput = {
       // The garden side faces north-east, so it is a morning elevation or it is
       // nothing.
       solar: { date: "2026-09-12", time: "08:40", hdri: "kloppenheim_02" },
-      render: { width: 1920, height: 1080, samples: 2000 },
+      render: { width: 1920, height: 1080, samples: 600 },
     },
     {
       id: "porch-evening",
@@ -528,7 +531,7 @@ const greenhollow: SceneDocumentInput = {
       camera: { position: [-16.5, 2.6, 19.5], target: [-7.5, 2.1, 27], focalLength: 50 },
       // The porch faces north-west: its light is the last hour of the day.
       solar: { date: "2026-09-12", time: "18:35", hdri: "kloppenheim_02" },
-      render: { width: 1920, height: 1080, samples: 2500 },
+      render: { width: 1920, height: 1080, samples: 600 },
     },
   ],
 };

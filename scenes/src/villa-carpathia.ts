@@ -167,14 +167,14 @@ const villa: SceneDocumentInput = {
       id: "sw-threequarter",
       name: "South-west",
       camera: { position: [-14.5, 6.2, -12.8], target: [0, 2.4, 0], focalLength: 35 },
-      render: { width: 1920, height: 1080, samples: 2000 },
+      render: { width: 1920, height: 1080, samples: 600 },
     },
     {
       id: "garden-elevation",
       name: "Garden elevation",
       camera: { position: [0, 3.2, 22], target: [0, 2.6, 0], focalLength: 85 },
       solar: { date: "2026-06-21", time: "07:15", hdri: "kloppenheim_02" },
-      render: { width: 2560, height: 1440, samples: 3000 },
+      render: { width: 2560, height: 1440, samples: 600 },
     },
   ],
 };

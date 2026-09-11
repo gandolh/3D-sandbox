@@ -1157,7 +1157,7 @@
       "render": {
         "width": 1920,
         "height": 1080,
-        "samples": 1200
+        "samples": 600
       }
     },
     {
@@ -1179,7 +1179,7 @@
       "render": {
         "width": 1920,
         "height": 1080,
-        "samples": 2000
+        "samples": 600
       }
     },
     {
@@ -1206,7 +1206,7 @@
       "render": {
         "width": 1920,
         "height": 1080,
-        "samples": 2000
+        "samples": 600
       }
     },
     {
@@ -1233,7 +1233,7 @@
       "render": {
         "width": 1920,
         "height": 1080,
-        "samples": 2500
+        "samples": 600
       }
     }
   ]

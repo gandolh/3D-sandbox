@@ -519,7 +519,7 @@
       "render": {
         "width": 1920,
         "height": 1080,
-        "samples": 2000
+        "samples": 600
       }
     },
     {
@@ -546,7 +546,7 @@
       "render": {
         "width": 2560,
         "height": 1440,
-        "samples": 3000
+        "samples": 600
       }
     }
   ]

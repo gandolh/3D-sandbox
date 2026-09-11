@@ -100,6 +100,45 @@ gl.getParameter(d.UNMASKED_RENDERER_WEBGL);
 Do this before quoting any render timing. It is one eval and it is the difference
 between a number worth recording and a number that means nothing.
 
+## How many samples is enough
+
+Measured 2026-09-11 on the approach shot of `greenhollow`, at 960 × 540, one
+progressive render sampled at intervals — so every row is the *same* render, and
+the comparison is not confounded by the scene changing underneath it. RMS is
+against the 1,500-sample frame, on a 0–255 channel scale.
+
+| samples | time | RMS vs 1,500 |
+|---|---|---|
+| 100 | 40 s | 3.30 |
+| 300 | 105 s | 1.80 |
+| 700 | 240 s | 1.38 |
+| 1,500 | 507 s | — |
+
+**300 samples is within 1.8 RMS of 1,500, for a fifth of the time.** An RMS of 1.8
+is around one or two levels per channel: visible as a faint grain on flat surfaces
+at 100 %, invisible at viewing size.
+
+Two cautions worth keeping with the numbers:
+
+- **The reference is not converged either.** Consecutive deltas fall 2.70 → 1.71 →
+  1.38 — roughly 1/√N, exactly as Monte Carlo should, and *slowly*. Measuring
+  against 1,500 therefore flatters the low counts. The curve, not the column, is
+  the honest reading.
+- **Cost scales with pixels.** 3.0 samples/s at 960 × 540 is about 0.75/s at
+  1920 × 1080, so a 2,000-sample shot at its declared resolution is **~45 minutes**
+  on this machine. That is what the invented default was really asking for.
+
+Shot budgets are now 600, which is about 13 minutes at 1920 × 1080 and sits past
+the knee of the curve.
+
+### On denoising
+
+**Yes, it is worth a brief.** The residual at 300–700 samples is fine-grained
+noise on flat, indirectly-lit surfaces — grass, plaster, the shaded side of the
+roof — which is precisely what a denoiser is good at, and the 1/√N convergence
+says brute force will never be an efficient way to remove it. That conclusion is
+now measured rather than assumed, which was the whole point of deferring it.
+
 ## What this does not settle
 
 This is an **integrated** Radeon sharing system memory. It is enough to make
