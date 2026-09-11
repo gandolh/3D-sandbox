@@ -75,3 +75,22 @@ And **the canonical sun figures moved**: hand-computed 32.3° / 272.3° became
 and the regression test now agree on suncalc's numbers.
 
 Brief: [03-solar.md](./briefs/done/03-solar.md).
+
+## [2026-09-11] done | Brief 04 — Viewport and app shell
+
+`apps/web` renders the reference scene: Vite 8, React 19.3, Tailwind 4,
+`@base-ui/react` 1.8.0, and an imperative `SandboxEngine` that owns renderer,
+camera, orbit and gizmo. React renders chrome only and never drives the loop.
+
+Verified in a real browser rather than only by build output — and that caught two
+bugs the build could not. `extrudePolygon` both mirrored footprints about X and
+lifted solids by `base + height` instead of `base`, so every neighbouring building
+mass floated a storey above the ground; and context masses had open gable ends you
+could see through. Both fixed, with regression tests on the extrusion bounds.
+
+`LintFinding` gained `entities` — the chain of ids enclosing its path, resolved
+centrally in `lintScene`. The inspector had been filtering findings by grepping the
+entity id out of the prose message, which worked and would have broken silently on
+the first reworded error.
+
+Brief: [04-viewport-shell.md](./briefs/done/04-viewport-shell.md).

@@ -50,8 +50,12 @@ export function extrudePolygon(
     bevelEnabled: false,
   });
   // XY-extruded-along-Z becomes XZ-extruded-along-Y.
-  geometry.rotateX(-Math.PI / 2);
-  // After the rotation the solid occupies y ∈ [-height, 0]; lift it onto its base.
+  //
+  // The sign matters twice over: rotateX(+90°) maps (x, y, z) → (x, -z, y), which
+  // keeps the polygon's plan-Z intact. Rotating the other way maps it to -z and
+  // silently mirrors every footprint about the X axis.
+  geometry.rotateX(Math.PI / 2);
+  // The solid now occupies y ∈ [-height, 0]; lift it onto its base.
   geometry.translate(0, base + height, 0);
   return geometry;
 }

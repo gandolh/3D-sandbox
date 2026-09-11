@@ -1,4 +1,4 @@
-import type { LintFinding, Rule } from "../types.js";
+import type { RawFinding, Rule } from "../types.js";
 
 /**
  * Every id in a document must be unique, across every tier and entity kind.
@@ -9,7 +9,7 @@ export const uniqueIds: Rule = {
   name: "unique-ids",
   run(doc) {
     const seen = new Map<string, string>();
-    const out: LintFinding[] = [];
+    const out: RawFinding[] = [];
 
     const claim = (id: string, path: string): void => {
       const prior = seen.get(id);

@@ -2,11 +2,13 @@ import { readFileSync } from "node:fs";
 import * as THREE from "three";
 import { Evaluator } from "three-bvh-csg";
 import { describe, expect, it } from "vitest";
-import { Roof, ScatterField, loadScene, type Level, type Wall } from "@solstice/schema";
+import { BuildingMass, Roof, ScatterField, loadScene, type Level, type Wall } from "@solstice/schema";
 import {
   UnsupportedRoofError,
+  buildMass,
   buildRoof,
   buildWall,
+  extrudePolygon,
   generateScene,
   mulberry32,
   pointInPolygon,
@@ -273,5 +275,66 @@ describe("generating the reference scene", () => {
   it("disposes without throwing", () => {
     const scene = generateScene(doc);
     expect(() => scene.dispose()).not.toThrow();
+  });
+});
+
+describe("extruded polygons", () => {
+  // Regression: the first implementation rotated the wrong way, mirroring every
+  // footprint about X, and then lifted solids by base + height instead of base —
+  // so neighbouring building masses floated a full storey above the ground.
+  const L: readonly (readonly [number, number])[] = [
+    [0, 0],
+    [10, 0],
+    [10, 4],
+    [4, 4],
+    [4, 9],
+    [0, 9],
+  ];
+
+  it("sits exactly on its base and rises by its height", () => {
+    const box = boxOf(extrudePolygon(L, 0, 6.2));
+    expect(box.min.y).toBeCloseTo(0, 6);
+    expect(box.max.y).toBeCloseTo(6.2, 6);
+  });
+
+  it("honours a base below ground", () => {
+    const box = boxOf(extrudePolygon(L, -0.25, 0.25));
+    expect(box.min.y).toBeCloseTo(-0.25, 6);
+    expect(box.max.y).toBeCloseTo(0, 6);
+  });
+
+  it("does not mirror the footprint in Z", () => {
+    const box = boxOf(extrudePolygon(L, 0, 1));
+    expect(box.min.x).toBeCloseTo(0, 6);
+    expect(box.max.x).toBeCloseTo(10, 6);
+    expect(box.min.z).toBeCloseTo(0, 6);
+    expect(box.max.z).toBeCloseTo(9, 6);
+  });
+
+  it("keeps an off-origin footprint where the document put it", () => {
+    const offset = L.map(([x, z]) => [x + 23, z + 22] as const);
+    const box = boxOf(extrudePolygon(offset, 0, 7.1));
+    expect(box.min.x).toBeCloseTo(23, 6);
+    expect(box.min.z).toBeCloseTo(22, 6);
+    expect(box.max.z).toBeCloseTo(31, 6);
+  });
+});
+
+describe("building masses sit on the ground", () => {
+  it("places a pitched neighbour from 0 to height + rise", () => {
+    const mass = BuildingMass.parse({
+      id: "n-01",
+      footprint: [[-46, 22], [-35, 22], [-35, 31], [-46, 31]],
+      height: 6.2,
+      roofKind: "gable",
+      pitch: 30,
+      material: "render",
+    });
+    const box = boxOf(buildMass(mass));
+    expect(box.min.y).toBeCloseTo(0, 6);
+    expect(box.max.y).toBeGreaterThan(6.2);
+    expect(box.max.y).toBeLessThan(6.2 + 5);
+    expect(box.min.x).toBeCloseTo(-46, 4);
+    expect(box.min.z).toBeCloseTo(22, 4);
   });
 });

@@ -30,12 +30,23 @@ export function buildMass(mass: BuildingMass): THREE.BufferGeometry {
     push(a[0]!, a[1]!, a[2]!); push(d[0]!, d[1]!, d[2]!); push(e[0]!, e[1]!, e[2]!);
   };
 
+  // Gable ends are filled in as well as the slopes. Without them the extruded
+  // walls stop at `height` and you see straight through the triangle under the
+  // ridge — cheap context geometry is fine, see-through context geometry is not.
+  const tri = (a: number[], c: number[], d: number[]) => {
+    push(a[0]!, a[1]!, a[2]!); push(c[0]!, c[1]!, c[2]!); push(d[0]!, d[1]!, d[2]!);
+  };
+
   if (ridgeAlongZ) {
     quad([b.minX, base, b.minZ], [b.minX, base, b.maxZ], [cx, apex, b.maxZ], [cx, apex, b.minZ]);
     quad([b.maxX, base, b.maxZ], [b.maxX, base, b.minZ], [cx, apex, b.minZ], [cx, apex, b.maxZ]);
+    tri([b.minX, base, b.minZ], [cx, apex, b.minZ], [b.maxX, base, b.minZ]);
+    tri([b.maxX, base, b.maxZ], [cx, apex, b.maxZ], [b.minX, base, b.maxZ]);
   } else {
     quad([b.minX, base, b.minZ], [b.maxX, base, b.minZ], [b.maxX, apex, cz], [b.minX, apex, cz]);
     quad([b.maxX, base, b.maxZ], [b.minX, base, b.maxZ], [b.minX, apex, cz], [b.maxX, apex, cz]);
+    tri([b.minX, base, b.maxZ], [b.minX, apex, cz], [b.minX, base, b.minZ]);
+    tri([b.maxX, base, b.minZ], [b.maxX, apex, cz], [b.maxX, base, b.maxZ]);
   }
 
   const roof = new THREE.BufferGeometry();

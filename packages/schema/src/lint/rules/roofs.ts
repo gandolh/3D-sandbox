@@ -1,5 +1,5 @@
 import { area, bounds, boundsContain } from "../../geometry.js";
-import type { LintFinding, Rule } from "../types.js";
+import type { RawFinding, Rule } from "../types.js";
 
 /**
  * A roof must actually cover the walls beneath it. The level it belongs to is
@@ -10,7 +10,7 @@ import type { LintFinding, Rule } from "../types.js";
 export const roofCoversWalls: Rule = {
   name: "roof-covers-walls",
   run(doc) {
-    const out: LintFinding[] = [];
+    const out: RawFinding[] = [];
     const levels = doc.subject.levels;
 
     doc.subject.roofs.forEach((roof, ri) => {

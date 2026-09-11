@@ -5,6 +5,7 @@ import {
   hasErrors,
   lintScene,
   loadScene,
+  resolveEntities,
   type LintFinding,
   type SceneDocumentInput,
 } from "../src/index.js";
@@ -269,5 +270,42 @@ describe("loadScene", () => {
     const { findings } = loadScene(doc);
     expect(hasErrors(findings)).toBe(false);
     expect(findings).toHaveLength(1);
+  });
+});
+
+describe("entity resolution", () => {
+  it("names the chain of ids enclosing a finding, outermost first", () => {
+    const doc = baseScene();
+    doc.subject!.levels![0]!.walls![0]!.openings = [
+      { id: "w-1", kind: "window", offset: 0.1, width: 1.4, height: 1.2, sill: 0.9 },
+    ];
+    const found = lint(doc).filter((f) => f.rule === "opening-fits-wall");
+    expect(found[0]!.entities).toEqual(["L1", "W-01", "w-1"]);
+  });
+
+  it("lets a wall claim findings raised against its openings", () => {
+    const doc = baseScene();
+    doc.subject!.levels![0]!.walls![0]!.openings = [
+      { id: "w-1", kind: "window", offset: 0.1, width: 1.4, height: 1.2, sill: 0.9 },
+    ];
+    const forWall = lint(doc).filter((f) => f.entities.includes("W-01"));
+    expect(forWall.length).toBeGreaterThan(0);
+  });
+
+  it("resolves a roof to its own id", () => {
+    const doc = baseScene();
+    doc.subject!.roofs![0]!.baseElevation = 9;
+    const found = lint(doc).filter((f) => f.rule === "roof-covers-walls");
+    expect(found[0]!.entities).toEqual(["R-01"]);
+  });
+
+  it("survives a path that points at nothing", () => {
+    const doc = SceneDocument.parse(baseScene());
+    expect(resolveEntities(doc, "subject.levels[99].walls[4]")).toEqual([]);
+  });
+
+  it("does not repeat an id that appears twice in the chain", () => {
+    const doc = SceneDocument.parse(baseScene());
+    expect(resolveEntities(doc, "subject.levels[0]")).toEqual(["L1"]);
   });
 });

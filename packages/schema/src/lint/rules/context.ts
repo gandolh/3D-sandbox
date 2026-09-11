@@ -1,11 +1,11 @@
 import { area } from "../../geometry.js";
-import type { LintFinding, Rule } from "../types.js";
+import type { RawFinding, Rule } from "../types.js";
 
 /** Zero-area polygons generate nothing and usually mean transposed coordinates. */
 export const polygonsHaveArea: Rule = {
   name: "polygons-have-area",
   run(doc) {
-    const out: LintFinding[] = [];
+    const out: RawFinding[] = [];
     const check = (poly: readonly (readonly [number, number])[], path: string, owner: string) => {
       if (area(poly) < 1e-3) {
         out.push({
@@ -43,7 +43,7 @@ export const polygonsHaveArea: Rule = {
 export const scatterDensityIsSane: Rule = {
   name: "scatter-density-is-sane",
   run(doc, opts) {
-    return doc.context.scatter.flatMap((field, i): LintFinding[] => {
+    return doc.context.scatter.flatMap((field, i): RawFinding[] => {
       const a = area(field.area);
       if (a < 1e-3) return []; // polygons-have-area owns this
       const excluded = field.exclude.reduce((sum, poly) => sum + area(poly), 0);
@@ -67,7 +67,7 @@ export const scatterDensityIsSane: Rule = {
 export const shotCameraIsValid: Rule = {
   name: "shot-camera-is-valid",
   run(doc) {
-    return doc.shots.flatMap((shot, i): LintFinding[] => {
+    return doc.shots.flatMap((shot, i): RawFinding[] => {
       const [px, py, pz] = shot.camera.position;
       const [tx, ty, tz] = shot.camera.target;
       const d = Math.hypot(tx - px, ty - py, tz - pz);

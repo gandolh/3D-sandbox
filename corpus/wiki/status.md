@@ -9,15 +9,16 @@ _Snapshot: 2026-09-11_
 
 ## Where things stand
 
-Design is fully settled ([decisions.md](./decisions.md)). Three packages built:
-`@solstice/schema` (document, validation, linter), `@solstice/geometry`
+**It runs.** `apps/web` renders the reference scene in WebGL2 — orbit, select,
+edit, relight — in the Darkroom direction, dark and light. Three packages behind
+it: `@solstice/schema` (document, validation, linter), `@solstice/geometry`
 (document → three.js meshes) and `@solstice/solar` (site + clock → sun position,
-sky and lighting). All three are headlessly testable; 83 tests pass. `scenes/`
-holds the reference scene, which round-trips through the builder into canonical
-JSON.
+sky, lighting). All headlessly testable; **93 tests pass**.
 
-Nothing renders on a screen yet — there is no `apps/web` and no `apps/api`. The
-generator produces a correct scene graph that nothing has yet drawn.
+The browser reports the same 11,217 triangles / 284 instances the headless
+generator does, which is the cheapest check that tests and app agree.
+
+No persistence API yet, and `Render` is disabled — path tracing is brief 06.
 
 **Blocked:** `git push` has no credentials on this machine — no `gh`, no
 credential helper, no GitHub SSH key. Commits are accumulating locally on `main`.
@@ -29,12 +30,13 @@ credential helper, no GitHub SSH key. Commits are accumulating locally on `main`
 | 01 | [Scene document schema and linter](../briefs/done/01-schema-and-linter.md) | done |
 | 02 | [Geometry generator](../briefs/done/02-geometry-generator.md) | done |
 | 03 | [Solar time](../briefs/done/03-solar.md) | done |
-| 04 | [Viewport and app shell](../briefs/todo/04-viewport-shell.md) | todo |
+| 04 | [Viewport and app shell](../briefs/done/04-viewport-shell.md) | done |
 
 ## Next
 
-Brief 04 (**viewport and app shell**) next — the first thing a human can look at.
-Everything it needs now exists: a validated document, a scene graph, and a sun.
+Brief 05 (**Fastify persistence API**) next: scene files are truth, SQLite is a
+derived index, `Save` writes through instead of downloading. Then 06 (path-traced
+render) and 07 (physics).
 
 The canonical solar moment is **21 Jun 2026 17:42 EEST at 44.4268 N, 26.1025 E →
 altitude 32.949°, azimuth 271.654°**. That figure is pinned by a test and quoted

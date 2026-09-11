@@ -1,4 +1,4 @@
-import type { LintFinding, Rule } from "../types.js";
+import type { RawFinding, Rule } from "../types.js";
 
 /**
  * Every material id must resolve against the document's own `materials` table.
@@ -8,7 +8,7 @@ import type { LintFinding, Rule } from "../types.js";
 export const materialResolves: Rule = {
   name: "material-resolves",
   run(doc) {
-    const out: LintFinding[] = [];
+    const out: RawFinding[] = [];
     const known = new Set(Object.keys(doc.materials));
 
     const check = (id: string | undefined, path: string, owner: string): void => {
@@ -85,7 +85,7 @@ export const assetResolves: Rule = {
   run(doc, opts) {
     const known = opts.knownAssets;
     if (known === undefined) return [];
-    const out: LintFinding[] = [];
+    const out: RawFinding[] = [];
 
     const check = (asset: string, path: string, owner: string): void => {
       if (known.has(asset)) return;

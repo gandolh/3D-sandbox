@@ -1,11 +1,11 @@
 import { intervalsOverlap, length } from "../../geometry.js";
-import type { LintFinding, Rule } from "../types.js";
+import type { RawFinding, Rule } from "../types.js";
 
 /** A wall whose endpoints coincide generates no geometry and breaks openings. */
 export const wallNotDegenerate: Rule = {
   name: "wall-not-degenerate",
   run(doc) {
-    const out: LintFinding[] = [];
+    const out: RawFinding[] = [];
     doc.subject.levels.forEach((level, li) => {
       level.walls.forEach((wall, wi) => {
         const len = length(wall.start, wall.end);
@@ -40,7 +40,7 @@ export const wallNotDegenerate: Rule = {
 export const openingFitsWall: Rule = {
   name: "opening-fits-wall",
   run(doc, opts) {
-    const out: LintFinding[] = [];
+    const out: RawFinding[] = [];
     doc.subject.levels.forEach((level, li) => {
       level.walls.forEach((wall, wi) => {
         const len = length(wall.start, wall.end);
@@ -87,7 +87,7 @@ export const openingFitsWall: Rule = {
 export const openingFitsHeight: Rule = {
   name: "opening-fits-height",
   run(doc) {
-    const out: LintFinding[] = [];
+    const out: RawFinding[] = [];
     doc.subject.levels.forEach((level, li) => {
       level.walls.forEach((wall, wi) => {
         const wallHeight = wall.height ?? level.height;
@@ -120,7 +120,7 @@ export const openingFitsHeight: Rule = {
 export const openingsDoNotOverlap: Rule = {
   name: "openings-do-not-overlap",
   run(doc) {
-    const out: LintFinding[] = [];
+    const out: RawFinding[] = [];
     doc.subject.levels.forEach((level, li) => {
       level.walls.forEach((wall, wi) => {
         const path = `subject.levels[${li}].walls[${wi}]`;

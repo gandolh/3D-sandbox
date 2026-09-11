@@ -1,0 +1,85 @@
+@import "tailwindcss";
+
+/**
+ * Darkroom — the settled visual direction.
+ *
+ * Dark is the default and the one that matters: a path-traced render cannot be
+ * judged for exposure against a light surround. The light theme is a deliberate
+ * concession — chrome lightens, the viewport keeps its dark matte, and the render
+ * is identical in both.
+ */
+@theme {
+  --color-chrome: #111316;
+  --color-panel: #16181c;
+  --color-line: #24282d;
+  --color-input: #1c1f24;
+  --color-ink: #e8eaed;
+  --color-muted: #8e959d;
+  --color-subtle: #5f666e;
+  --color-accent: #e8a33d;
+  --color-accent-ink: #1a1204;
+  --color-accent-soft: #2b2110;
+  --color-viewport: #0a0b0d;
+  --color-danger: #e2745a;
+  --color-warn: #e8b77a;
+
+  --font-ui: "Archivo", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  --radius-sm: 4px;
+}
+
+/* Light: same roles, re-valued. Amber darkens to hold contrast on a light
+   ground; the viewport keeps a dark matte so exposure still reads true. */
+:root[data-theme="light"] {
+  --color-chrome: #edebe7;
+  --color-panel: #f7f5f2;
+  --color-line: #d5d1ca;
+  --color-input: #ffffff;
+  --color-ink: #1a1c1f;
+  --color-muted: #5c6168;
+  --color-subtle: #8b8f95;
+  --color-accent: #9a5a12;
+  --color-accent-ink: #ffffff;
+  --color-accent-soft: #f7e8cf;
+  --color-viewport: #26272a;
+  --color-danger: #b4472c;
+  --color-warn: #7a5312;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-chrome);
+  color: var(--color-ink);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+/* Base UI portals popups to the body; a stacking context on the app root keeps
+   them above the viewport canvas without a z-index arms race. */
+.root {
+  isolation: isolate;
+  height: 100%;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

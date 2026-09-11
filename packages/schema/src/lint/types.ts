@@ -9,6 +9,15 @@ export interface LintFinding {
   /** Where in the document, in dotted path form. */
   path: string;
   message: string;
+  /**
+   * Ids of every entity enclosing `path`, outermost first — e.g. a finding on an
+   * opening resolves to `["ground-floor", "W-03", "w-12"]`.
+   *
+   * Resolved centrally from `path` rather than set by each rule, so a UI can
+   * filter structurally instead of grepping the prose message. Rules do not
+   * populate this; `lintScene` fills it in.
+   */
+  entities: readonly string[];
 }
 
 export interface LintOptions {
@@ -37,10 +46,14 @@ export interface ResolvedOptions {
   maxScatterInstances: number;
 }
 
+/** What a rule returns. `lintScene` resolves `entities` before anyone sees it. */
+export type RawFinding = Omit<LintFinding, "entities">;
+
 export interface Rule {
   name: string;
-  run(doc: SceneDocument, opts: ResolvedOptions): LintFinding[];
+  run(doc: SceneDocument, opts: ResolvedOptions): RawFinding[];
 }
+
 
 export const DEFAULTS = {
   minOpeningEdgeMargin: 0.25,

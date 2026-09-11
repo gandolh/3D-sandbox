@@ -1,4 +1,5 @@
 import type { SceneDocument } from "../document.js";
+import { resolveEntities } from "./entities.js";
 import { polygonsHaveArea, scatterDensityIsSane, shotCameraIsValid } from "./rules/context.js";
 import { uniqueIds } from "./rules/identity.js";
 import { assetResolves, materialResolves, materialsAreUsed } from "./rules/references.js";
@@ -12,6 +13,7 @@ import {
 import { DEFAULTS, type LintFinding, type LintOptions, type Rule } from "./types.js";
 
 export * from "./types.js";
+export * from "./entities.js";
 
 /** Every rule, in the order findings are reported. */
 export const RULES: readonly Rule[] = [
@@ -44,7 +46,12 @@ export function lintScene(doc: SceneDocument, options: LintOptions = {}): LintFi
     maxScatterInstances: options.maxScatterInstances ?? DEFAULTS.maxScatterInstances,
   };
 
-  const findings = RULES.flatMap((rule) => rule.run(doc, opts));
+  const findings: LintFinding[] = RULES.flatMap((rule) =>
+    rule.run(doc, opts).map((finding) => ({
+      ...finding,
+      entities: resolveEntities(doc, finding.path),
+    })),
+  );
   // Errors first; otherwise keep rule order, which is roughly structural order.
   return findings.sort((a, b) => Number(b.severity === "error") - Number(a.severity === "error"));
 }
