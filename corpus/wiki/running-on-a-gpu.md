@@ -15,14 +15,18 @@ because the answer is non-obvious and cost a session to find.
 
 Same scene (`villa-carpathia`), same 2,000-sample budget:
 
-| Backend | Samples | Time | Rate |
-|---|---|---|---|
-| SwiftShader (Chromium default) | 0.22 | 74 s | ~0.003 /s |
-| D3D12 → AMD Radeon (WSL2) | 538.7 | 168 s | ~3.2 /s |
+| Backend | Samples | Time | Rate | Resolution |
+|---|---|---|---|---|
+| SwiftShader (Chromium default) | 0.22 | 74 s | ~0.003 /s | 960×540 |
+| D3D12 → AMD Radeon (WSL2) | 538.7 | 168 s | ~3.2 /s | 1920×1080 |
 
-About a thousandfold. Resolution differed (960×540 software, 511×759 GPU), which
-moves the ratio by a third — not by an order of magnitude. A 2,000-sample shot is
-roughly **ten minutes** at this window size, not the eleven days software implied.
+About a thousandfold — and the GPU run was doing **four times the pixels**, so per
+pixel it is nearer four thousandfold. A 2,000-sample shot at 1920×1080 is roughly
+**ten minutes**, against a software figure that extrapolates past a week.
+
+The render target is sized by the shot, not by the viewport canvas
+(`PathTraceSession` calls `setSize(settings.width, settings.height)`), so the
+browser window size does not enter into these numbers.
 
 Rate is steady from the first reading onward (225 samples at 68.9 s → 3.26 /s;
 538.7 at 168.4 s → 3.20 /s), so BVH build is not a meaningful share of a shot of

@@ -1,11 +1,20 @@
-import { setShowColliders, setShowContext, setTheme, useStore } from "../state/store.js";
-import type { RenderSettings } from "../engine/PathTracer.js";
+import {
+  setShotId,
+  setShowColliders,
+  setShowContext,
+  setTheme,
+  useStore,
+} from "../state/store.js";
+import type { RenderRequest } from "../engine/SandboxEngine.js";
 
 export function Toolbar({ onSave }: { onSave: () => void }) {
   const doc = useStore((s) => s.document);
   const theme = useStore((s) => s.theme);
   const showContext = useStore((s) => s.showContext);
   const showColliders = useStore((s) => s.showColliders);
+  const shotId = useStore((s) => s.shotId);
+  const shots = doc?.shots ?? [];
+  const shot = shots.find((s) => s.id === shotId);
 
   return (
     <header className="flex h-[46px] shrink-0 items-center gap-3 border-b border-line bg-chrome px-3.5">
@@ -51,22 +60,48 @@ export function Toolbar({ onSave }: { onSave: () => void }) {
       >
         Save
       </button>
+      {shots.length > 0 && (
+        <select
+          value={shotId ?? ""}
+          onChange={(event) => {
+            const next = event.target.value === "" ? null : event.target.value;
+            setShotId(next);
+            // Framing the viewport to the shot is what makes the picker honest:
+            // otherwise the button says "Garden elevation" while the screen
+            // shows something else entirely.
+            const picked = shots.find((s) => s.id === next);
+            if (picked !== undefined) {
+              window.dispatchEvent(new CustomEvent("solstice:frame", { detail: picked }));
+            }
+          }}
+          title="Which shot the Render button reproduces"
+          className="rounded-sm border border-line bg-panel px-2 py-1.5 text-[12px] text-ink"
+        >
+          <option value="">Viewport</option>
+          {shots.map((s) => (
+            <option key={s.id} value={s.id}>
+              {s.name}
+            </option>
+          ))}
+        </select>
+      )}
+
       <button
         type="button"
         onClick={() => {
-          // A Shot is the reproducible unit, so its declared output size wins.
-          const shot = doc?.shots[0];
-          const settings: RenderSettings = {
-            width: shot?.render.width ?? 1280,
-            height: shot?.render.height ?? 720,
-            samples: shot?.render.samples ?? 256,
-          };
-          window.dispatchEvent(new CustomEvent("solstice:render", { detail: settings }));
+          // A Shot is the reproducible unit: its camera, its clock, its output
+          // size and its sample budget. Taking the size alone — which is what
+          // this did before — reproduces nothing.
+          const request: RenderRequest =
+            shot === undefined
+              ? { width: 1280, height: 720, samples: 256 }
+              : { ...shot.render, shot };
+          window.dispatchEvent(new CustomEvent("solstice:render", { detail: request }));
         }}
         title={
-          doc?.shots[0] === undefined
-            ? "Path-trace at 1280 × 720"
-            : `Path-trace shot "${doc.shots[0].name}" at ${doc.shots[0].render.width} × ${doc.shots[0].render.height}`
+          shot === undefined
+            ? "Path-trace the current viewport at 1280 × 720"
+            : `Path-trace "${shot.name}" · ${shot.render.width} × ${shot.render.height} · ${shot.render.samples} samples${shot.solar === undefined ? "" : ` · ${shot.solar.time}`}`
         }
         className="rounded-sm border border-accent bg-accent px-3 py-1.5 text-[12px] font-semibold text-accent-ink"
       >

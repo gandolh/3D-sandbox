@@ -32,6 +32,9 @@ export function RenderOverlay({
               : `${progress.samples.toLocaleString("en-GB")} / ${progress.targetSamples.toLocaleString("en-GB")} samples`}
           </span>
           <span className="text-subtle tabular-nums">{seconds(progress.elapsedMs)}</span>
+          {progress.label !== undefined && (
+            <span className="truncate text-subtle">{progress.label}</span>
+          )}
         </div>
         <div className="h-1 overflow-hidden rounded-full bg-line">
           <div

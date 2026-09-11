@@ -8,10 +8,19 @@ export interface RenderSettings {
   height: number;
   samples: number;
   bounces?: number;
+  /** What is being rendered, for the overlay. See `RenderProgress.label`. */
+  label?: string;
 }
 
 export interface RenderProgress {
   phase: "building" | "rendering" | "done" | "cancelled";
+  /**
+   * What this render is of — shot name, output size and the clock it is being
+   * lit by. The clock is the load-bearing part: a shot's solar override is
+   * otherwise invisible until the image comes out, and "it looks about right"
+   * is not a way to tell whether 07:15 was applied.
+   */
+  label?: string;
   /** BVH build progress, 0–1. Only meaningful while `phase` is `building`. */
   build: number;
   samples: number;
@@ -31,7 +40,6 @@ export class PathTraceSession {
   private readonly tracer: WebGLPathTracer;
   private readonly bvhWorker: GenerateMeshBVHWorker;
   private readonly previousSize = new THREE.Vector2();
-  private readonly previousAspect: number;
   private readonly startedAt = performance.now();
   private cancelled = false;
   private building = true;
@@ -48,11 +56,16 @@ export class PathTraceSession {
      * fails deep inside a colour lookup rather than politely skipping.
      */
     private readonly scene: THREE.Scene,
+    /**
+     * The camera to render from — purpose-built for this shot, never the
+     * viewport's. A render must not move where the user left the viewport, and
+     * the two have different aspect ratios by definition: the shot's is fixed
+     * by its declared output size, the viewport's by the browser window.
+     */
     private readonly camera: THREE.PerspectiveCamera,
     private readonly settings: RenderSettings,
   ) {
     this.renderer.getSize(this.previousSize);
-    this.previousAspect = camera.aspect;
 
     this.tracer = new WebGLPathTracer(renderer);
     // `setSceneAsync` refuses to run without one, and the point of the async
@@ -77,8 +90,6 @@ export class PathTraceSession {
    */
   async start(onProgress: (progress: RenderProgress) => void): Promise<void> {
     this.renderer.setSize(this.settings.width, this.settings.height, false);
-    this.camera.aspect = this.settings.width / this.settings.height;
-    this.camera.updateProjectionMatrix();
 
     await this.tracer.setSceneAsync(this.scene, this.camera, {
       onProgress: (value) => {
@@ -120,8 +131,6 @@ export class PathTraceSession {
     this.bvhWorker.dispose();
     this.scene.environment?.dispose();
     this.renderer.setSize(this.previousSize.x, this.previousSize.y, false);
-    this.camera.aspect = this.previousAspect;
-    this.camera.updateProjectionMatrix();
   }
 
   private report(): RenderProgress {
@@ -136,6 +145,7 @@ export class PathTraceSession {
       build: this.buildProgress,
       samples: this.tracer.samples,
       targetSamples: this.settings.samples,
+      ...(this.settings.label === undefined ? {} : { label: this.settings.label }),
       elapsedMs: performance.now() - this.startedAt,
     };
   }

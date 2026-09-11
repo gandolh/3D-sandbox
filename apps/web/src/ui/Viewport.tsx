@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import { SandboxEngine } from "../engine/SandboxEngine.js";
-import type { RenderProgress, RenderSettings } from "../engine/PathTracer.js";
+import { SandboxEngine, type RenderRequest } from "../engine/SandboxEngine.js";
+import type { RenderProgress } from "../engine/PathTracer.js";
 import { RenderOverlay } from "./RenderOverlay.jsx";
 import { editDocument, getState, select, setStatus, useStore } from "../state/store.js";
 import { translateWall } from "../lib/entities.js";
 import { collidersFor } from "../lib/physics.js";
+import type { Shot } from "@solstice/schema";
 
 export function Viewport() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -17,6 +18,10 @@ export function Viewport() {
   const selection = useStore((s) => s.selection);
   const showContext = useStore((s) => s.showContext);
   const showColliders = useStore((s) => s.showColliders);
+  // The only thing that changes the viewport camera's focal length is framing a
+  // shot, so the picker's selection is an accurate read of it.
+  const shotId = useStore((s) => s.shotId);
+  const framedShot = doc?.shots.find((s) => s.id === shotId);
 
   // The engine outlives every render; React only feeds it.
   useEffect(() => {
@@ -44,22 +49,29 @@ export function Viewport() {
     // The toolbar's Render button is far from the engine; a custom event keeps
     // the engine out of global state without threading a ref through the tree.
     const onRenderRequest = (event: Event): void => {
-      const settings = (event as CustomEvent<RenderSettings>).detail;
-      void engine.startRender(settings).then((blob) => {
+      const request = (event as CustomEvent<RenderRequest>).detail;
+      void engine.startRender(request).then((blob) => {
         if (blob === null) return;
         const url = URL.createObjectURL(blob);
         const anchor = document.createElement("a");
         anchor.href = url;
-        anchor.download = `render-${Date.now()}.png`;
+        // Name the file after the shot: a render nobody can trace back to its
+        // framing is just a picture.
+        anchor.download = `${request.shot?.id ?? "viewport"}-${Date.now()}.png`;
         anchor.click();
         URL.revokeObjectURL(url);
         setStatus("Render downloaded");
       });
     };
+    const onFrame = (event: Event): void => {
+      engine.frameShot((event as CustomEvent<Shot>).detail);
+    };
     window.addEventListener("solstice:render", onRenderRequest);
+    window.addEventListener("solstice:frame", onFrame);
 
     return () => {
       window.removeEventListener("solstice:render", onRenderRequest);
+      window.removeEventListener("solstice:frame", onFrame);
       engine.dispose();
       engineRef.current = null;
     };
@@ -84,7 +96,7 @@ export function Viewport() {
 
       <Hud className="top-2.5 left-2.5">
         <span className="size-1.5 rounded-full bg-accent" />
-        Perspective · 50 mm
+        Perspective · {framedShot?.camera.focalLength ?? 50} mm
       </Hud>
       {selection !== null && <Hud className="top-2.5 right-2.5">{selection}</Hud>}
       <Hud className="bottom-2.5 left-2.5">

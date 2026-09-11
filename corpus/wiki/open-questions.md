@@ -16,7 +16,9 @@ updated: 2026-09-11
 - **The asset manifest.** Everything placed is a proxy box or a proxy cone.
   Turning those into real Poly Haven glTF is the largest single upgrade available,
   and it is gated on the download-and-commit workflow, not on code.
-- **Path-tracer performance on real hardware.** Never yet run on a GPU. Sample
-  budgets, denoising and whether shots need a lower default are all unknown.
+- **Denoising, and whether 2,000 samples is the right default.** Now measurable
+  rather than unknown — see [running-on-a-gpu.md](running-on-a-gpu.md) — but still
+  unjudged: nobody has compared a 500-sample render against a 3,000-sample one and
+  said where it stops improving.
 - **Placements do not collide with each other.** The physics world derives only
   static geometry, so two chairs dropped at the same spot occupy the same space.

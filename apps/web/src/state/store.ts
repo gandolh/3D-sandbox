@@ -23,6 +23,8 @@ export interface AppState {
   revision: number;
   showContext: boolean;
   showColliders: boolean;
+  /** Shot id to render, or null for "whatever the viewport is looking at". */
+  shotId: string | null;
   theme: "dark" | "light";
   status: string;
 }
@@ -34,6 +36,7 @@ let state: AppState = {
   revision: 0,
   showContext: true,
   showColliders: false,
+  shotId: null,
   theme: "dark",
   status: "Loading…",
 };
@@ -85,6 +88,8 @@ export const setShowContext = (showContext: boolean): void =>
   set({ showContext, revision: state.revision + 1 });
 
 export const setStatus = (status: string): void => set({ status });
+
+export const setShotId = (shotId: string | null): void => set({ shotId });
 
 /**
  * Apply an edit to the document, then re-validate.

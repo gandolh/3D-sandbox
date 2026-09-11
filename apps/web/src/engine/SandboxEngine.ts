@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { TransformControls } from "three/addons/controls/TransformControls.js";
 import { Sky } from "three/addons/objects/Sky.js";
-import type { SceneDocument } from "@solstice/schema";
+import type { SceneDocument, Shot } from "@solstice/schema";
 import { generateScene, type GeneratedScene } from "@solstice/geometry";
 import type { CuboidCollider } from "@solstice/physics";
 import { resolveSolar } from "@solstice/solar";
@@ -12,6 +12,15 @@ import {
   type RenderProgress,
   type RenderSettings,
 } from "./PathTracer.js";
+import { frameShot, shotCamera } from "./shot.js";
+
+/**
+ * What to render. Without a `shot` the request frames whatever the viewport is
+ * currently looking at; with one, the shot's camera and solar override win.
+ */
+export interface RenderRequest extends RenderSettings {
+  shot?: Shot;
+}
 
 export interface EngineEvents {
   onSelect: (id: string | null) => void;
@@ -50,6 +59,8 @@ export class SandboxEngine {
   private resizeObserver: ResizeObserver | null = null;
   private render: PathTraceSession | null = null;
   private lastSolar: ReturnType<typeof resolveSolar> | null = null;
+  /** Kept so a shot's solar override can be re-resolved against the site. */
+  private lastDocument: SceneDocument | null = null;
   private readonly colliderOverlay = new THREE.Group();
 
   constructor(
@@ -115,6 +126,7 @@ export class SandboxEngine {
     this.generated?.dispose();
     this.generated?.root.removeFromParent();
 
+    this.lastDocument = doc;
     this.generated = generateScene(doc, { includeContext: options.includeContext });
     this.scene.add(this.generated.root);
     this.setSolar(doc);
@@ -257,10 +269,34 @@ export class SandboxEngine {
    * Resolves with the finished image, or null if it was cancelled. The renderer
    * is restored to the viewport's size either way.
    */
-  async startRender(settings: RenderSettings): Promise<Blob | null> {
+  async startRender(request: RenderRequest): Promise<Blob | null> {
     this.cancelRender();
-    const renderScene = this.buildRenderScene();
-    const session = new PathTraceSession(this.renderer, renderScene, this.camera, settings);
+    const { shot, ...settings } = request;
+
+    // A shot's solar override is the whole reason `garden-elevation` differs
+    // from `sw-threequarter`: it renders at 07:15 whatever the working clock
+    // says. The sun, the sky environment and the pixels all have to agree, so
+    // it is resolved once here and threaded in rather than read from the
+    // viewport's `lastSolar`.
+    const solar =
+      shot?.solar !== undefined && this.lastDocument !== null
+        ? resolveSolar(this.lastDocument, shot.solar)
+        : this.lastSolar;
+
+    const renderScene = this.buildRenderScene(solar);
+    const camera = shot === undefined ? this.viewportRenderCamera(settings) : shotCamera(shot);
+    const session = new PathTraceSession(this.renderer, renderScene, camera, {
+      ...settings,
+      // Built from the *resolved* solar, not from the shot, so the overlay
+      // reports the time actually being rendered rather than the time asked for.
+      label: [
+        shot?.name ?? "Viewport",
+        `${settings.width} × ${settings.height}`,
+        solar === null ? null : solar.solar.time,
+      ]
+        .filter((part): part is string => part !== null)
+        .join(" · "),
+    });
     this.render = session;
     this.orbit.enabled = false;
     this.gizmo.getHelper().visible = false;
@@ -295,7 +331,7 @@ export class SandboxEngine {
    * The sky still lights the render, but as a pre-filtered environment map
    * rather than as geometry.
    */
-  private buildRenderScene(): THREE.Scene {
+  private buildRenderScene(solved: ReturnType<typeof resolveSolar> | null): THREE.Scene {
     const renderScene = new THREE.Scene();
     if (this.generated !== null) renderScene.add(this.generated.root.clone());
 
@@ -303,7 +339,20 @@ export class SandboxEngine {
     sun.target = this.sun.target.clone();
     renderScene.add(sun, sun.target);
 
-    const { position, lighting } = this.lastSolar ?? { position: null, lighting: null };
+    const { position, lighting } = solved ?? { position: null, lighting: null };
+    if (position !== null && lighting !== null) {
+      // The clone still carries the viewport's sun direction and colour. A shot
+      // with its own time needs both moved, or the sky says 07:15 while the
+      // shadows say 17:42.
+      const distance = 120;
+      sun.position.set(
+        position.direction.x * distance,
+        Math.max(1, position.direction.y * distance),
+        position.direction.z * distance,
+      );
+      sun.color.set(lighting.color);
+      sun.intensity = lighting.intensity;
+    }
     const environment =
       position === null || lighting === null
         ? null
@@ -313,6 +362,31 @@ export class SandboxEngine {
       renderScene.background = environment;
     }
     return renderScene;
+  }
+
+  /**
+   * Move the viewport to a shot, so what you see is what you will render.
+   *
+   * The FOV is recomputed for the *viewport's* aspect, not the shot's: the
+   * window is whatever shape the user made it, and matching the shot's framing
+   * horizontally is the closest honest preview available.
+   */
+  frameShot(shot: Shot): void {
+    this.orbit.target.copy(frameShot(this.camera, shot));
+    this.orbit.update();
+  }
+
+  /**
+   * The viewport's framing, at the output's aspect ratio.
+   *
+   * A clone, because the live camera must survive the render untouched — the
+   * user should find the viewport exactly where they left it.
+   */
+  private viewportRenderCamera(settings: RenderSettings): THREE.PerspectiveCamera {
+    const camera = this.camera.clone();
+    camera.aspect = settings.width / settings.height;
+    camera.updateProjectionMatrix();
+    return camera;
   }
 
   cancelRender(): void {
