@@ -16,8 +16,16 @@ scenes/*.scene.json      ← the only source of truth
       ▼
 packages/schema          ← depends on nothing but zod
       │
-      ├──► apps/web      (generator → three.js → WebGL2 → path tracer)
-      └──► apps/api      (Fastify; validates on write, never stores invalid)
+      ├──► packages/geometry   (document → three.js meshes; CPU only, no GL)
+      ├──► packages/solar      (site + clock → sun, sky, lighting; suncalc)
+      ├──► packages/physics    (document → colliders; rapier, headless)
+      │         │
+      │         └──► apps/web  (the three above → WebGL2 → path tracer)
+      │
+      └──► apps/api            (Fastify; validates on write, never stores invalid)
+
+assets/                  ← manifest, download list, impostor bake harness
+      └──► assets-src/   (downloads: gitignored except the baked atlases)
 ```
 
 `packages/schema` is the bottom of the stack and must stay free of three.js,

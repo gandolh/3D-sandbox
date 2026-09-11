@@ -51,3 +51,30 @@ This brief is small and it is the difference between "the renderer works" and
 - A finished 600-sample PNG of `approach` on disk, opened and looked at.
 - A stated answer on tab throttling, with the measurement behind it.
 - The wiki carries the first end-to-end render time this project has ever had.
+
+---
+
+## Outcome (2026-09-11)
+
+Done, and the brief was right to exist. The first render that ever completed
+produced **a fully black PNG** — 44 KB of RGB(0,0,0) at 1920 × 1080, after
+fourteen minutes, while the screen showed the correct image the whole time.
+
+`preserveDrawingBuffer` is not set on the viewport renderer, so the drawing
+buffer is cleared before the next compositing step, and the `toBlob` in
+`startRender` — issued after the loop had yielded — read an empty buffer. The
+capture now happens in the same tick as the final sample. Setting
+`preserveDrawingBuffer: true` would also fix it and would tax every 60 fps
+viewport frame forever for a read that happens once per render.
+
+Galling detail: `assets/bake/impostor.js` sets `preserveDrawingBuffer: true`
+explicitly, with a comment, because reading the canvas back was obviously
+necessary there. The same requirement in the render path was never connected.
+
+Throttling **was** measured rather than assumed, per the brief: 97.9 samples at
+20.1 s in the foreground, 332 at 68.2 s after 48 s fully covered by another
+maximised window — 4.87 samples/s across both, so occlusion does not throttle.
+A backgrounded tab is still untested, and is now a delay risk rather than a
+corruption risk.
+
+Numbers in [running-on-a-gpu.md](../../wiki/running-on-a-gpu.md).

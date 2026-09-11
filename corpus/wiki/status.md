@@ -77,8 +77,10 @@ five more in `todo/`, in rough order of how much they matter:
 - **[14 — animation time](../briefs/todo/14-animation-time.md).** The one real
   gap. `animejs` and `motion` are in no `package.json`; the glossary defines
   *animation time* and `Timeline.tsx` claims to implement it; neither is true.
-- **[15 — finish a render](../briefs/todo/15-finish-a-render.md).** No render has
-  ever completed. `toBlob` and the download after it have never executed.
+- **[15 — finish a render](../briefs/done/15-finish-a-render.md) — done.** The
+  first render that ever completed came out **fully black**: no
+  `preserveDrawingBuffer`, so `toBlob` read a cleared buffer a frame too late.
+  Captured in-tick now.
 - **[16 — denoise](../briefs/todo/16-denoiser.md).** Already a dependency:
   `three-gpu-pathtracer` ships `DenoiseMaterial`.
 - **[17 — repo honesty pass](../briefs/todo/17-repo-honesty-pass.md).** A dead
@@ -116,28 +118,3 @@ scatters as crossed alpha-tested quads — 2,062,487 triangles per tree down to
 four, path-traced with correct alpha shadows. Crossed quads rather than
 camera-facing billboards because a path tracer has no "the camera" to face.
 `pine_tree_01` and `fir_tree_01` are unbaked, so villa's forest is one species.
-
-## Next
-
-**The agreed sequence is complete.** Document model → editor and viewport →
-solar time → path-traced render → physics, all seven briefs done, 163 tests.
-
-Two things want doing before new features:
-
-1. **Run a render on a machine with a GPU.** It has only ever run on software
-   WebGL. Denoising, sample budgets and shot selection are all guesswork until
-   someone has seen it at speed.
-2. **Push.** Seven commits are stranded on local `main` for want of GitHub
-   credentials — see the blocker entry in [log.md](../log.md).
-
-After that, the honest backlog is in
-[open-questions.md](./open-questions.md): hip roofs, schema migrations, and the
-asset manifest that turns proxy boxes into furniture.
-
-The canonical solar moment is **21 Jun 2026 17:42 EEST at 44.4268 N, 26.1025 E →
-altitude 32.949°, azimuth 271.654°**. That figure is pinned by a test and quoted
-in the design artifact; if it ever moves, the two have diverged.
-
-Known constraint, already surfaced: the scene tree, inspector and timeline each
-need an independent scroll container (`@base-ui/react` Scroll Area) from the first
-commit of the shell, not retrofitted once panels start clipping.

@@ -44,6 +44,7 @@ export class PathTraceSession {
   private cancelled = false;
   private building = true;
   private buildProgress = 0;
+  private captured: Promise<Blob | null> | null = null;
 
   constructor(
     private readonly renderer: THREE.WebGLRenderer,
@@ -106,8 +107,29 @@ export class PathTraceSession {
   step(): RenderProgress {
     if (!this.cancelled && !this.building && this.tracer.samples < this.settings.samples) {
       this.tracer.renderSample();
+      // Grab the image the instant the last sample lands, in this same tick.
+      //
+      // The renderer is built without `preserveDrawingBuffer`, so the drawing
+      // buffer is cleared before the next compositing step — and a `toBlob`
+      // issued a frame later reads an empty buffer and yields a **fully black
+      // PNG**. That is not hypothetical: it is what the first render this
+      // project ever completed produced, 44 KB of RGB(0,0,0) at 1920 × 1080,
+      // after fourteen minutes, while the screen showed the correct image.
+      //
+      // Capturing here costs nothing on the 60 fps viewport path, which
+      // `preserveDrawingBuffer: true` would tax on every frame forever for a
+      // read that happens once per render.
+      if (this.tracer.samples >= this.settings.samples) this.capture();
     }
     return this.report();
+  }
+
+  /** Snapshot the canvas now. `toBlob` samples the buffer at call time. */
+  private capture(): void {
+    if (this.captured !== null) return;
+    this.captured = new Promise((resolve) => {
+      this.renderer.domElement.toBlob((blob) => resolve(blob), "image/png");
+    });
   }
 
   get complete(): boolean {
@@ -118,11 +140,15 @@ export class PathTraceSession {
     this.cancelled = true;
   }
 
-  /** The accumulated image. Read before `dispose`. */
+  /**
+   * The accumulated image, snapshotted when the last sample landed.
+   *
+   * Not captured here: by the time anything awaits this, the drawing buffer has
+   * been composited and cleared, and what comes back is black.
+   */
   async toBlob(): Promise<Blob | null> {
-    return new Promise((resolve) => {
-      this.renderer.domElement.toBlob((blob) => resolve(blob), "image/png");
-    });
+    if (this.captured === null) this.capture();
+    return this.captured;
   }
 
   /** Restore the renderer to what the viewport had. */

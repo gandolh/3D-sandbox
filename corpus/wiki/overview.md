@@ -28,9 +28,24 @@ a language model and the thing reading it is a geometry generator.
 |---|---|
 | `packages/schema/` | Scene document types, Zod validation, and the linter |
 | `scenes/` | Authored scenes — TypeScript sources plus generated `.scene.json` |
-| `apps/web/` | Browser editor and renderer (not yet built) |
-| `apps/api/` | Fastify persistence API (not yet built) |
+| `packages/geometry/` | Document → three.js meshes. Pure CPU; no WebGL context |
+| `packages/solar/` | Site + clock → sun position, sky and lighting |
+| `packages/physics/` | Colliders derived from the document; drop-to-rest |
+| `apps/web/` | Browser editor and path-traced renderer |
+| `apps/api/` | Fastify persistence API |
+| `assets/` | Manifest, download-list generator, impostor bake harness |
 | `corpus/` | This wiki |
+
+## What it can do today
+
+Open a scene, orbit it, select and edit walls and placements, watch the sun move
+across a real day, drop furniture onto the floor it is standing over, and
+path-trace a named shot at its own camera, clock and resolution. Trees and
+shrubs are real models — the heavy ones as baked impostors — and surfaces carry
+real PBR maps.
+
+What it cannot do is **animate**. Solar time is a value you scrub, not a track
+you play. See [status.md](./status.md).
 
 ## Where to go next
 
