@@ -96,7 +96,7 @@ scene graph. Evaluation is `packages/animation` — pure, headless, 14 tests.
 **`motion` was deliberately not installed.** It was agreed during the grilling,
 but its only use here would be chrome transitions, and this project already
 carries one dependency imported nowhere (`xatlas-web`, see
-[brief 17](../todo/17-repo-honesty-pass.md)). One decorative dependency is a
+[brief 17](./17-repo-honesty-pass.md)). One decorative dependency is a
 mistake worth not repeating.
 
 One regression made and caught in the browser: preferring the playhead for the

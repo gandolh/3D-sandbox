@@ -20,8 +20,7 @@
     "react-dom": "19.3.0",
     "three": "0.185.1",
     "three-gpu-pathtracer": "0.0.24",
-    "three-mesh-bvh": "0.9.15",
-    "xatlas-web": "0.1.0"
+    "three-mesh-bvh": "0.9.15"
   },
   "devDependencies": {
     "@tailwindcss/vite": "4.3.3",

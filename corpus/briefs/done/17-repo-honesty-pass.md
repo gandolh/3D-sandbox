@@ -20,7 +20,7 @@ whoever opens it next. Found by auditing the project against what it claims,
   app *can* hold testable logic, and `store.ts` and `AssetLoader.ts` both have
   some.
 - **`Timeline.tsx` describes a feature that does not exist** (see
-  [brief 14](../done/14-animation-time.md)). If 14 lands first this fixes itself; if
+  [brief 14](./14-animation-time.md)). If 14 lands first this fixes itself; if
   not, the comment goes.
 
 ## Files you OWN
@@ -56,3 +56,27 @@ whoever opens it next. Found by auditing the project against what it claims,
 - `overview.md` describes the project as it is.
 - A README that gets someone from clone to a rendered scene.
 - Tests covering the asset loader's fallback paths.
+
+---
+
+## Outcome (2026-09-11)
+
+Done. `xatlas-web` removed and the build unaffected; a README written;
+`overview.md`'s "not yet built" table corrected and a paragraph added saying what
+the thing can and cannot do; the architecture diagram extended to show geometry,
+solar, physics and the assets layer, none of which it had ever mentioned.
+
+Two extras the audit turned up while looking:
+
+- **`status.md` carried a second, obsolete `## Next` section**, still claiming
+  seven briefs, 163 tests, and commits stranded for want of credentials. Removed.
+- **`running-on-a-gpu.md` passed the 200-line cap** and was straddling GPU access
+  and render performance. Split, with timings and convergence moving to
+  [render-performance.md](../../wiki/render-performance.md).
+
+`apps/web` went from one test file to three: the store's edit path (including
+that a rejected edit leaves the document untouched, and that the playhead never
+bumps the revision) and all four of `AssetLoader`'s silent fallbacks.
+
+The lying comment in `Timeline.tsx` fixed itself — [brief 14](./14-animation-time.md)
+made it true.

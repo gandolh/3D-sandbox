@@ -89,8 +89,9 @@ five more in `todo/`, in rough order of how much they matter:
   *no*.** Measured, `DenoiseMaterial` moves the image away from converged: this
   scene is nearly all high-frequency material and an edge-aware blur has little
   it can safely touch. Ships off by default.
-- **[17 — repo honesty pass](../briefs/todo/17-repo-honesty-pass.md).** A dead
-  dependency, a stale overview, no README, one web test file for eighteen sources.
+- **[17 — repo honesty pass](../briefs/done/17-repo-honesty-pass.md) — done.**
+  `xatlas-web` removed, a README written, the overview and architecture pages
+  corrected, and `apps/web` tested where it holds logic.
 - **[18 — finish the vegetation](../briefs/todo/18-vegetation-finishing.md).**
   Two trees unbaked, the vine thin from underneath.
 
