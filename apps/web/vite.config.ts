@@ -44,6 +44,13 @@ function assetsSrc(): Plugin {
                 models: entries
                   .filter((e) => e.gltf !== undefined)
                   .map((e) => ({ id: e.id, path: `${e.source}/${e.slug}/${e.gltf}` })),
+                impostors: entries
+                  .filter((e) => e.impostor !== undefined)
+                  .map((e) => ({
+                    id: e.id,
+                    atlas: `${e.source}/${e.slug}/${e.impostor!.atlas}`,
+                    meta: `${e.source}/${e.slug}/${e.impostor!.meta}`,
+                  })),
               }),
             );
           });

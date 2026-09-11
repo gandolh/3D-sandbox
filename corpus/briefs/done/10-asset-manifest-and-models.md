@@ -89,7 +89,7 @@ Four things the brief did not anticipate, three of them only visible by running 
 
 - **Poly Haven's trees cannot be scattered at all.** `pine_tree_01` is 17.4 M
   triangles against the whole scene's 3,130, and the mesh is 905 MB at *every*
-  resolution. That is now [brief 13](../todo/13-vegetation-impostors.md) and a
+  resolution. That is now [brief 13](./13-vegetation-impostors.md) and a
   decision about impostors over decimation.
 - **The strictness rule I wrote contradicted the heavy-asset split an hour later.**
   Treating "downloaded" as the standard made every build fail, because not

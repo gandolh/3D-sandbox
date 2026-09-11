@@ -56,17 +56,18 @@ credential helper, no GitHub SSH key. Commits are accumulating locally on `main`
 **Placements are real.** A dev-only Vite middleware serves `assets-src/`, the
 generator loads glTF through an injectable `AssetSource` (so it still runs
 headlessly with nothing downloaded), and placements collide with each other —
-drop a bowl over a table and it rests on the table. Context vegetation does
-*not* work: Poly Haven's trees are 4.6–17.4 M triangles each and need impostors
-first. **194 tests pass.**
+drop a bowl over a table and it rests on the table. **201 tests pass.**
+
+**Context vegetation is real.** `tree_small_02` bakes to a 3.9 MB angle atlas and
+scatters as crossed alpha-tested quads — 2,062,487 triangles per tree down to
+four, path-traced with correct alpha shadows. Crossed quads rather than
+camera-facing billboards because a path tracer has no "the camera" to face.
+`pine_tree_01` and `fir_tree_01` are unbaked, so villa's forest is one species.
 
 ## Next
 
-**10 is done.** Queued: **13** vegetation impostors — the blocker for the context
-tier looking like anything but cones — then **11** textures and an alpha-cut vine,
-then **12** a sample-convergence study to replace the guessed 2,000-sample
-default. 13 before 11 because nothing else in the scene can improve while the
-forest is proxy geometry.
+**10 and 13 are done.** Queued: **11** textures and an alpha-cut vine, then **12**
+a sample-convergence study to replace the guessed 2,000-sample default.
 
 ## Briefs
 
@@ -83,9 +84,13 @@ forest is proxy geometry.
 **Placements are real.** A dev-only Vite middleware serves `assets-src/`, the
 generator loads glTF through an injectable `AssetSource` (so it still runs
 headlessly with nothing downloaded), and placements collide with each other —
-drop a bowl over a table and it rests on the table. Context vegetation does
-*not* work: Poly Haven's trees are 4.6–17.4 M triangles each and need impostors
-first. **194 tests pass.**
+drop a bowl over a table and it rests on the table. **201 tests pass.**
+
+**Context vegetation is real.** `tree_small_02` bakes to a 3.9 MB angle atlas and
+scatters as crossed alpha-tested quads — 2,062,487 triangles per tree down to
+four, path-traced with correct alpha shadows. Crossed quads rather than
+camera-facing billboards because a path tracer has no "the camera" to face.
+`pine_tree_01` and `fir_tree_01` are unbaked, so villa's forest is one species.
 
 ## Next
 

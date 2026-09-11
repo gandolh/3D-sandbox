@@ -157,8 +157,10 @@ export function mergeSimple(geometries: readonly THREE.BufferGeometry[]): THREE.
 export function buildScatterMesh(
   field: ScatterField,
   material: THREE.Material,
-): { mesh: THREE.InstancedMesh; instances: ScatterInstance[] } {
-  const instances = scatterInstances(field);
+  /** Placed instances, when the caller has already computed or filtered them. */
+  only?: readonly ScatterInstance[],
+): { mesh: THREE.InstancedMesh; instances: readonly ScatterInstance[] } {
+  const instances = only ?? scatterInstances(field);
   const geometry = proxyTreeGeometry(field.height);
   const mesh = new THREE.InstancedMesh(geometry, material, Math.max(1, instances.length));
   mesh.name = `scatter:${field.id}`;

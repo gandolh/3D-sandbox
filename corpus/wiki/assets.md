@@ -63,8 +63,21 @@ over it. Tiering saves draw calls and authoring effort, not bytes.
 
 So `npm run assets` splits its output. `download.sh` fetches the 88 MB that is
 usable as-is; `download-heavy.sh` fetches the trees separately and is explicitly
-a *decimation source*, not something to commit. Turning those into a scatter LOD
-is unbuilt — see [open-questions.md](open-questions.md).
+a **bake source**, not something to commit.
+
+### Baking an impostor
+
+`node assets/bake/serve.ts`, then open
+`http://localhost:5199/impostor.html?asset=<source>/<slug>/<file>.gltf&angles=16&cell=512`
+in a **headed, GPU-backed** browser — see
+[running-on-a-gpu.md](running-on-a-gpu.md); headless falls back to SwiftShader
+and the bake takes hours. The page renders a ring of orthographic views and
+POSTs the atlas back, which the server writes to
+`assets-src/<source>/<slug>/impostor/`.
+
+That directory **is** committed. `tree_small_02` goes from a 110 MB download of
+2,062,487 triangles to a 3.9 MB atlas, and from 2 M triangles per instance to
+four.
 
 ## The vegetation gap — a live constraint, not a nice-to-have
 

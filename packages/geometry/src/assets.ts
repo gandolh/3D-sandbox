@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import type { ImpostorAsset } from "./context/impostor.js";
 
 /**
  * One loaded asset, reduced to what the generator and the physics world need.
@@ -26,6 +27,15 @@ export interface AssetGeometry {
  */
 export interface AssetSource {
   get(id: string): AssetGeometry | undefined;
+  /**
+   * A baked angle atlas, for assets too heavy to place as geometry.
+   *
+   * Separate from `get` because they are not alternatives at the same fidelity:
+   * the subject tier wants the real mesh and the context tier cannot have it —
+   * Poly Haven's trees are millions of triangles each. An asset may have one,
+   * both, or neither.
+   */
+  impostor?(id: string): ImpostorAsset | undefined;
 }
 
 /** Sizes and grounds a loaded object, merging it into one geometry. */

@@ -15,6 +15,14 @@ assets-src/*/
 !assets-src/download.sh
 !assets-src/download-heavy.sh
 
+# Baked impostor atlases ARE committed: they are the point. A 110 MB tree of two
+# million triangles becomes a 3.9 MB atlas and four triangles per instance, and
+# re-baking needs the source download plus a GPU.
+!assets-src/*/
+assets-src/*/*/*
+!assets-src/*/*/impostor/
+!assets-src/*/*/impostor/*
+
 .DS_Store
 
 # Derived index — disposable, rebuilt by rescanning scenes/

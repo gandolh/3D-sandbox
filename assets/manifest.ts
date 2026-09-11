@@ -26,6 +26,8 @@ export interface ManifestEntry {
   slug: string;
   /** Entry file for a model, relative to the asset directory. Absent for materials. */
   gltf?: string;
+  /** A baked angle atlas, when `impostor/atlas.png` is present. */
+  impostor?: { atlas: string; meta: string };
   /** Every file found, relative to the asset directory. */
   files: string[];
 }
@@ -72,11 +74,15 @@ export async function readManifest(dir = ASSETS_DIR): Promise<ManifestEntry[]> {
       if (files.length === 0) continue;
 
       const gltf = files.find((f) => f.endsWith(".gltf") || f.endsWith(".glb"));
+      const atlas = files.find((f) => f === "impostor/atlas.png");
       out.push({
         id: `${source}/${entry.name}`,
         source,
         slug: entry.name,
         ...(gltf === undefined ? {} : { gltf }),
+        ...(atlas === undefined
+          ? {}
+          : { impostor: { atlas, meta: "impostor/impostor.json" } }),
         files: files.sort(),
       });
     }

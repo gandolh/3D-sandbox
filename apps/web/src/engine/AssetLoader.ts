@@ -1,5 +1,6 @@
+import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-import { prepareAsset, assetSourceFrom, type AssetGeometry, type AssetSource } from "@solstice/geometry";
+import { prepareAsset, type AssetGeometry, type AssetSource, type ImpostorAsset } from "@solstice/geometry";
 
 /**
  * Loads the glTF the manifest knows about, once, into an `AssetSource`.
@@ -14,14 +15,18 @@ import { prepareAsset, assetSourceFrom, type AssetGeometry, type AssetSource } f
  */
 export async function loadAssets(signal?: AbortSignal): Promise<AssetSource> {
   const entries = new Map<string, AssetGeometry>();
+  const impostors = new Map<string, ImpostorAsset>();
 
-  let index: { models?: { id: string; path: string }[] };
+  let index: {
+    models?: { id: string; path: string }[];
+    impostors?: { id: string; atlas: string; meta: string }[];
+  };
   try {
     const response = await fetch("/assets-src/index.json", signal === undefined ? {} : { signal });
-    if (!response.ok) return assetSourceFrom(entries);
+    if (!response.ok) return source(entries, impostors);
     index = (await response.json()) as typeof index;
   } catch {
-    return assetSourceFrom(entries);
+    return source(entries, impostors);
   }
 
   const loader = new GLTFLoader();
@@ -39,7 +44,42 @@ export async function loadAssets(signal?: AbortSignal): Promise<AssetSource> {
     }),
   );
 
-  return assetSourceFrom(entries);
+  const textures = new THREE.TextureLoader();
+  await Promise.all(
+    (index.impostors ?? []).map(async (entry) => {
+      try {
+        const meta = (await (await fetch(`/assets-src/${entry.meta}`)).json()) as {
+          angles: number;
+          size: [number, number, number];
+        };
+        const texture = await textures.loadAsync(`/assets-src/${entry.atlas}`);
+        texture.colorSpace = THREE.SRGBColorSpace;
+        // The atlas is a strip of discrete views; filtering across a slice
+        // boundary would bleed one angle into the next, and mipmaps would do it
+        // worse at distance, which is exactly where impostors are used.
+        texture.generateMipmaps = false;
+        texture.minFilter = THREE.LinearFilter;
+        texture.magFilter = THREE.LinearFilter;
+        texture.wrapS = THREE.ClampToEdgeWrapping;
+        texture.wrapT = THREE.ClampToEdgeWrapping;
+        impostors.set(entry.id, { texture, angles: meta.angles, size: meta.size });
+      } catch {
+        // Left out, so scatter falls back to the proxy cone.
+      }
+    }),
+  );
+
+  return source(entries, impostors);
+}
+
+function source(
+  entries: ReadonlyMap<string, AssetGeometry>,
+  impostors: ReadonlyMap<string, ImpostorAsset>,
+): AssetSource {
+  return {
+    get: (id) => entries.get(id),
+    impostor: (id) => impostors.get(id),
+  };
 }
 
 /** Sizes for the physics world, in the shape `deriveColliders` wants. */

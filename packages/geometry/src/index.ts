@@ -9,7 +9,13 @@ import { buildWall } from "./subject/walls.js";
 import { UnsupportedRoofError, buildRoof } from "./subject/roofs.js";
 import { buildRun } from "./subject/runs.js";
 import type { AssetSource } from "./assets.js";
-import { buildScatterMesh, mergeSimple } from "./context/scatter.js";
+import {
+  buildScatterMesh,
+  mergeSimple,
+  scatterInstances,
+  type ScatterInstance,
+} from "./context/scatter.js";
+import { buildImpostorGeometry, impostorMaterial } from "./context/impostor.js";
 import { buildMass, buildRoad } from "./context/masses.js";
 
 export * from "./random.js";
@@ -21,6 +27,7 @@ export * from "./subject/roofs.js";
 export * from "./subject/runs.js";
 export * from "./assets.js";
 export * from "./context/scatter.js";
+export * from "./context/impostor.js";
 export * from "./context/masses.js";
 
 export interface TierStats {
@@ -210,6 +217,50 @@ export function generateScene(
 
   if (includeContext) {
     for (const field of doc.context.scatter) {
+      // Impostors when the field's assets have been baked. Checked before the
+      // proxy, because the alternative for a photoreal tree is not "the real
+      // mesh" — it is a cone. Poly Haven's are 2–17 M triangles each and a
+      // 284-instance forest of them is billions.
+      //
+      // Grouped per asset rather than picking one atlas for the whole field: a
+      // field names several species precisely so the scatter is not uniform,
+      // and collapsing them to whichever happened to be baked first throws that
+      // away. A field may be partly baked — those instances get impostors and
+      // the rest fall through to the proxy below.
+      const baked = new Map<string, ScatterInstance[]>();
+      const unbaked: ScatterInstance[] = [];
+      const all = scatterInstances(field);
+      for (const instance of all) {
+        if (options.assets?.impostor?.(instance.asset) === undefined) unbaked.push(instance);
+        else baked.set(instance.asset, [...(baked.get(instance.asset) ?? []), instance]);
+      }
+
+      for (const [assetId, group] of baked) {
+        const impostor = options.assets!.impostor!(assetId)!;
+        const geometry = buildImpostorGeometry(group, impostor, field.height);
+        const mesh = new THREE.Mesh(geometry, impostorMaterial(impostor));
+        mesh.name = `scatter:${field.id}:${assetId}`;
+        owned.push(geometry);
+        context.add(mesh);
+        stats.context.meshes++;
+        stats.context.triangles += triangleCount(geometry);
+        stats.instances += group.length;
+      }
+
+      if (unbaked.length === 0) continue;
+      if (baked.size > 0) {
+        // Only the leftovers get proxies, so a partly-baked field is obviously
+        // partly baked rather than silently all-or-nothing.
+        const material = resolveMaterial(materials, field.material ?? doc.site.terrain.material);
+        const { mesh } = buildScatterMesh(field, material, unbaked);
+        owned.push(mesh.geometry);
+        context.add(mesh);
+        stats.context.meshes++;
+        stats.context.triangles += triangleCount(mesh.geometry) * unbaked.length;
+        stats.instances += unbaked.length;
+        continue;
+      }
+
       const material = resolveMaterial(materials, field.material ?? doc.site.terrain.material);
       const { mesh, instances } = buildScatterMesh(field, material);
       owned.push(mesh.geometry);

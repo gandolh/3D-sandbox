@@ -67,3 +67,29 @@ and shares machinery with **brief 11** (alpha-cut materials).
 - Orbiting the viewport does not show the impostors popping.
 - An un-baked asset still yields the proxy cone, with a test.
 - Verified on the GPU, with a before/after triangle count recorded in the wiki.
+
+---
+
+## Outcome (2026-09-11)
+
+Done for `tree_small_02`. The pipeline exists and the orchard is real trees:
+2,062,487 triangles per tree became **four**, and a 110 MB download became a
+3.9 MB atlas. Verified in the viewport and path-traced, with correct alpha
+shadows on the grass.
+
+**Crossed quads, not camera-facing billboards** — and this is the thing worth
+carrying forward. A billboard is view-dependent, and a path tracer cannot have
+that: rays arrive from every direction at once, so there is no "the camera" to
+face. Two planes crossed at right angles are view-independent, cost four
+triangles, and need no special handling in the tracer at all. The brief assumed
+a camera-facing quad and a "sample the slice nearest the view angle" step; that
+step cannot exist in a path trace, and finding out why changed the design.
+
+The two planes take atlas slices 90° apart, matching their own orientation.
+That is the whole difference between a cross-tree that reads as a tree and one
+that reads as two copies of the same photograph.
+
+Not done: `pine_tree_01` and `fir_tree_01` are unbaked. Villa's forest falls
+through to `tree_small_02`'s atlas, so it renders but is one species. Baking
+them is mechanical — 1.4 GB of download and two runs of the harness — and the
+only reason to do it is variety.
