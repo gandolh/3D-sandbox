@@ -27,6 +27,12 @@ export function App() {
    * touched. When the API is not running — the common case while working on the
    * viewport alone — it falls back to downloading the canonical file, so the
    * round-trip format stays inspectable either way.
+   *
+   * `__API_BASE__` is empty in a build that has no API behind it at all (the
+   * static sub-path deploy). That is a different thing from an API that is
+   * merely down, and it is checked first: posting into a host's 404 page
+   * returns a valid HTTP response, so the unreachable path would never be
+   * taken and the user would be told the API refused a save it never saw.
    */
   const onSave = async (): Promise<void> => {
     const doc = getState().document;
@@ -36,9 +42,25 @@ export function App() {
       return;
     }
 
+    const download = (): void => {
+      const blob = new Blob([serializeScene(doc)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = `${doc.id}.scene.json`;
+      anchor.click();
+      URL.revokeObjectURL(url);
+    };
+
+    if (__API_BASE__ === "") {
+      download();
+      setStatus("No API in this build — downloaded instead");
+      return;
+    }
+
     setStatus("Saving…");
     try {
-      const response = await fetch(`/api/scenes/${doc.id}`, {
+      const response = await fetch(`${__API_BASE__}/scenes/${doc.id}`, {
         method: "PUT",
         headers: { "content-type": "application/json" },
         body: serializeScene(doc),
@@ -50,13 +72,7 @@ export function App() {
       }
       setStatus(`API refused the save (${response.status})`);
     } catch {
-      const blob = new Blob([serializeScene(doc)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const anchor = document.createElement("a");
-      anchor.href = url;
-      anchor.download = `${doc.id}.scene.json`;
-      anchor.click();
-      URL.revokeObjectURL(url);
+      download();
       setStatus("API unreachable — downloaded instead");
     }
   };

@@ -204,3 +204,39 @@ Briefs [10](briefs/todo/10-asset-manifest-and-models.md),
 [12](briefs/todo/12-render-convergence.md) written. `decisions.md` passed the
 200-line cap and split into stack and [scene](wiki/decisions-scene.md) halves.
 Hip roofs and stairs parked — nothing is blocked on either.
+
+## [2026-09-11] done | Published to the estate, and on the showcase shelf
+
+Solstice now has a stack in `vps-deploy` (`stacks/solstice.ts`) and a kit on the
+`showcase` gallery (kit 12, `/solstice`). Neither has been *run* yet: the deploy
+is written and dry-run clean, and the showcase kit says so rather than linking a
+page that does not exist.
+
+**The client deploys; the API deliberately does not.** The obvious shape was
+`WebServiceStack`, like atrium — a static client plus a containerized Fastify
+service. It is the wrong one here, and for a reason that comes straight out of
+[wiki/decisions.md](./wiki/decisions.md): scene files are truth, and the API is a
+writer over them. Published unauthenticated at `/solstice-api`, `PUT
+/api/scenes/greenhollow` from anybody on the internet overwrites the reference
+scene. Authoring is a repo-time activity by design, so there is nothing a public
+writer would be *for*. If it is ever wanted on the box it needs Ward in front of
+it first, and then it is a different stack, not a flag on this one.
+
+Nothing is lost by that. The client bundles the scene it loads and derives
+geometry, colliders, sun position and the path-traced render in the browser, so
+what ships is the whole editor and the whole renderer.
+
+**One code change, forced by the deploy.** `Save` posted to a hardcoded
+`/api/scenes/:id` and fell back to downloading the canonical file when the fetch
+*threw*. Behind a Caddy sub-path with no API, that fetch does not throw — it
+reaches the estate's 404 handler and returns a perfectly valid HTTP response, so
+the fallback would never fire and the user would be told the API refused a save
+it never saw. The base is now `__API_BASE__`, injected by `vite define` from
+`SOLSTICE_API_BASE` (default `/api`, which is what the dev proxy expects). Empty
+means *this build has no API at all*, which is a different thing from an API that
+is down, and is checked before the request rather than after it. Verified against
+the real sub-path artifact: `No API in this build — downloaded instead`.
+
+Also confirmed end to end that the sub-path build is sound — `SOLSTICE_BASE`
+drives `base`, `index.html` references `/solstice/assets/…`, and the built bundle
+path-traces Greenhollow on the real GPU from a static file server.

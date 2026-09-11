@@ -43,6 +43,13 @@ GPU is reachable from WSL2, but only through X11: see
 [running-on-a-gpu.md](running-on-a-gpu.md) for why headless falls back to
 software and what flags avoid it.
 
+**It has a home.** A `solstice` stack now exists in the `vps-deploy` estate
+(static, `/solstice`, dry-run clean but never executed) and a kit on the
+`showcase` shelf. The **client deploys and the API does not** — it is an
+unauthenticated writer over the scene files, and authoring is a repo-time
+activity by design. `SOLSTICE_API_BASE` empty is what makes `Save` download
+rather than post into a 404. See [log.md](../log.md).
+
 **Blocked:** `git push` has no credentials on this machine — no `gh`, no
 credential helper, no GitHub SSH key. Commits are accumulating locally on `main`.
 
