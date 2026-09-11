@@ -46,6 +46,14 @@ software and what flags avoid it.
 **Blocked:** `git push` has no credentials on this machine — no `gh`, no
 credential helper, no GitHub SSH key. Commits are accumulating locally on `main`.
 
+## Next
+
+Three briefs are queued, in order: **10** the asset manifest and real models
+(which also arms `asset-resolves` — it has never once run on a real scene), **11**
+textures and an alpha-cut vine, **12** a sample-convergence study to replace the
+guessed 2,000-sample default. Brief 10 needs assets downloaded by hand; it emits
+a download list for that.
+
 ## Briefs
 
 | # | Brief | State |

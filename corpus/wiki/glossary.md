@@ -67,3 +67,9 @@ property of what is planted — a rose bed and an apple orchard differ by it —
 a rendering hint, and the thing that lets proxy geometry be the right size
 before the asset manifest exists.
 _Avoid_: proxy size, tree height
+
+**Manifest**:
+The generated index of assets actually present in `assets-src/`. Not
+hand-maintained — scanning the files is what keeps it honest — and it is what
+arms the `asset-resolves` lint rule. A scene may only name assets in it.
+_Avoid_: asset list, asset registry, catalogue

@@ -105,42 +105,8 @@ module means a compile step on every machine and on the VPS. It prints an
 `ExperimentalWarning`; that is the entire cost. Revisit if the index ever holds
 anything that cannot be recomputed.
 
-## A roof belongs to the structure it mostly sits over (2026-09-11)
+---
 
-`roof-covers-walls` used to take the bounds of *every* wall on a level and
-require the roof to cover all of them. That silently assumed **one building per
-level**, and the first realistic scene — house, garage, greenhouse and a
-boundary wall on one plot — failed every roof at once.
-
-Walls are now clustered into *structures* by shared endpoints, and a roof is
-judged against the structure covering at least **half of its own footprint**.
-
-- *Rejected*: roofs naming the walls they cover. Explicit, but one more
-  cross-reference to keep consistent in an AI-authored document, and the
-  geometry already says which walls a roof is over.
-- *Rejected*: any-overlap association. A porch roof has to tuck against the house
-  wall to be a porch; a 0.2 m lap onto an 11 m house would make the house's walls
-  the porch roof's problem.
-- A roof over no walls falls through to the level's **slabs** — a canopy shelters
-  a floor. Over neither, it is a warning.
-
-## `baseColor` is the stand-in for textured materials, not just procedural ones (2026-09-11)
-
-The schema described `baseColor` as "used directly when `source` is
-`procedural`". The generator has always applied it regardless, and without one
-every untextured material resolves to the same neutral grey — so a scene of
-grass, clay tile, gravel and zinc came out one flat tan.
-
-Every material now declares its dominant colour whether or not it names a
-texture. When the asset manifest lands the maps replace it; until then a scene
-can actually be composed.
-
-## The plot is angled to the compass with `northOffset`, not re-authored (2026-09-11)
-
-Greenhollow's plot runs +Z into the site. Axis-aligned to true north that puts
-the entire garden elevation in permanent shade at 45°N. Rather than rotate every
-coordinate, `site.northOffset` is set to 40° so the front faces south-west and
-takes the afternoon while the garden takes the morning.
-
-- *Rejected*: rotating the authored coordinates. The plot's own axes are what
-  make the layout readable in source; the sun is the thing that should move.
+Decisions about **how a scene is modelled and authored** — roof association,
+material colour, plot orientation, the asset manifest, schema versioning — live
+in [decisions-scene.md](decisions-scene.md). This page is the stack.
