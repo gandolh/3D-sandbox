@@ -2,6 +2,7 @@ import * as THREE from "three";
 import type { Plan, Run } from "@solstice/schema";
 import { ensureStandardAttributes } from "../attributes.js";
 import { mulberry32, randomBetween } from "../random.js";
+import { mergeSimple } from "../context/scatter.js";
 
 /** Post section, in metres. Slim enough to read as metalwork at render scale. */
 const POST = 0.08;
@@ -149,7 +150,7 @@ function beams(run: Run, height: number, rafters: boolean): THREE.BufferGeometry
  */
 const LEAF = 0.34;
 /** Clusters per square metre of canopy. Enough to read as dense, sparse enough to see sky. */
-const LEAF_DENSITY = 26;
+const LEAF_DENSITY = 34;
 
 function canopy(run: Run, height: number): THREE.BufferGeometry[] {
   const out: THREE.BufferGeometry[] = [];
@@ -166,11 +167,24 @@ function canopy(run: Run, height: number): THREE.BufferGeometry[] {
       const across = randomBetween(rng, -run.width / 2 - 0.2, run.width / 2 + 0.2);
       const size = LEAF * randomBetween(rng, 0.7, 1.5);
 
-      const leaf = new THREE.PlaneGeometry(size, size);
-      // Tilted, not flat: a field of horizontal quads reads as a perforated
-      // ceiling, and the whole point is that it should not.
-      leaf.rotateX(-Math.PI / 2 + randomBetween(rng, -0.7, 0.7));
-      leaf.rotateY(rng() * Math.PI * 2);
+      // A cluster is two quads crossed, not one.
+      //
+      // A single flat quad presents as a thin sliver at a grazing angle, so from
+      // directly underneath — which is where the approach shot puts the viewer —
+      // the canopy thinned out into scattered specks. Crossing them gives a
+      // cluster presence from any direction, for two triangles more. The same
+      // reason the tree impostors are crossed quads rather than billboards.
+      const tilt = -Math.PI / 2 + randomBetween(rng, -0.7, 0.7);
+      const spin = rng() * Math.PI * 2;
+      const a = new THREE.PlaneGeometry(size, size);
+      a.rotateX(tilt);
+      a.rotateY(spin);
+      const b = new THREE.PlaneGeometry(size, size);
+      b.rotateX(tilt);
+      b.rotateY(spin + Math.PI / 2);
+      const leaf = mergeSimple([a, b]);
+      a.dispose();
+      b.dispose();
 
       const u = along / segment.length;
       leaf.translate(

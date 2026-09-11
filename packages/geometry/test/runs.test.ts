@@ -83,6 +83,16 @@ describe("buildRun", () => {
     expect(top - canopy.minY).toBeLessThan(0.25);
   });
 
+  it("crosses each cluster, so it reads from below as well as from the side", () => {
+    // A single flat quad is a sliver at a grazing angle, and the approach shot
+    // views the canopy from directly underneath.
+    const { climber } = buildRun(run({ climber: "vine" }));
+    const first = climber[0]!;
+    const p = first.getAttribute("position");
+    const count = first.index === null ? p.count : first.index.count;
+    expect(count / 3).toBe(4);
+  });
+
   it("builds the climber from many small clusters, not one slab", () => {
     // A slab reads as a black soffit from underneath. What makes a vine a vine
     // is that light comes through it in patches, so the gaps are the feature.

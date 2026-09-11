@@ -298,3 +298,35 @@ download have never executed (→ 15); `three-gpu-pathtracer` already ships a
 `DenoiseMaterial` nobody wired up (→ 16); `xatlas-web` is an unused dependency,
 `overview.md` still says the app and API are "not yet built", and there is no
 README (→ 17); two trees are unbaked and the vine is thin from underneath (→ 18).
+
+## 2026-09-11 — Briefs 14 to 18: animation, and the render that came out black
+
+**The render that finally finished came out black.** Every render in this
+project's life had been cancelled, so `toBlob` had never executed. The renderer
+has no `preserveDrawingBuffer`, so the buffer is cleared before the next
+compositing step and a `toBlob` issued a frame later reads nothing: 44 KB of
+RGB(0,0,0) at 1920 × 1080, after fourteen minutes, with the correct image on
+screen throughout. Captured in-tick now. The bake harness had set that flag
+explicitly, with a comment; the render path never connected the two.
+
+**Animation time exists.** Tracks of keyframes in the document, evaluated by a
+pure `packages/animation`, driven by anime.js. The decision that mattered was
+not in the brief: playback cannot go through the document, because `setSolar`
+clones it, re-parses it, re-lints it and bumps the revision — and the viewport
+regenerates the scene on a revision change. Sixty frames a second is sixty
+rebuilds. The playhead drives the engine; the transport commits once, on stop.
+
+**The denoiser made things worse.** Brief 12 predicted it would help, from sound
+1/√N reasoning. Measured: RMS *rose* from 13.62 to 13.75 at 150 samples and
+11.75 to 12.16 at 400. This scene is nearly all high-frequency material and an
+edge-aware blur has little it can safely touch. It ships off. The same kind of
+reasoning that produced that prediction produced the 2,000-sample default;
+measuring settled both, in opposite directions.
+
+Also: `xatlas-web` removed (imported nowhere), a README written, a duplicate
+obsolete `Next` section deleted from status, `running-on-a-gpu.md` split at the
+line cap, `apps/web` tested from one file to three, and the vine's clusters made
+crossed quads so the canopy reads from underneath.
+
+Deferred on purpose: baking `pine_tree_01` and `fir_tree_01`, at the user's
+request to spend less machine time. 231 tests.

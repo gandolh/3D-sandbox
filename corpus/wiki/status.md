@@ -74,8 +74,8 @@ camera-facing billboards because a path tracer has no "the camera" to face.
 
 ## Next
 
-**Briefs 01–13 are done.** An audit against the original brief on 2026-09-11 put
-five more in `todo/`, in rough order of how much they matter:
+**Briefs 01–18 are done**, bar the deferred half of 18. The 2026-09-11 audit
+against the original brief produced five more; all are closed:
 
 - **[14 — animation time](../briefs/done/14-animation-time.md) — done.** A
   sun-path study plays over `greenhollow`; `packages/animation` evaluates tracks
@@ -92,8 +92,9 @@ five more in `todo/`, in rough order of how much they matter:
 - **[17 — repo honesty pass](../briefs/done/17-repo-honesty-pass.md) — done.**
   `xatlas-web` removed, a README written, the overview and architecture pages
   corrected, and `apps/web` tested where it holds logic.
-- **[18 — finish the vegetation](../briefs/todo/18-vegetation-finishing.md).**
-  Two trees unbaked, the vine thin from underneath.
+- **[18 — finish the vegetation](../briefs/done/18-vegetation-finishing.md) —
+  half done.** The vine's clusters are crossed quads now and read from below;
+  the two tree bakes are deferred for machine time, not for any unknown.
 
 Schema migrations stay in [open-questions.md](open-questions.md), correctly
 deferred until a field first changes meaning.

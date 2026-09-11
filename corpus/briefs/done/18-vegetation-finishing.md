@@ -46,3 +46,27 @@ visible, and neither is hard now that the machinery exists.
 - The vine reads as a vine from directly beneath, in a path trace, not just from
   the gate.
 - The atlases are committed and the sources are not.
+
+---
+
+## Outcome (2026-09-11) — half done, deliberately
+
+**The vine is fixed.** Each cluster is now two quads crossed rather than one
+flat quad, and density is 34/m² rather than 26. A single flat quad presents as a
+sliver at a grazing angle, which is why the canopy thinned into scattered specks
+seen from directly underneath — exactly where the approach shot puts the viewer.
+Crossing them buys presence from any direction for two triangles each: 2,375
+clusters, 9,500 triangles, and the whole scene is 22,458.
+
+It is the same reasoning as the tree impostors, and the second time on this
+project that "one quad is not enough, two crossed are" has been the answer.
+
+**The tree bakes are deferred.** `pine_tree_01` and `fir_tree_01` need 1.4 GB of
+download and two heavy GPU bakes, and the user asked for less machine time. The
+harness works and the procedure is written down in
+[assets.md](../../wiki/assets.md); this is an hour of mechanical work whenever it
+is wanted. Until then villa's forest renders as one species, which is a
+cosmetic flaw in the *fixture* scene, not in `greenhollow`.
+
+Moved back to [open-questions.md](../../wiki/open-questions.md) rather than left
+implied.
