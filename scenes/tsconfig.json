@@ -1,0 +1,17 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    // No `outDir`: nothing here is compiled for consumption. `build.ts` is run
+    // by Node's type-stripping, which discards types **without checking
+    // them** — so this config exists purely to make `tsc` look at 1,200 lines
+    // of scene authoring that nothing else ever did.
+    "noEmit": true,
+    // `build.ts` imports `./src/greenhollow.ts` with the extension, because
+    // that is what Node's type-stripping requires of a script it runs
+    // directly. Nothing is emitted from here, so the extension is only a
+    // question for `tsc`, and this is the answer.
+    "allowImportingTsExtensions": true,
+    "types": ["node"]
+  },
+  "include": ["*.ts", "src/**/*.ts"]
+}

@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import type { RenderProgress } from "../engine/PathTracer.js";
 
 const seconds = (ms: number): string => `${(ms / 1000).toFixed(1)}s`;
@@ -14,6 +15,32 @@ export function RenderOverlay({
   progress: RenderProgress;
   onCancel: () => void;
 }) {
+  const cancel = useRef<HTMLButtonElement | null>(null);
+
+  /**
+   * Escape cancels, and the button takes focus when the overlay appears.
+   *
+   * This is the control that stops an hour of GPU, and it was the hardest thing
+   * in the app to reach: a small button at the bottom of a bar, behind every
+   * focusable control in the toolbar and the whole scene tree. Escape is what
+   * everyone already presses at a modal-looking thing, and moving focus here
+   * means the keyboard answer is "Enter".
+   *
+   * Bound on `window` rather than the overlay so it works wherever focus went —
+   * including the canvas, which is where it usually is when someone starts a
+   * render.
+   */
+  useEffect(() => {
+    cancel.current?.focus();
+    const onKey = (event: KeyboardEvent): void => {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      onCancel();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onCancel]);
+
   const building = progress.phase === "building";
   const pct = building
     ? progress.build * 100
@@ -51,11 +78,13 @@ export function RenderOverlay({
         </div>
       </div>
       <button
+        ref={cancel}
         type="button"
         onClick={onCancel}
-        className="shrink-0 rounded-sm border border-line bg-panel px-3 py-1.5 text-[12px] font-medium text-ink"
+        title="Stop this render — Escape also works"
+        className="shrink-0 rounded-sm border border-line bg-panel px-3 py-1.5 text-[12px] font-medium text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
       >
-        Cancel
+        Cancel <span className="text-subtle">Esc</span>
       </button>
     </div>
   );

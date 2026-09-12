@@ -10,13 +10,13 @@ import tailwindcss from "@tailwindcss/vite";
  * Serve `assets-src/` at `/assets-src/` in dev.
  *
  * The downloads live at the repo root, outside this app, and they are
- * gitignored — 17 assets come to 135 MB. Copying them into `public/` would
+ * gitignored — the light asset set is around 90 MB (see `assets-src/DOWNLOADS.md`). Copying them into `public/` would
  * duplicate that and put it in the bundle; serving them from where they already
  * are costs nothing.
  *
  * **Dev only.** A production build ships no models, so the deployed client falls
  * back to proxies. That is the honest state until vegetation impostors (brief
- * 13) make the asset set small enough to bundle — a 135 MB static deploy is
+ * 13) make the asset set small enough to bundle — a static deploy carrying every asset is
  * worse than grey boxes.
  */
 function assetsSrc(): Plugin {

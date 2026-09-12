@@ -60,3 +60,53 @@ Two smaller keyboard gaps belong in the same pass:
 - The scene tree is one tab stop with arrow-key navigation.
 - Both toolbar selects have accessible names.
 - `npm run check` exits 0.
+
+---
+
+## Outcome — 2026-09-12
+
+Done, with one verification I could not complete in this environment and say so
+below rather than claim.
+
+**1 — Cancel is reachable in zero keys.** The overlay moves focus to the button
+when it appears, and **Escape** cancels — bound on `window` rather than on the
+overlay, so it works wherever focus happens to be, which when a render starts is
+usually the canvas. The button reads `Cancel Esc` and has a visible focus ring.
+
+**2 — The scene tree is a tree.** `role="tree"` with `aria-label="Scene tree"`
+(distinct from the picker's "Scene"), 40 `treeitem`s carrying `aria-level` and
+`aria-selected`, a roving tab stop, and Arrow/Home/End/Enter handled. Headings —
+Site, Terrain, the level and tier rows — were `<button disabled>`, which tells a
+screen reader there is a control you could press if only it worked; they are
+`role="presentation"` now. **Zero disabled buttons remain in the tree**, down
+from fourteen.
+
+Navigation is driven off the DOM rather than a flattened copy of the document,
+because the tree is assembled from six collections in render order and
+rebuilding that order here would be a second source of truth that drifts the
+first time a section is added.
+
+**Tab stops across the whole app: ~53 → 13.** Tabbing through sixty walls to
+reach the viewport is not navigation.
+
+**3 — Both `<select>`s have `aria-label`s.** `title` is a tooltip; a screen
+reader may or may not announce it and nothing else will.
+
+### What was actually performed
+
+Measured in the browser: the tree's roles and levels; `ArrowDown` → `W-01`,
+again → `W-02`, `ArrowUp` → `W-01`, `End` → `roof-greenhouse`, `Home` → `W-01`,
+`Enter` → selected; the tab-stop count and names; focus landing on Cancel when a
+render starts, screenshotted with the ring visible; and the toolbar correctly
+disabled during a live render.
+
+**Not isolated: Escape cancelling a render in progress.** On the first attempt
+the overlay did close after Escape — but the status line read "Render
+downloaded", meaning that render had *completed* rather than been cancelled, so
+it proves nothing. Two further attempts could not be read back: this machine
+renders in software (brief 40), and at 64 × 36 one sample takes **77 seconds**
+with the main thread saturated, so CDP could neither deliver the keystroke nor
+read the result. The binding itself is a plain `window` keydown listener calling
+the same `onCancel` the button calls, and the focus half is confirmed — but the
+end-to-end cancel is unverified here and should be checked on a machine with a
+GPU.

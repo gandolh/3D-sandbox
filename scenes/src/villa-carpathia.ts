@@ -12,7 +12,7 @@ import {
   wallsFromFootprint,
   windowOpening,
   withOpenings,
-  type Plan,
+  type PlanInput,
   type SceneDocumentInput,
 } from "@solstice/schema";
 
@@ -54,7 +54,7 @@ const NEIGHBOURS = [
 ];
 
 /** A rectangle grown by `margin` on every side. */
-const grown = (footprint: Plan[], margin: number): Plan[] => {
+const grown = (footprint: PlanInput[], margin: number): PlanInput[] => {
   const xs = footprint.map(([x]) => x);
   const zs = footprint.map(([, z]) => z);
   const minX = Math.min(...xs) - margin;

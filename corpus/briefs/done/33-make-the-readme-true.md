@@ -67,3 +67,45 @@ know `npm run scenes` exists — the quickstart never mentions it.
 - A clean clone followed by the README, literally, produces a running editor.
   Say in the outcome note that you ran it.
 - No number in the README contradicts a generated artefact or another line.
+
+---
+
+## Outcome — 2026-09-12
+
+All five fixed, and the quickstart was **verified by running it**, not by
+reasoning — which is what the brief insisted on and it was right to.
+
+**1 — The broken quickstart, proven.** Cloned the repo to a temp directory, ran
+`npm install`, and then:
+
+```
+node -e "import('@solstice/schema')"
+FAILED: ERR_MODULE_NOT_FOUND
+  Cannot find module '…/node_modules/@solstice/schema/dist/index.js'
+```
+
+`packages/schema/` on a fresh clone contains `package.json src test tsconfig.json`
+and no `dist`. Then `npm run build` in the same clone: `RESOLVED, exports: 56`,
+and the dev server serves `/` and `/src/main.tsx` with 200. So the missing step
+is exactly `npm run build`, and it now has its own line with the reason beside
+it.
+
+**2 — The asset figures are gone rather than corrected.** The README said 135 MB
+in one paragraph and ~88 MB five lines later; the generated file says 89.8 MB.
+Rather than pick one, it now points at `assets-src/DOWNLOADS.md`, which
+`npm run assets` regenerates — a number that drifts is worse than a pointer to
+one that cannot. The stale 135 MB is also gone from `vite.config.ts` and
+`.gitignore`.
+
+**3 — The test count is gone**, for the same reason. `npm run check`'s comment
+now lists what it does, not how many of it there are.
+
+**4 — Node 22.12 is stated** above the quickstart, and `.npmrc` gained
+`engine-strict=true` so an old Node fails with a clear message instead of a raw
+syntax error pointing at a type annotation — which names nothing useful and
+looks like a bug in the code.
+
+**5 — The scene workflow has its own section.** Edit `scenes/src/*.ts`, run
+`npm run scenes`, reload. Nothing watches those files; editing one with the dev
+server running and expecting the viewport to change is the first thing everyone
+tries, and it does nothing.

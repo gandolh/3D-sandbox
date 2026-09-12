@@ -89,11 +89,11 @@ migrations, and the two unbaked conifers that only the regression fixture uses.
 | 29 | [Writing a scene must not destroy one](../briefs/done/29-writing-a-scene-must-not-destroy-one.md) | done |
 | 30 | [Give the document a ceiling](../briefs/todo/30-give-the-document-a-ceiling.md) | todo |
 | 31 | [Contain the bake server](../briefs/done/31-contain-the-bake-server.md) | done |
-| 32 | [Type-check the scenes](../briefs/todo/32-typecheck-the-scenes.md) | todo |
-| 33 | [Make the README true](../briefs/todo/33-make-the-readme-true.md) | todo |
+| 32 | [Type-check the scenes](../briefs/done/32-typecheck-the-scenes.md) | done |
+| 33 | [Make the README true](../briefs/done/33-make-the-readme-true.md) | done |
 | 34 | [A truncated download is forever](../briefs/todo/34-a-truncated-download-is-forever.md) | todo |
 | 35 | [The app cannot tell you what happened](../briefs/todo/35-the-app-cannot-tell-you-what-happened.md) | todo |
-| 36 | [Reach Cancel without a mouse](../briefs/todo/36-reach-cancel-without-a-mouse.md) | todo |
+| 36 | [Reach Cancel without a mouse](../briefs/done/36-reach-cancel-without-a-mouse.md) | done |
 | 37 | [A home for shared primitives](../briefs/todo/37-a-home-for-shared-primitives.md) | todo |
 | 38 | [Tests that do not hold weight](../briefs/todo/38-tests-that-do-not-hold-weight.md) | todo |
 | 39 | [Switching scenes keeps the first one's assets](../briefs/done/39-switching-scenes-keeps-the-first-ones-assets.md) | done |

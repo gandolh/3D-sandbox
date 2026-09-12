@@ -50,6 +50,7 @@ export function Toolbar({ onSave }: { onSave: () => void }) {
           value={sceneId}
           onChange={(event) => setSceneId(event.target.value)}
           disabled={rendering}
+          aria-label="Scene"
           title={duringRender ?? "Which scene is open"}
           className="rounded-sm border border-line bg-panel px-2 py-[3px] font-mono text-[11.5px] text-muted disabled:opacity-40"
         >
@@ -122,6 +123,7 @@ export function Toolbar({ onSave }: { onSave: () => void }) {
               window.dispatchEvent(new CustomEvent("solstice:frame", { detail: picked }));
             }
           }}
+          aria-label="Shot to render"
           title="Which shot the Render button reproduces"
           className="rounded-sm border border-line bg-panel px-2 py-1.5 text-[12px] text-ink"
         >

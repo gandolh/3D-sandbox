@@ -65,3 +65,42 @@ Four `tsc` invocations for two independent results: `--force` discards the
 - `npm run check` type-checks `scenes/` and still exits 0.
 - TypeScript runs twice, not four times, and the outcome note says what that saved.
 - A deliberate type error in `scenes/src/elmsgate.ts` fails `npm run check`.
+
+---
+
+## Outcome — 2026-09-12
+
+Done, and the answer to "run it and report what it finds" is **36 errors in three
+classes**, every one of them latent since the scenes were written.
+
+`scenes/tsconfig.json` is `noEmit` with `allowImportingTsExtensions` — nothing
+here is compiled for consumption, `build.ts` is run by Node's type-stripping
+which **discards types without checking them**, so this config exists purely to
+make `tsc` look at 1,200 lines nothing ever had.
+
+**1 — `WallSpec` is not exported from `@solstice/schema`** (1 error).
+`greenhollow.ts` has been importing it for weeks. It resolved to nothing, and
+nothing noticed: a type-only import is deleted by type-stripping without anyone
+asking whether it existed. Fixed by exporting it, which it should always have
+been — scenes build walls by hand routinely.
+
+**2 — `rect()` returns a type its own schema rejects** (34 errors). The helper
+returned `Plan[]`, where `Plan` is `readonly [M, M]`, while `SceneDocumentInput`
+is a *mutable* tuple — so the builder's own convenience function produced
+something the document it builds will not accept. Fixed at the root with a
+`PlanInput` type: mutable, exported, and documented as the authoring form
+against `Plan`'s readonly geometry form.
+
+**3 — `build.ts` imports with a `.ts` extension** (1 error), which is what Node
+requires of a script it runs directly. `allowImportingTsExtensions`, with a
+comment saying why.
+
+### The passes, collapsed
+
+`check` ran `tsc --build` and then `tsc --build --force`, and `--force`'s only
+effect is to throw away the work the line before it just did. `typecheck` is now
+plain `tsc --build`; the separate `build` step is gone from `check`, because a
+composite build *is* a typecheck; `typecheck:scenes` is new.
+
+**Wall clock for `npm run check`: 27.9 s → 22.4 s**, while covering 1,200 lines
+more than before.

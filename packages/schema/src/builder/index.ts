@@ -13,10 +13,31 @@ type WallInput = NonNullable<
   NonNullable<SceneDocumentInput["subject"]>["levels"]
 >[number]["walls"];
 type OpeningInput = NonNullable<NonNullable<WallInput>[number]["openings"]>[number];
-type WallSpec = NonNullable<WallInput>[number];
+/**
+ * One wall as the document declares it, before parsing.
+ *
+ * Exported because scenes build walls by hand — a boundary wall with a gate, an
+ * internal partition — and were importing this name already. It was not
+ * exported, and nothing noticed: `scenes/` was never type-checked, and Node's
+ * type-stripping deletes a type-only import without ever asking whether it
+ * resolves.
+ */
+export type WallSpec = NonNullable<WallInput>[number];
+
+/**
+ * A plan point as an *author* writes it.
+ *
+ * Deliberately mutable, unlike `Plan`, which is the readonly form the geometry
+ * package passes around. The difference matters exactly here: `SceneDocument`'s
+ * Zod input type is a mutable tuple, so a helper returning `readonly [M, M]`
+ * produces something the schema it belongs to will not accept. Thirty-four type
+ * errors across the three scenes came from that one mismatch, none of them
+ * visible until `scenes/` was type-checked for the first time.
+ */
+export type PlanInput = [number, number];
 
 /** An axis-aligned rectangle in plan space, given by its corner and extent. */
-export function rect(x: number, z: number, width: number, depth: number): Plan[] {
+export function rect(x: number, z: number, width: number, depth: number): PlanInput[] {
   return [
     [x, z],
     [x + width, z],
