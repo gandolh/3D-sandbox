@@ -1,10 +1,16 @@
 import type { SceneDocument } from "@solstice/schema";
-import {
-  PhysicsWorld,
-  deriveColliders,
-  type CuboidCollider,
-  type PlacementSizes,
-} from "@solstice/physics";
+// `@solstice/physics/colliders`, not the package root.
+//
+// `deriveColliders` is pure arithmetic over the document and the
+// always-available colliders toggle uses it; `PhysicsWorld` is the only thing
+// in the package that touches Rapier. The package's index re-exports
+// `world.js`, and Rapier's module has side effects, so importing anything
+// through the root pulls ~2 MB of inlined WASM into the first paint — for a
+// feature (drop to floor) most visitors never reach. The second entry point is
+// what lets a bundler tell the two halves apart.
+import { deriveColliders, type CuboidCollider, type PlacementSizes } from "@solstice/physics/colliders";
+// Type-only, so it is erased rather than emitted as an import.
+import type { PhysicsWorld } from "@solstice/physics";
 
 /** Every input a physics world is derived from. */
 export interface PhysicsInputs {
@@ -23,6 +29,16 @@ export interface PhysicsInputs {
 }
 
 let cached: { inputs: PhysicsInputs; world: PhysicsWorld } | null = null;
+let engine: typeof import("@solstice/physics") | null = null;
+
+/**
+ * Has the physics engine chunk already been fetched?
+ *
+ * So the caller can say "Loading the physics engine…" on the first drop and
+ * "Dropping table-01…" on every one after, rather than showing the same
+ * message for two very different waits.
+ */
+export const physicsReady = (): boolean => engine !== null;
 
 /**
  * Same inputs, field by field, by identity.
@@ -64,7 +80,12 @@ const sameInputs = (a: PhysicsInputs, b: PhysicsInputs): boolean => {
 export async function physicsFor(inputs: PhysicsInputs): Promise<PhysicsWorld> {
   if (cached !== null && sameInputs(cached.inputs, inputs)) return cached.world;
   cached?.world.dispose();
-  const world = await PhysicsWorld.create(inputs.doc, sizesFromMap(inputs.sizes));
+  // Deferred to here — the first drop — rather than to module scope. The chunk
+  // is still statically built and served from the same directory, so this does
+  // not touch the static-deploy decision; it changes *when* it loads, not
+  // where it comes from.
+  engine ??= await import("@solstice/physics");
+  const world = await engine.PhysicsWorld.create(inputs.doc, sizesFromMap(inputs.sizes));
   cached = { inputs, world };
   return world;
 }

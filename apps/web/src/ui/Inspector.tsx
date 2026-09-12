@@ -1,5 +1,5 @@
 import { editDocument, getState, setStatus, useStore } from "../state/store.js";
-import { physicsFor } from "../lib/physics.js";
+import { physicsFor, physicsReady } from "../lib/physics.js";
 import { mToMm, mmToM, wallBearing, wallLength } from "@solstice/schema";
 import { findEntity, setWallBearing, setWallLength } from "../lib/entities.js";
 import { Divider, Field, PanelTitle } from "./primitives.jsx";
@@ -227,12 +227,18 @@ function PlacementInspector({ index }: { index: number }) {
   const drop = async (): Promise<void> => {
     const current = getState().document;
     if (current === null) return;
+    // Rapier is ~2 MB of inlined WASM and it is fetched on this click rather
+    // than at first paint, so the first drop of a session waits for a download
+    // and every later one does not. Two different waits, two messages.
+    setStatus(physicsReady() ? `Dropping ${placement.id}…` : "Loading the physics engine…");
+    let world;
+    try {
+      world = await physicsFor({ doc: current, revision, sizes: getState().assetSizes });
+    } catch {
+      setStatus("Could not load the physics engine — drop to floor is unavailable");
+      return;
+    }
     setStatus(`Dropping ${placement.id}…`);
-    const world = await physicsFor({
-      doc: current,
-      revision,
-      sizes: getState().assetSizes,
-    });
     // The asset's real size when it is loaded; the old guess when it is not.
     // A guessed box is why placements could not collide before — it settles
     // things onto a surface that is not where the model's surface is.

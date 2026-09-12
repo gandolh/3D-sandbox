@@ -82,7 +82,7 @@ migrations, and the two unbaked conifers that only the regression fixture uses.
 | 22 | [Collider rotation units](../briefs/done/22-collider-rotation-units.md) | done |
 | 23 | [Normals face outward](../briefs/done/23-normals-face-outward.md) | done |
 | 24 | [Physics cache ignores sizes](../briefs/done/24-physics-cache-ignores-sizes.md) | done |
-| 25 | [Defer the heavy half](../briefs/todo/25-defer-the-heavy-half.md) | todo |
+| 25 | [Defer the heavy half](../briefs/done/25-defer-the-heavy-half.md) | done |
 | 26 | [Stop shipping source maps](../briefs/done/26-stop-shipping-source-maps.md) | done |
 | 27 | [Arm the unproven rules](../briefs/done/27-arm-the-unproven-rules.md) | done |
 | 28 | [Close the cross-origin surface](../briefs/done/28-close-the-cross-origin-surface.md) | done |

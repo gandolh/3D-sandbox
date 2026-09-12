@@ -55,6 +55,10 @@ export function Viewport() {
         }),
       onStats: setStats,
       onRenderProgress: setRender,
+      // Both heavy halves of the app now arrive on a click that used to feel
+      // instant. Saying so is the difference between a slow start and a broken
+      // button.
+      onRenderLoading: () => setStatus("Loading the renderer…"),
     });
     engineRef.current = engine;
 

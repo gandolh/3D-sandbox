@@ -12,12 +12,20 @@ import {
 import type { CuboidCollider } from "@solstice/physics";
 import { resolveSolar, skyGradient } from "@solstice/solar";
 import { minutesToClock } from "@solstice/animation";
-import {
+// Type-only, so `three-gpu-pathtracer` is not in the first paint.
+//
+// Everything this module needs from `PathTracer.js` is used solely inside
+// `startRender`, and a visitor who only orbits the viewport never reaches it.
+// The chunk is still statically built and served from the same directory — this
+// changes *when* it loads, not where it comes from, so the static-deploy
+// decision is untouched.
+import type {
   PathTraceSession,
-  buildSkyEnvironment,
-  type RenderProgress,
-  type RenderSettings,
+  RenderProgress,
+  RenderSettings,
 } from "./PathTracer.js";
+
+type Tracer = typeof import("./PathTracer.js");
 import { frameShot, shotCamera } from "./shot.js";
 
 /**
@@ -48,6 +56,8 @@ export interface EngineEvents {
   onTranslate: (id: string, dx: number, dz: number) => void;
   onStats: (stats: { triangles: number; instances: number }) => void;
   onRenderProgress: (progress: RenderProgress | null) => void;
+  /** The renderer chunk is being fetched — the first Render of a session. */
+  onRenderLoading?: () => void;
 }
 
 /**
@@ -384,6 +394,17 @@ export class SandboxEngine {
     }
     const { shot, ...settings } = request;
 
+    // Fetched before anything else is touched, so a chunk that fails to arrive
+    // leaves the viewport exactly as it was — no disabled orbit, no hidden
+    // gizmo, no half-built render scene to unwind.
+    let tracer: Tracer;
+    try {
+      this.events.onRenderLoading?.();
+      tracer = await import("./PathTracer.js");
+    } catch (error) {
+      throw new Error(`Could not load the renderer: ${(error as Error).message}`);
+    }
+
     // A shot's solar override is the whole reason `garden-elevation` differs
     // from `sw-threequarter`: it renders at 07:15 whatever the working clock
     // says. The sun, the sky environment and the pixels all have to agree, so
@@ -394,13 +415,13 @@ export class SandboxEngine {
         ? resolveSolar(this.lastDocument, shot.solar)
         : this.lastSolar;
 
-    const renderScene = this.buildRenderScene(solar);
+    const renderScene = this.buildRenderScene(solar, tracer);
     // Captured before the session resizes the renderer, and restored by this
     // method rather than by the session: the renderer is the engine's, and only
     // the engine knows whether anyone else has taken it over since.
     const viewportSize = this.renderer.getSize(new THREE.Vector2());
     const camera = shot === undefined ? this.viewportRenderCamera(settings) : shotCamera(shot);
-    const session = new PathTraceSession(this.renderer, renderScene, camera, {
+    const session = new tracer.PathTraceSession(this.renderer, renderScene, camera, {
       ...settings,
       // Built from the *resolved* solar, not from the shot, so the overlay
       // reports the time actually being rendered rather than the time asked for.
@@ -474,7 +495,10 @@ export class SandboxEngine {
    * The sky still lights the render, but as a pre-filtered environment map
    * rather than as geometry.
    */
-  private buildRenderScene(solved: ReturnType<typeof resolveSolar> | null): THREE.Scene {
+  private buildRenderScene(
+    solved: ReturnType<typeof resolveSolar> | null,
+    tracer: Tracer,
+  ): THREE.Scene {
     const renderScene = new THREE.Scene();
     if (this.generated !== null) renderScene.add(this.generated.root.clone());
 
@@ -492,7 +516,7 @@ export class SandboxEngine {
     const environment =
       position === null || lighting === null
         ? null
-        : buildSkyEnvironment(position.direction, lighting.color, lighting.sky.turbidity);
+        : tracer.buildSkyEnvironment(position.direction, lighting.color, lighting.sky.turbidity);
     if (environment !== null) {
       renderScene.environment = environment;
       renderScene.background = environment;
