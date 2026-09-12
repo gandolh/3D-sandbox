@@ -409,3 +409,67 @@ The lesson is the one this project keeps relearning, in a new place: **running i
 catches what building it cannot.** Three of these four were invisible to the type
 checker, to the linter that was actively warning about one of them, and to 248
 passing tests.
+
+## [2026-09-12] audit | What to do better: 26 findings, 14 real, 6 briefs
+
+A five-lens audit — correctness, geometry/render performance, web+bundle
+performance, structure/debt, coverage — run in parallel and then vetted by
+re-reading or re-measuring every cited line. **26 raw findings, 14 survived.**
+Five were dropped as locked decisions or non-issues, including one of my own:
+"add a linter for floating promises" earns nothing here, because every
+fire-and-forget site is already explicitly `void`-marked and `tsconfig.base.json`
+is strict.
+
+The headline is that **two independent lenses found the same live bug**, and it
+is the third instance of one class:
+
+- **Roads render black.** `buildRoad` winds its ribbon backwards, so every road
+  normal is `(0, −1, 0)` — measured on the shipped build, and visible in the
+  viewport as a pure-black road and alley against lit terrain. That blackness
+  appears in screenshots taken during briefs 19 and 21 and was read both times as
+  "asphalt is dark". The two gable builders had the same bug, found and fixed on
+  2026-09-11. All three were invisible for the same reason: **the tests assert
+  bounding boxes, and a bounding box is identical whether a surface faces the sky
+  or the ground.** Brief 23 fixes the road and puts a shared facing assertion
+  across every hand-wound builder.
+
+The most severe finding was new, from the correctness lens:
+
+- **Placement colliders are rotated in degrees and read as radians.**
+  `colliders.ts:70` copies `placement.rotationY` — a `Degrees` document field —
+  into a collider field that `world.ts` and the overlay both feed to three.js as
+  radians, while the mesh path correctly calls `degToRad`. Elmsgate's bench sits
+  at 180° and its collider at 180 radians ≡ 233°. `degToRad` is imported into
+  that file and never called, and a test asserts the wrong value, pinning it.
+  Brief 22.
+
+The rest of the **Now** tier: a physics world cached without regard to asset
+sizes, so a drop before models load poisons every drop after it (24); ~2 MB of
+Rapier WASM and the whole path tracer in the first paint for features most
+visitors never reach (25); 11.2 MB of source maps shipped to production against a
+4.3 MB bundle (26); and **three of thirteen lint rules with no test proving they
+fire**, plus `unique-ids` silently not covering `subject.runs` despite a doc
+comment claiming completeness (27) — the same shape as the never-armed
+`asset-resolves` that shipped eight invented slugs.
+
+**Next**, real and recorded but not yet spec'd: sun positioning typed out twice
+inside `SandboxEngine` where a comment promises the viewport and the render must
+agree; `roof-covers-walls` applying `overhang` as slack in the direction that
+lets an *undersized* roof pass; `POST /api/scenes` gating on the derived index and
+so clobbering a scene file the index has not seen; the scatter estimate and the
+scatter generator disagreeing for row fields, which is the triangle-budget guard
+quoting a number the generator never produces; impostor materials never disposed;
+`wallBearing` implemented twice with the `@solstice/geometry` copy dead; the
+render queue's `startRender` outside its own try/catch; `prepareAsset`'s grounding
+untested though `colliders.ts` depends on it in writing.
+
+**Watch:** scatter instances computed twice per unbaked field · `dayBounds`
+recomputed every animation frame · two merge helpers disagreeing on what to do
+with missing normals · wall-rotation trig duplicated across geometry and physics
+with nowhere shared to live · solar tests pinned to suncalc's own output rather
+than an external ephemeris · no CI runs `npm run check`.
+
+The pattern across the whole audit is one thing said three ways: **this codebase's
+tests assert that output exists and is roughly the right size, not that it is
+correct.** Bounding boxes instead of directions, counts instead of associations,
+silence on a good document instead of a finding on a bad one.

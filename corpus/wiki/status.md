@@ -168,6 +168,14 @@ of GPU.
 Schema migrations stay in [open-questions.md](open-questions.md), correctly
 deferred until a field first changes meaning.
 
+## Next
+
+A five-lens audit on 2026-09-12 produced **14 vetted findings** and six queued
+briefs (22–27) — see [log.md](../log.md) for the full ranked list including the
+Next and Watch tiers. Two are live bugs rather than improvements: every road in
+every scene renders black from an inverted winding, and placement colliders are
+rotated in degrees while both consumers read radians.
+
 ## Briefs
 
 | # | Brief | State |
@@ -193,3 +201,9 @@ deferred until a field first changes meaning.
 | 19 | [Render the whole shot list](../briefs/done/19-render-the-whole-shot-list.md) | done |
 | 20 | [A scene picker](../briefs/done/20-scene-picker.md) | done |
 | 21 | [Elmsgate, a two-storey town house](../briefs/done/21-a-town-house.md) | done |
+| 22 | [Collider rotation units](../briefs/todo/22-collider-rotation-units.md) | todo |
+| 23 | [Normals face outward](../briefs/todo/23-normals-face-outward.md) | todo |
+| 24 | [Physics cache ignores sizes](../briefs/todo/24-physics-cache-ignores-sizes.md) | todo |
+| 25 | [Defer the heavy half](../briefs/todo/25-defer-the-heavy-half.md) | todo |
+| 26 | [Stop shipping source maps](../briefs/todo/26-stop-shipping-source-maps.md) | todo |
+| 27 | [Arm the unproven rules](../briefs/todo/27-arm-the-unproven-rules.md) | todo |
