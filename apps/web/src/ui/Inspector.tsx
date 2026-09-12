@@ -1,5 +1,5 @@
 import { editDocument, getState, setStatus, useStore } from "../state/store.js";
-import { physicsFor, sizesFromMap } from "../lib/physics.js";
+import { physicsFor } from "../lib/physics.js";
 import { mToMm, mmToM, wallBearing, wallLength } from "@solstice/schema";
 import { findEntity, setWallBearing, setWallLength } from "../lib/entities.js";
 import { Divider, Field, PanelTitle } from "./primitives.jsx";
@@ -228,7 +228,11 @@ function PlacementInspector({ index }: { index: number }) {
     const current = getState().document;
     if (current === null) return;
     setStatus(`Dropping ${placement.id}…`);
-    const world = await physicsFor(current, revision, sizesFromMap(getState().assetSizes));
+    const world = await physicsFor({
+      doc: current,
+      revision,
+      sizes: getState().assetSizes,
+    });
     // The asset's real size when it is loaded; the old guess when it is not.
     // A guessed box is why placements could not collide before — it settles
     // things onto a surface that is not where the model's surface is.
