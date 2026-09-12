@@ -83,3 +83,86 @@ number**, so nothing can flag the discrepancy.
 - A straddling exclusion yields the geometrically correct count.
 - The estimate and the generator return the same number for every arrangement.
 - `npm run check` exits 0; scene renders are re-checked and the movement is noted.
+
+---
+
+## Outcome — 2026-09-12
+
+**1 — The field id is folded into the seed.** `scatterSeed(field)` in
+`packages/schema/src/derive/`, hashing the id into the author's `seed` the way
+`runs.ts` has always hashed a run's id — the same function, shared rather than
+copied a second time. `seed` keeps working as the author's dial: same id and
+same seed still reproduce exactly, which is the only reason a render can be
+re-made from its document.
+
+The test is the strict one. It does not assert that the two fields *differ*;
+it asserts that **not one instance coincides** between an `oaks` field and a
+`birches` field over the same polygon with `seed` omitted. "Some differ" would
+have passed on a hash that only perturbed the tail.
+
+**2 — mulberry32 is warmed before first use.** The measured defect, since the
+brief quoted it: `mulberry32(0)` → 0.266429, **0.000330**, 0.223272;
+`mulberry32(1)` → 0.627074, **0.002736**. A field consuming draws as (x, z)
+therefore put its first accepted instance within 0.03 % of `bounds.minZ`,
+standing hard against the southern boundary, for any low seed. Four draws are
+discarded at construction — seed 0's fifth output is 0.467328.
+
+Discarded **inside `mulberry32`** rather than at the scatter call site, which is
+a deliberate widening: the defect belongs to the generator, and `runs.ts` seeds
+a pergola's canopy from it. A pergola's foliage has therefore moved too. The
+test walks seeds 0–3 and asserts the first instance clears the edge by a metre.
+
+**3 — Exclusions are clipped, and this needed a real primitive.**
+`polygonNetArea(outer, holes)` in `schema/geometry.ts`. The obvious
+`area(field) − Σ area(exclude)` is wrong twice: a hole half outside the field
+removes the half that was never there, and two overlapping holes remove their
+overlap twice.
+
+It is **exact, not sampled**. Cut the plane into horizontal slabs at every
+vertex *and every edge-edge crossing*; inside one slab no edge begins, ends, or
+swaps sides with another, so each crossing's x moves linearly in z, the covered
+length does too, and the integral of a linear function over an interval is its
+midpoint value times the width. One evaluation per slab is the entire answer.
+
+Sutherland–Hodgman was the cheaper candidate and was rejected: it clips against
+a **convex** polygon only, and fields are not guaranteed convex. A sampled
+quadtree was rejected for giving a bounded error where an exact answer is
+available for the same order of work. Verified against seven hand-computed
+cases, all exact to the last digit — including an L-shaped field, which is
+precisely the shape Sutherland–Hodgman would have got wrong:
+
+| case | expected | got |
+|---|---|---|
+| 50 × 50 hole half outside a 100 × 100 field | 8 750 | 8 750 |
+| two 20 × 20 holes overlapping by 10 × 10 | 9 300 | 9 300 |
+| L-shaped field, 4 × 4 hole on its inner corner | 63 | 63 |
+
+The brief's own worked example now holds: that straddling field plants **350**
+instances, not 300.
+
+**4 — Shared, not repeated.** `estimateScatterInstances` is the single
+definition and the generator asks it — brief 37 did that; this brief put the
+correct arithmetic inside it. The row disagreement the brief flagged was fixed
+there too.
+
+**What moved in the shipped scenes.** Every instance in every scene has new
+coordinates — expected, and the reason the brief asked for a look. Counts:
+
+| scene | field | before | after |
+|---|---|---|---|
+| elmsgate | yard-planting | 4 | 4 |
+| greenhollow | roses-west / roses-east / kitchen-garden | 9 / 9 / 4 | unchanged |
+| greenhollow | orchard (rows) | 16 | **15** |
+| villa-carpathia | forest | 260 | 260 |
+
+Only the orchard's number changes, and it changes to the truth: the generator
+always placed 15, and the estimate was quoting 16. No bundled scene has a
+straddling or overlapping exclusion, so nothing else moves in count — the
+clipping fix is latent in these three and correct for the next one.
+
+**Looked at**: villa-carpathia in the viewport — 260 instances, 28 947 tris,
+forest re-shuffled and still well-formed, the clearing intact and all six
+neighbours standing clear of the trees. Not a path-traced render; this machine
+cannot (brief 40's outcome).
+
+`npm run check` clean, **306 tests** (was 294).

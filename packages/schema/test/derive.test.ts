@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   POST_HALF_WIDTH,
+  polygonNetArea,
+  scatterSeed,
   SceneDocument,
   ScatterField,
   lintScene,
@@ -98,5 +100,64 @@ describe("scatter lattice", () => {
     const lattice = scatterLattice(f);
     expect(Number.isFinite(lattice.countX)).toBe(true);
     expect(Number.isFinite(lattice.countZ)).toBe(true);
+  });
+});
+
+describe("net area with holes", () => {
+  const rect = (x: number, z: number, w: number, h: number) =>
+    [
+      [x, z],
+      [x, z + h],
+      [x + w, z + h],
+      [x + w, z],
+    ] as const;
+  const field = rect(0, 0, 100, 100);
+
+  // Exact, not close — the method cuts the plane into slabs where the covered
+  // length is linear and integrates each one in closed form, so a tolerance
+  // here would be hiding something rather than allowing for something.
+  it("subtracts only the part of a hole that is inside", () => {
+    expect(polygonNetArea(field, [rect(75, 25, 50, 50)])).toBe(8750);
+  });
+
+  it("subtracts overlapping holes once", () => {
+    expect(polygonNetArea(field, [rect(0, 0, 20, 20), rect(10, 10, 20, 20)])).toBe(9300);
+  });
+
+  it("ignores a hole entirely outside", () => {
+    expect(polygonNetArea(field, [rect(200, 200, 5, 5)])).toBe(10000);
+  });
+
+  it("handles a non-convex outline", () => {
+    // An L, 75 m², with a 4 × 4 hole straddling its inner corner — 12 m² of
+    // which lies on the L. Sutherland–Hodgman would not survive this shape.
+    const L = [
+      [0, 0],
+      [0, 10],
+      [5, 10],
+      [5, 5],
+      [10, 5],
+      [10, 0],
+    ] as const;
+    expect(polygonNetArea(L, [])).toBe(75);
+    expect(polygonNetArea(L, [rect(3, 3, 4, 4)])).toBe(63);
+  });
+});
+
+describe("scatter seed", () => {
+  it("separates two ids that share a seed", () => {
+    expect(scatterSeed({ id: "oaks", seed: 0 })).not.toBe(scatterSeed({ id: "birches", seed: 0 }));
+  });
+
+  it("keeps the author's dial", () => {
+    expect(scatterSeed({ id: "oaks", seed: 0 })).not.toBe(scatterSeed({ id: "oaks", seed: 1 }));
+    expect(scatterSeed({ id: "oaks", seed: 7 })).toBe(scatterSeed({ id: "oaks", seed: 7 }));
+  });
+
+  it("stays a 32-bit integer for a seed near the top of the range", () => {
+    const hash = scatterSeed({ id: "a-rather-long-field-identifier", seed: 4294967295 });
+    expect(Number.isInteger(hash)).toBe(true);
+    expect(hash).toBeGreaterThanOrEqual(0);
+    expect(hash).toBeLessThan(2 ** 32);
   });
 });

@@ -103,4 +103,4 @@ migrations, and the two unbaked conifers that only the regression fixture uses.
 | 46 | [A house a real architect would draw](../briefs/done/46-a-house-a-real-architect-would-draw.md) | done |
 | 43 | [Impostor quads are the wrong shape](../briefs/todo/43-impostor-quads-are-the-wrong-shape.md) | todo |
 | 44 | [The dome and the render disagree after sunset](../briefs/todo/44-the-dome-and-the-render-disagree-after-sunset.md) | todo |
-| 45 | [Scatter counts and seeds](../briefs/todo/45-scatter-counts-and-seeds.md) | todo |
+| 45 | [Scatter counts and seeds](../briefs/done/45-scatter-counts-and-seeds.md) | done |

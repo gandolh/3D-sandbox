@@ -1,9 +1,9 @@
-import { area, bounds } from "../geometry.js";
+import { bounds, polygonNetArea } from "../geometry.js";
 import type { M } from "../units.js";
 import type { ScatterField } from "../document.js";
 
 export interface ScatterEstimate {
-  /** Field area less its exclusions, in m². */
+  /** Field area less its exclusions — clipped to the field, unioned — in m². */
   net: number;
   /** How many instances the field will place. */
   instances: number;
@@ -64,9 +64,11 @@ const cellCount = (origin: M, limit: M, step: M): number =>
  * three, now that the thing being described also asks.
  */
 export function estimateScatterInstances(field: ScatterField): ScatterEstimate {
-  const gross = area(field.area);
-  const excluded = field.exclude.reduce((sum, poly) => sum + area(poly), 0);
-  const net = Math.max(0, gross - excluded);
+  const gross = polygonNetArea(field.area, []);
+  // Clipped, not subtracted whole. See `polygonNetArea`: an exclusion hanging
+  // over the field's edge used to remove the half that was never inside it, and
+  // two overlapping exclusions removed their overlap twice.
+  const net = polygonNetArea(field.area, field.exclude);
 
   // A row planting's count comes from its spacing, not its density — the whole
   // point of rows is that a person chose how far apart to put the trees. Using
@@ -84,4 +86,30 @@ export function estimateScatterInstances(field: ScatterField): ScatterEstimate {
   }
 
   return { net, instances: Math.round((net / 100) * field.density) };
+}
+
+/**
+ * The RNG seed a field actually plants with: the author's `seed`, with the
+ * field's **id** mixed in.
+ *
+ * `seed` defaults to 0 and nothing else fed the generator, so two fields over
+ * the same polygon that both omitted it placed every instance at exactly the
+ * same coordinates — an `oaks` bed and a `birches` bed over one plot became a
+ * single co-incident, z-fighting thicket with twice the geometry and nothing
+ * warning about it. That is a natural way to author two plantings, which is why
+ * it had to stop being a trap rather than become a lint rule.
+ *
+ * `seed` stays meaningful as the author's dial: same id and same seed reproduce
+ * exactly, which is the whole reason a render can be re-made from its document.
+ *
+ * `packages/geometry/src/subject/runs.ts` has done this since it was written,
+ * precisely so two pergolas could not collide. The scatter tier is the one that
+ * skipped it; this is that hash, shared rather than copied.
+ */
+export function scatterSeed(field: Pick<ScatterField, "id" | "seed">): number {
+  let hash = field.seed >>> 0;
+  // `Math.imul`, not `*`: the product of a 32-bit seed and 31 leaves the range
+  // where float64 is exact, and `>>> 0` on an inexact product is not a hash.
+  for (const ch of field.id) hash = (Math.imul(hash, 31) + ch.charCodeAt(0)) >>> 0;
+  return hash;
 }

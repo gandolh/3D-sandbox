@@ -205,6 +205,38 @@ describe("deterministic scatter", () => {
     expect(scatterInstances(field(1))).toHaveLength(200);
   });
 
+  it("counts an exclusion that hangs over the edge only where it overlaps", () => {
+    // 100 × 100 field, one 50 × 50 exclusion half outside it. Subtracting the
+    // exclusion whole removes 2 500 m² where 1 250 is excluded, so the field
+    // planted 300 where 350 belong — 14 % under, and shaped correctly, so
+    // nothing about the render said so.
+    const big = ScatterField.parse({
+      id: "meadow",
+      assets: ["a"],
+      area: [[0, 0], [100, 0], [100, 100], [0, 100]],
+      density: 4,
+      seed: 5,
+      exclude: [[[75, 25], [125, 25], [125, 75], [75, 75]]],
+    });
+    expect(scatterInstances(big)).toHaveLength(350);
+  });
+
+  it("counts two overlapping exclusions once", () => {
+    // Two 20 × 20 holes sharing a 10 × 10 corner: 700 m² of hole, not 800.
+    const twice = ScatterField.parse({
+      id: "meadow",
+      assets: ["a"],
+      area: [[0, 0], [100, 0], [100, 100], [0, 100]],
+      density: 4,
+      seed: 5,
+      exclude: [
+        [[0, 0], [20, 0], [20, 20], [0, 20]],
+        [[10, 10], [30, 10], [30, 30], [10, 30]],
+      ],
+    });
+    expect(scatterInstances(twice)).toHaveLength(Math.round((10000 - 700) / 100 * 4));
+  });
+
   it("places nothing inside an excluded region", () => {
     const clearing = [[-20, -20], [20, -20], [20, 20], [-20, 20]];
     const instances = scatterInstances(field(3, [clearing]));
@@ -213,6 +245,43 @@ describe("deterministic scatter", () => {
     );
     expect(inside).toHaveLength(0);
     expect(instances.length).toBeGreaterThan(100);
+  });
+
+  it("separates two fields that share a polygon and omit the seed", () => {
+    // The authoring pattern this protects: an `oaks` bed and a `birches` bed
+    // over the same plot. Both default `seed` to 0, and before the field id was
+    // folded in they placed every instance at identical coordinates — one
+    // co-incident z-fighting thicket with twice the geometry.
+    const named = (id: string) =>
+      ScatterField.parse({
+        id,
+        assets: ["a"],
+        area: [[0, 0], [40, 0], [40, 40], [0, 40]],
+        density: 2,
+      });
+    const oaks = scatterInstances(named("oaks"));
+    const birches = scatterInstances(named("birches"));
+    expect(oaks).toHaveLength(birches.length);
+    expect(oaks.map((i) => i.position)).not.toEqual(birches.map((i) => i.position));
+    // Not merely "some differ" — none of them may coincide.
+    const shared = oaks.filter((o, i) => o.position[0] === birches[i]!.position[0]);
+    expect(shared).toHaveLength(0);
+  });
+
+  it("still reproduces exactly for one id and one seed", () => {
+    // The dial has to keep working, or a render stops being re-makeable from
+    // its document — which is the reason the seed exists at all.
+    expect(scatterInstances(field(12))).toEqual(scatterInstances(field(12)));
+  });
+
+  it("does not pin the first instance to the southern edge", () => {
+    // mulberry32's second output is ~0.0003 for seed 0, so the first accepted
+    // instance used to land within 0.03 % of `bounds.minZ` — hard against the
+    // boundary — for any low seed. The RNG is warmed before first use now.
+    for (const seed of [0, 1, 2, 3]) {
+      const first = scatterInstances(field(seed))[0]!;
+      expect(first.position[2]).toBeGreaterThan(-50 + 1);
+    }
   });
 
   it("varies scale within the declared range", () => {

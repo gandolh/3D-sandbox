@@ -168,7 +168,13 @@ export const ScatterField = z.strictObject({
   area: PolygonSchema,
   /** Instances per 100 m² of `area`. */
   density: z.number().finite().positive(),
-  /** Deterministic placement — the same seed must give the same forest. */
+  /**
+   * Deterministic placement — the same seed must give the same forest.
+   *
+   * Defaulting to 0 is safe because the field's **id** is mixed in before the
+   * RNG sees it (`scatterSeed`). It was not: two fields over one polygon that
+   * both omitted this placed every instance at identical coordinates.
+   */
   seed: z.number().int().nonnegative().default(0),
   /**
    * Surface for the instances. Falls back to the terrain's, which is only ever

@@ -3,6 +3,7 @@ import {
   bounds,
   estimateScatterInstances,
   scatterLattice,
+  scatterSeed,
   type ScatterField,
 } from "@solstice/schema";
 import { mulberry32, pick, randomBetween } from "../random.js";
@@ -33,7 +34,7 @@ export function scatterInstances(field: ScatterField): ScatterInstance[] {
   if (target === 0) return [];
 
   const b = bounds(field.area);
-  const rng = mulberry32(field.seed);
+  const rng = mulberry32(scatterSeed(field));
   const out: ScatterInstance[] = [];
 
   // Bounded so a pathological polygon cannot spin forever; a field that cannot
@@ -72,7 +73,7 @@ export function scatterInstances(field: ScatterField): ScatterInstance[] {
  */
 function rowInstances(field: ScatterField): ScatterInstance[] {
   const lattice = scatterLattice(field);
-  const rng = mulberry32(field.seed);
+  const rng = mulberry32(scatterSeed(field));
   const out: ScatterInstance[] = [];
 
   // A quarter of the spacing, so a tree never wanders into its neighbour's place.
