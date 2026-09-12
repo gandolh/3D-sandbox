@@ -10,7 +10,7 @@ import {
   type MaterialSource,
 } from "@solstice/geometry";
 import type { CuboidCollider } from "@solstice/physics";
-import { resolveSolar } from "@solstice/solar";
+import { resolveSolar, skyGradient } from "@solstice/solar";
 import { minutesToClock } from "@solstice/animation";
 import {
   PathTraceSession,
@@ -67,6 +67,8 @@ export class SandboxEngine {
   private readonly sun = new THREE.DirectionalLight(0xffffff, 1);
   private readonly ambient = new THREE.HemisphereLight(0xbfd4ff, 0x6b6252, 0.4);
   private readonly sky = new Sky();
+  /** Reused so a background change never allocates during playback. */
+  private readonly nightSky = new THREE.Color();
   private readonly selectionBox = new THREE.BoxHelper(new THREE.Object3D(), 0xe8a33d);
 
   private generated: GeneratedScene | null = null;
@@ -221,15 +223,10 @@ export class SandboxEngine {
   private applySolar(solved: ReturnType<typeof resolveSolar>): void {
     this.lastSolar = solved;
     const { position, lighting } = solved;
-    const distance = 120;
-    this.sun.position.set(
-      position.direction.x * distance,
-      Math.max(1, position.direction.y * distance),
-      position.direction.z * distance,
-    );
-    this.sun.target.position.set(0, 0, 0);
-    this.sun.color.set(lighting.color);
-    this.sun.intensity = lighting.intensity;
+    const direction = position.direction;
+    const below = direction.y <= 0;
+
+    aimSun(this.sun, direction, lighting);
     this.ambient.intensity = lighting.ambientIntensity;
 
     const uniforms = this.sky.material.uniforms;
@@ -237,7 +234,35 @@ export class SandboxEngine {
     uniforms["rayleigh"]!.value = lighting.sky.rayleigh;
     uniforms["mieCoefficient"]!.value = 0.005;
     uniforms["mieDirectionalG"]!.value = 0.8;
-    uniforms["sunPosition"]!.value.copy(this.sun.position).normalize();
+    // The **true** direction, not the light's clamped one.
+    //
+    // These were the same vector, and that is the bug: the clamp exists to keep
+    // the shadow camera out of a degenerate direction, and it was incidentally
+    // lying to the dome. At Bucharest on 2026-06-21 22:30 the sun is at
+    // -11.61°, and `Math.max(1, y * 120)` handed the shader an elevation of
+    // +0.49° — a full sunset glow on the north-west horizon — while the path
+    // tracer's environment, built from the same unclamped direction the render
+    // path uses, correctly saw night. Scrub past sunset, see dusk, press
+    // Render, get night.
+    uniforms["sunPosition"]!.value.set(direction.x, direction.y, direction.z).normalize();
+
+    // Below the horizon three's `Sky` drives its whole result from
+    // `sunIntensity(dot(sun, up))`, which is 0 there — so the dome would paint
+    // black while the environment map paints a dim blue night. Hide it and
+    // paint the environment's own night gradient instead, from the one
+    // function both sides read.
+    this.sky.visible = !below;
+    if (below) {
+      const { zenith } = skyGradient(direction.y, lighting.sky.turbidity);
+      this.scene.background = this.nightSky.setRGB(
+        zenith.r,
+        zenith.g,
+        zenith.b,
+        THREE.LinearSRGBColorSpace,
+      );
+    } else {
+      this.scene.background = null;
+    }
   }
 
   /**
@@ -462,14 +487,7 @@ export class SandboxEngine {
       // The clone still carries the viewport's sun direction and colour. A shot
       // with its own time needs both moved, or the sky says 07:15 while the
       // shadows say 17:42.
-      const distance = 120;
-      sun.position.set(
-        position.direction.x * distance,
-        Math.max(1, position.direction.y * distance),
-        position.direction.z * distance,
-      );
-      sun.color.set(lighting.color);
-      sun.intensity = lighting.intensity;
+      aimSun(sun, position.direction, lighting);
     }
     const environment =
       position === null || lighting === null
@@ -601,4 +619,34 @@ export class SandboxEngine {
       if (!canvas.isConnected) renderer.forceContextLoss();
     }, 0);
   }
+}
+
+/**
+ * Point the scene's one directional light at the origin from the sun's
+ * direction — and turn it off when the sun is not up.
+ *
+ * The clamp is doing exactly one job: a `DirectionalLight` at or under `y = 0`
+ * has a degenerate shadow camera and casts nothing useful, so its position is
+ * lifted to keep the frustum sane. That is a guard on the *light*, and it must
+ * not reach the sky dome, which wants the truth. Above the horizon the lift is
+ * harmless — 0.3° becomes 0.48° — and below it the honest guard is `visible =
+ * false`, not a light hoisted into a sky it has set behind.
+ *
+ * Shared by the viewport and by the render scene so the two cannot drift, which
+ * is how they came to disagree in the first place.
+ */
+export function aimSun(
+  sun: THREE.DirectionalLight,
+  direction: { x: number; y: number; z: number },
+  lighting: { color: string; intensity: number },
+): void {
+  const distance = 120;
+  sun.position.set(direction.x * distance, Math.max(1, direction.y * distance), direction.z * distance);
+  sun.target.position.set(0, 0, 0);
+  sun.color.set(lighting.color);
+  sun.intensity = lighting.intensity;
+  // `intensity` is already 0 below the horizon, so this is not what makes the
+  // scene dark — it stops the renderer rendering a shadow map every frame for
+  // a light contributing nothing.
+  sun.visible = direction.y > 0;
 }

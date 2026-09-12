@@ -23,6 +23,41 @@ export interface SkyMap {
 const clamp01 = (v: number): number => (v < 0 ? 0 : v > 1 ? 1 : v);
 const mix = (a: number, b: number, t: number): number => a + (b - a) * t;
 
+export interface SkyGradient {
+  /** Linear RGB straight up. */
+  zenith: { r: number; g: number; b: number };
+  /** Linear RGB at the horizon. */
+  horizon: { r: number; g: number; b: number };
+  /** 0 below the horizon, 1 once the sun is well up. */
+  day: number;
+}
+
+/**
+ * The dome's colour, without drawing it.
+ *
+ * Split out of `skyRadianceMap` because the **viewport** needs the same answer
+ * the **path tracer's environment** is built from, and it cannot afford to
+ * build a 256 × 128 float map to get it — that is 131 072 iterations per frame
+ * while someone scrubs the timeline.
+ *
+ * Below the horizon this is the whole story: the sun disc and its glow never
+ * run, so the dome is exactly this gradient and nothing else. That is the case
+ * the viewport needs it for.
+ */
+export function skyGradient(sunY: number, turbidity: number): SkyGradient {
+  const haze = clamp01((turbidity - 2) / 8);
+  const day = clamp01(sunY * 2.2);
+  return {
+    zenith: { r: 0.06 + 0.16 * day, g: 0.11 + 0.26 * day, b: 0.24 + 0.46 * day },
+    horizon: {
+      r: mix(0.1, 0.62, day) + 0.18 * haze,
+      g: mix(0.11, 0.68, day) + 0.16 * haze,
+      b: mix(0.16, 0.82, day) + 0.12 * haze,
+    },
+    day,
+  };
+}
+
 /**
  * A sky dome as an equirectangular radiance map.
  *
@@ -48,13 +83,9 @@ export function skyRadianceMap(options: SkyMapOptions): SkyMap {
   const glowPower = mix(28, 6, haze);
 
   // The dome dims and warms as the sun sinks; below the horizon it is night.
-  const day = clamp01(sun.y * 2.2);
-  const zenith = { r: 0.06 + 0.16 * day, g: 0.11 + 0.26 * day, b: 0.24 + 0.46 * day };
-  const horizon = {
-    r: mix(0.10, 0.62, day) + 0.18 * haze,
-    g: mix(0.11, 0.68, day) + 0.16 * haze,
-    b: mix(0.16, 0.82, day) + 0.12 * haze,
-  };
+  // Shared with the viewport, which paints the same gradient without building
+  // the map — see `skyGradient`.
+  const { day, zenith, horizon } = skyGradient(sun.y, turbidity);
 
   const data = new Float32Array(width * height * 4);
 
