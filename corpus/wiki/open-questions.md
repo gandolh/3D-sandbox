@@ -19,6 +19,19 @@ updated: 2026-09-11
   honest close is to delete the species claim from villa rather than leave a
   standing question about a fixture.
 
+- **The scene's compass is left-handed.** `packages/solar/src/index.ts:86`
+  documents "+Z is north and +X is east". With +Y up, a right-handed frame makes
+  east **−X**: for a physical ENU frame `e × n = u`, but `X × Y = e × u = −n`.
+  Seen from above the scene's sun therefore sweeps **counter-clockwise** where the
+  real one sweeps clockwise. Everything downstream is internally consistent —
+  `wallBearing` uses the same `atan2(x, z)` — so shadows still land on the façade
+  the document names, and no scene is *wrong on its own terms*. The cost is that
+  a site plan transcribed from paper with x = east, z = north is built as its
+  **mirror image**, and a render will not match a photograph taken from the same
+  real-world spot. The fix is one sign, in `directionFrom` or in the north
+  convention, **not both** — but it silently changes what every existing scene
+  means, so it is a decision and not a bug fix. Raised by the 2026-09-12 audit.
+
 _Vine density was brief 18. The denoiser closed on 2026-09-11: brief 16 measured
 the bundled pass as actively harmful, and the remaining thread — whether a
 trained denoiser like `oidn-web` would do better — died with the convergence

@@ -35,8 +35,8 @@ is operated there by hand. Nothing in `apps/` or `packages/` waits on it.
 
 ## Next
 
-Four audit rounds on 2026-09-12 — twelve lenses in all — produced **21 queued
-briefs (22–42)**. The full ranked lists are in [log.md](../log.md).
+Four audit rounds on 2026-09-12 — twelve lenses in all — produced **24 queued
+briefs (22–45)**. The full ranked lists are in [log.md](../log.md).
 
 Six of them are **live bugs**, not improvements:
 
@@ -106,3 +106,6 @@ migrations, and the two unbaked conifers that only the regression fixture uses.
 | 40 | [Every render leaks the GPU](../briefs/todo/40-every-render-leaks-the-gpu.md) | todo |
 | 41 | [A render can be undermined while it runs](../briefs/todo/41-a-render-can-be-undermined-while-it-runs.md) | todo |
 | 42 | [Bring the fixture forward](../briefs/todo/42-bring-the-fixture-forward.md) | todo |
+| 43 | [Impostor quads are the wrong shape](../briefs/todo/43-impostor-quads-are-the-wrong-shape.md) | todo |
+| 44 | [The dome and the render disagree after sunset](../briefs/todo/44-the-dome-and-the-render-disagree-after-sunset.md) | todo |
+| 45 | [Scatter counts and seeds](../briefs/todo/45-scatter-counts-and-seeds.md) | todo |

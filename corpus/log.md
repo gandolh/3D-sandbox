@@ -536,3 +536,49 @@ The theme from round 1 held all the way through, and widened. The tests assert
 that output exists and is roughly the right size, not that it is correct — and
 in one case (`colliders.test.ts:166`) a test asserts the **wrong** value
 outright, which is why the degrees-vs-radians bug ships with `check` green.
+
+## [2026-09-12] audit | The maths pass, and one finding that did not survive
+
+The numerical round finished last, after dying twice on a quota limit. It ran the
+built package code rather than reasoning about it, and it explicitly **cleared**
+several things worth not re-litigating: `suncalc` really does return north-based
+clockwise degrees; `skyRadianceMap`'s (u,v)→direction inversion matches three's
+`equirectUv` to four decimals; `extrudePolygon` treats clockwise and
+counter-clockwise footprints identically; `pointInPolygon` is standard PNPOLY;
+and the impostor atlas slice wraparound is correct at 359.9°.
+
+Three real findings came out of it:
+
+- **Impostor quads are the wrong shape.** The baker renders a *square* cell of
+  side `max(sx, sy, sz)`; the consumer builds a quad of aspect `max(sx, sz) / sy`.
+  For `tree_small_02` that draws every tree at w/h 0.8874 instead of 0.9420 —
+  5.8 % too narrow. For an asset that is not tallest in Y it is far worse: a
+  `[6, 2, 6]` shrub draws 0.667 m tall instead of 2 m and floats above the
+  ground. Latent only because the one baked asset is the forgiving shape.
+- **The sun's Y-clamp lies to the sky dome but not to the environment map**, so
+  below the horizon the viewport paints a sunset and the render of the same shot
+  comes back black. The clamp protects the shadow light from a degenerate
+  direction, which is a real need; it should not also be steering the dome.
+- **Scatter seeds do not mix in the field id**, so two fields over one polygon
+  that both omit `seed` place byte-identical forests. `runs.ts` already hashes
+  the entity id for exactly this reason; the scatter tier skipped it. Same
+  function also subtracts exclusion areas unclipped, so a straddling exclusion
+  under-plants by 14 %.
+
+**And one finding was refuted by checking it.** The pass claimed `boxProjectUv`
+gives the +X and −X faces identical UVs, mirroring one of them. My first attempt
+to check appeared to confirm the opposite — but that probe was wrong too: a box
+corner is shared by three faces, so looking a vertex up by position alone returns
+whichever came first. Re-run filtered by face normal, the ±X faces get **opposite**
+u directions, and working through the camera basis for each face shows all four
+run u left-to-right seen from outside. The projection is correct. Dropped.
+
+That is twice in one day that a finder's quoted arithmetic did not survive
+re-running, and once that my own refutation was as flawed as the claim.
+
+Separately recorded in [open-questions.md](wiki/open-questions.md): **the scene's
+compass is left-handed.** With +Y up and +Z north, a right-handed frame puts east
+at −X, not +X. Everything downstream is internally consistent, so no scene is
+wrong on its own terms — but a plan transcribed from paper is built as its mirror
+image. That is a decision, not a bug fix, because changing it silently changes
+what every existing scene means.
