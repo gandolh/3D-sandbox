@@ -11,26 +11,26 @@ Run `bash assets-src/download.sh` to fetch everything into place.
 
 | Asset | Kind | Files | Used by |
 |---|---|---|---|
-| `ambientcg/Asphalt026A` | material | 1 file(s), — | greenhollow, villa-carpathia |
-| `ambientcg/Concrete034` | material | 1 file(s), — | greenhollow, villa-carpathia |
-| `ambientcg/Gravel023` | material | 1 file(s), — | greenhollow |
-| `polyhaven/ArmChair_01` | model | 5 file(s), 2.7 MB | villa-carpathia |
-| `polyhaven/clay_plaster` | material | 4 file(s), 7.1 MB | greenhollow, villa-carpathia |
-| `polyhaven/CoffeeTable_01` | model | 5 file(s), 2.1 MB | villa-carpathia |
+| `ambientcg/Asphalt026A` | material | 1 file(s), 32.2 MB | elmsgate, greenhollow, villa-carpathia |
+| `ambientcg/Concrete034` | material | 1 file(s), 10.1 MB | elmsgate, greenhollow, villa-carpathia |
+| `ambientcg/Gravel023` | material | 1 file(s), 29.9 MB | elmsgate, greenhollow |
+| `polyhaven/ArmChair_01` | model | 5 file(s), 2.7 MB | greenhollow, villa-carpathia |
+| `polyhaven/clay_plaster` | material | 4 file(s), 7.1 MB | elmsgate, greenhollow, villa-carpathia |
+| `polyhaven/CoffeeTable_01` | model | 5 file(s), 2.1 MB | greenhollow, villa-carpathia |
 | `polyhaven/fir_tree_01` | model | **too heavy** — 486.6 MB | villa-carpathia |
 | `polyhaven/leafy_grass` | material | 4 file(s), 16.7 MB | greenhollow, villa-carpathia |
-| `polyhaven/outdoor_table_chair_set_01` | model | 8 file(s), 3.1 MB | greenhollow |
-| `polyhaven/painted_wooden_bench` | model | 5 file(s), 7.6 MB | greenhollow |
+| `polyhaven/outdoor_table_chair_set_01` | model | 8 file(s), 3.1 MB | elmsgate, greenhollow |
+| `polyhaven/painted_wooden_bench` | model | 5 file(s), 7.6 MB | elmsgate, greenhollow |
 | `polyhaven/pine_tree_01` | model | **too heavy** — 936.7 MB | villa-carpathia |
-| `polyhaven/planter_box_01` | model | 5 file(s), 7.6 MB | greenhollow |
+| `polyhaven/planter_box_01` | model | 5 file(s), 7.6 MB | elmsgate, greenhollow |
 | `polyhaven/planter_box_02` | model | 5 file(s), 7.7 MB | greenhollow |
-| `polyhaven/planter_box_03` | model | 5 file(s), 7.8 MB | greenhollow |
+| `polyhaven/planter_box_03` | model | 5 file(s), 7.8 MB | elmsgate, greenhollow |
 | `polyhaven/roof_tiles_14` | material | 4 file(s), 4.0 MB | greenhollow, villa-carpathia |
-| `polyhaven/shrub_01` | model | 5 file(s), 10.3 MB | greenhollow |
-| `polyhaven/shrub_02` | model | 5 file(s), 4.6 MB | greenhollow |
+| `polyhaven/shrub_01` | model | 5 file(s), 10.3 MB | elmsgate, greenhollow |
+| `polyhaven/shrub_02` | model | 5 file(s), 4.6 MB | elmsgate, greenhollow |
 | `polyhaven/shrub_03` | model | 5 file(s), 4.3 MB | greenhollow |
-| `polyhaven/shrub_04` | model | 5 file(s), 4.2 MB | greenhollow |
-| `polyhaven/tree_small_02` | model | **too heavy** — 110.0 MB | greenhollow, villa-carpathia |
+| `polyhaven/shrub_04` | model | 5 file(s), 4.2 MB | elmsgate, greenhollow |
+| `polyhaven/tree_small_02` | model | **too heavy** — 110.0 MB | elmsgate, greenhollow, villa-carpathia |
 
 Every referenced asset resolved.
 
@@ -49,4 +49,4 @@ times, and a BVH has to be built over it either way. These want decimating to a
 scatter LOD first. `download.sh` skips them; `download-heavy.sh` fetches them
 if you want the originals to decimate from.
 
-Fetched by `download.sh`: **89.8 MB** across 17 assets.
+Fetched by `download.sh`: **162.0 MB** across 17 assets.
