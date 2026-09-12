@@ -462,24 +462,24 @@
         "footprint": [
           [
             -3.25,
-            1.4
+            1.25
           ],
           [
             3.25,
-            1.4
+            1.25
           ],
           [
             3.25,
-            10.6
+            10.75
           ],
           [
             -3.25,
-            10.6
+            10.75
           ]
         ],
         "baseElevation": 5.8,
         "pitch": 38,
-        "overhang": 0.15,
+        "overhang": 0,
         "ridgeBearing": 90,
         "material": "roof-slate"
       }

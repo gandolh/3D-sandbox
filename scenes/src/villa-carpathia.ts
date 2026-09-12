@@ -12,6 +12,7 @@ import {
   wallsFromFootprint,
   windowOpening,
   withOpenings,
+  type Plan,
   type SceneDocumentInput,
 } from "@solstice/schema";
 
@@ -36,6 +37,31 @@ walls = withOpenings(walls, "W-03", [
   windowOpening("w-12", 3.9, 1.4, 1.2, 0.9),
 ]);
 
+/**
+ * The neighbours, named once so the forest can be told where they are.
+ *
+ * Declared above the document because `context.scatter` has to exclude them and
+ * `context.masses` has to place them, and two hand-copied lists of the same six
+ * rectangles is how they drift apart.
+ */
+const NEIGHBOURS = [
+  { id: "n-01", footprint: rect(-46, 22, 11, 9), height: 6.2, material: "render-neighbour" },
+  { id: "n-02", footprint: rect(-30, 24, 10, 8), height: 5.8, material: "render-neighbour" },
+  { id: "n-03", footprint: rect(-13, 23, 12, 9), height: 6.6, material: "render-neighbour" },
+  { id: "n-04", footprint: rect(6, 24, 10, 8), height: 5.4, material: "render-neighbour" },
+  { id: "n-05", footprint: rect(23, 22, 11, 10), height: 7.1, material: "render-neighbour" },
+  { id: "n-06", footprint: rect(40, 25, 9, 8), height: 5.6, material: "render-neighbour" },
+];
+
+/** A rectangle grown by `margin` on every side. */
+const grown = (footprint: Plan[], margin: number): Plan[] => {
+  const xs = footprint.map(([x]) => x);
+  const zs = footprint.map(([, z]) => z);
+  const minX = Math.min(...xs) - margin;
+  const minZ = Math.min(...zs) - margin;
+  return rect(minX, minZ, Math.max(...xs) + margin - minX, Math.max(...zs) + margin - minZ);
+};
+
 const villa: SceneDocumentInput = {
   schemaVersion: 1,
   id: "villa-carpathia",
@@ -53,35 +79,52 @@ const villa: SceneDocumentInput = {
   // refraction-corrected). Sun in the west, so shadows fall east.
   solar: { date: "2026-06-21", time: "17:42", hdri: "kloppenheim_06" },
 
+  // Every material declares its dominant colour and a world-metre texture
+  // scale, whether or not it names a texture — the rule settled on 2026-09-11.
+  // Without the colour, a machine with no assets downloaded renders the walls,
+  // roof, ground and road the same neutral grey; without the scale, one
+  // clay-plaster repeat smears across a 9.6 m wall and the 140 m meadow gets a
+  // single blade of grass. Values match Greenhollow's so the two scenes are
+  // comparable.
   materials: {
     [WALL_MATERIAL]: {
       label: "Lime Plaster 04",
       source: "polyhaven",
       slug: "clay_plaster",
+      baseColor: "#E9E1D3",
+      textureScale: 2.4,
       roughness: 0.82,
     },
     "roof-clay-tile": {
       label: "Clay Roof Tile",
       source: "polyhaven",
       slug: "roof_tiles_14",
+      baseColor: "#9C5540",
+      textureScale: 1.6,
       roughness: 0.68,
     },
     "slab-concrete": {
       label: "Board-formed Concrete",
       source: "ambientcg",
       slug: "Concrete034",
+      baseColor: "#B9B5AD",
+      textureScale: 3.0,
       roughness: 0.9,
     },
     "grass-meadow": {
       label: "Meadow Grass",
       source: "polyhaven",
       slug: "leafy_grass",
+      baseColor: "#5C7B43",
+      textureScale: 4.0,
       roughness: 1,
     },
     "asphalt-road": {
       label: "Worn Asphalt",
       source: "ambientcg",
       slug: "Asphalt026A",
+      baseColor: "#47474A",
+      textureScale: 4.0,
       roughness: 0.95,
     },
     "render-neighbour": {
@@ -126,8 +169,9 @@ const villa: SceneDocumentInput = {
   },
 
   context: {
-    // 14 400 m² of plot, less an 896 m² clearing around the house, at 2.1
-    // instances per 100 m² — about 284 trees, well inside the 4 000 budget.
+    // 14 400 m² of plot, less an 896 m² clearing around the house and the six
+    // neighbours' own plots, at 2.1 instances per 100 m² — 260 trees, well
+    // inside the 4 000 budget.
     scatter: [
       {
         id: "forest",
@@ -136,17 +180,17 @@ const villa: SceneDocumentInput = {
         density: 2.1,
         seed: 20260621,
         scaleRange: [0.8, 1.25],
-        exclude: [rect(-14, -16, 28, 32)],
+        // The house clearing, and every neighbour — each with a 2 m skirt, so
+        // trees do not touch the walls either. Without these the forest grew
+        // straight through all six: n-03 alone is 108 m², which at this
+        // density puts about two trees inside its rooms.
+        exclude: [
+          rect(-14, -16, 28, 32),
+          ...NEIGHBOURS.map((n) => grown(n.footprint, 2)),
+        ],
       },
     ],
-    masses: [
-      { id: "n-01", footprint: rect(-46, 22, 11, 9), height: 6.2, material: "render-neighbour" },
-      { id: "n-02", footprint: rect(-30, 24, 10, 8), height: 5.8, material: "render-neighbour" },
-      { id: "n-03", footprint: rect(-13, 23, 12, 9), height: 6.6, material: "render-neighbour" },
-      { id: "n-04", footprint: rect(6, 24, 10, 8), height: 5.4, material: "render-neighbour" },
-      { id: "n-05", footprint: rect(23, 22, 11, 10), height: 7.1, material: "render-neighbour" },
-      { id: "n-06", footprint: rect(40, 25, 9, 8), height: 5.6, material: "render-neighbour" },
-    ],
+    masses: NEIGHBOURS,
     roads: [
       {
         id: "street",

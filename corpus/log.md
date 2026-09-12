@@ -705,3 +705,35 @@ materials — and an assertion on upstream's source that fails the day they fix
 it, which is the signal to delete the workaround.
 
 266 tests.
+
+## 2026-09-12 — The fixture catches up, and `overhang` gets a meaning
+
+Brief 42, the last of the audit's live bugs. Villa was written before two
+decisions and never brought forward: its five textured materials declared
+neither a dominant colour nor a texture scale, so a machine with nothing
+downloaded rendered walls, roof, ground and road the same grey — in the scene
+whose job is to exercise the whole schema.
+
+The forest grew through all six neighbours. The fix is less about the exclusion
+list than about there being **one** list: `NEIGHBOURS` is now read by both
+`context.masses` and the scatter's `exclude`, since two hand-copied copies of
+six rectangles is how they drifted apart. 284 trees → 260.
+
+The old test asserted the instance count, which could never have caught this —
+284 trees with two standing in a neighbour's living room is still 284. That is
+the audit's recurring theme in one line, and there is now a test for the
+property instead: no instance inside any mass's footprint.
+
+**`overhang` was used three ways in three scenes**, which means it meant
+nothing. Settled as *descriptive*: the least the declared footprint oversails
+the walls on any side, which is the only reading consistent with `buildRoof`
+building straight from the footprint. Making it generative was considered and
+rejected for a real reason — one scalar cannot describe a mid-terrace, flush at
+the party walls and eaved front and back, so generating from it would make the
+schema unable to draw buildings it currently can.
+
+That also exposed `roof-covers-walls` passing `overhang` to `boundsContain` as a
+tolerance, loosening containment in the **wrong direction** — it permits a roof
+smaller than its walls. Left for brief 27, recorded in the decision.
+
+267 tests.

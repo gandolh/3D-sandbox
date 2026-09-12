@@ -281,12 +281,18 @@ const elmsgate: SceneDocumentInput = {
       {
         id: "roof-house",
         kind: "gable",
-        footprint: HOUSE,
+        // 0.15 of eave to the street and the yard; flush at the party walls,
+        // where an overhang would poke through the neighbour's roof. The
+        // footprint used to be `HOUSE` exactly, which is no eave anywhere — on
+        // the two elevations two of the three shots are of.
+        footprint: rect(-HALF_WIDTH, FRONT - 0.15, HALF_WIDTH * 2, HOUSE_DEPTH + 0.3),
         baseElevation: EAVE,
         pitch: 38,
-        // Terraces have almost no eaves overhang — the gable ends are buried in
-        // the neighbours, so there is nowhere for one to go.
-        overhang: 0.15,
+        // Zero, because `overhang` is the *least* the roof oversails its walls
+        // on any side, and a mid-terrace is flush on two of them. The eave that
+        // does exist is in the footprint above, which is where the generator
+        // reads it from.
+        overhang: 0,
         // Ridge along X, parallel to the street, which is what makes a row of
         // these read as one continuous roofline rather than a line of tents.
         ridgeBearing: 90,

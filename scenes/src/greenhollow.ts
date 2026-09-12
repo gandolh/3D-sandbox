@@ -318,7 +318,10 @@ const greenhollow: SceneDocumentInput = {
         footprint: rect(-10.3, 35.7, 5.6, 6.6),
         baseElevation: GREENHOUSE_EAVE,
         pitch: 26,
-        overhang: 0.15,
+        // 0.3, matching the footprint, which oversails the 5 × 6 m glasshouse
+        // by that much on all four sides. The 0.15 declared here before
+        // described nothing in the drawing.
+        overhang: 0.3,
         ridgeBearing: 0,
         material: "glass-house",
       },
@@ -342,12 +345,17 @@ const greenhollow: SceneDocumentInput = {
       },
       // The porch: posts along its open west and south edges, carrying the
       // zinc roof above.
+      //
+      // The south leg used to be missing, so the roof — flat, with no walls
+      // beneath it — was carried on one edge of two and its south corner read
+      // as cantilevered off nothing.
       {
         id: "porch-posts",
         kind: "colonnade",
         path: [
           [-9.5, 23],
           [-9.5, 31],
+          [-5.5, 31],
         ],
         width: 0.3,
         height: PORCH_EAVE,

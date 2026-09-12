@@ -94,3 +94,65 @@ field's meaning was never settled.
 - No tree intersects a building in villa.
 - `overhang` means one thing, recorded, and every scene agrees with it.
 - `npm run check` exits 0.
+
+---
+
+## Outcome — 2026-09-12
+
+All four items done, and the fourth needed the decision the brief asked for
+rather than a fix.
+
+**1 — Villa's five textured materials** now declare `baseColor` and
+`textureScale`, values matched to Greenhollow's so the two scenes are
+comparable. The scene had been written before the rule and never brought
+forward.
+
+**2 — The forest.** The six neighbours are now a single `NEIGHBOURS` array that
+both `context.masses` and the scatter's `exclude` read, each grown by a 2 m
+skirt so trees do not touch the walls either. Two hand-copied lists of the same
+six rectangles is how they drift apart in the first place.
+
+Instance count 284 → 260. The old test asserted the count, which could never
+have caught this — 284 trees with two inside a neighbour's rooms is still 284.
+So there is now a second test that checks the property: no instance falls within
+any mass's footprint.
+
+**3 — The porch colonnade** gained its south leg. The comment above it had
+described two edges since it was written; the path had one.
+
+### 4 — `overhang` means the drawing, not the generator
+
+Recorded in `decisions-scene.md` and on the field itself:
+
+> `Roof.overhang` is the **least** the declared `footprint` oversails the walls
+> beneath it, on any one side. Descriptive, not generative.
+
+That is the only reading consistent with `buildRoof`, which builds straight from
+`footprint` and never reads the field. **Making it generative was considered and
+rejected for a concrete reason**, not for scope: a single scalar cannot express
+a mid-terrace, flush at the party walls and eaved front and back, nor a hip
+roof's overhang following the eave line rather than a bounding box. Generating
+from one number would make the schema unable to describe buildings it can
+currently draw.
+
+Under that meaning, all three scenes now agree:
+
+| roof | before | after |
+|---|---|---|
+| villa `roof-main` | 0.4 declared, 0.4 drawn | unchanged — it was already right |
+| greenhollow `roof-greenhouse` | 0.15 declared, 0.3 drawn | declares 0.3; the drawing was deliberate and symmetric |
+| elmsgate `roof-house` | 0.15 declared, **0.0 drawn** | footprint gains 0.15 of eave to street and yard, stays flush at the party walls; declares 0 |
+
+**One thing this surfaced and did not fix**, because it is a `packages/schema`
+change the brief reserves: `roof-covers-walls` passes `overhang` to
+`boundsContain` as a *tolerance*, which loosens containment in the wrong
+direction — it permits a roof **smaller** than its walls by that much. Under
+this decision it should assert the footprint extends at least `overhang` beyond
+the walls. Recorded in the decision and belongs to brief 27.
+
+**5 — Looked at, in the viewport rather than a render.** This machine cannot
+path-trace (brief 40's outcome has the detail), so the check was a viewport
+screenshot of each scene. Villa: 260 instances, the six neighbours standing
+clear of the trees, meadow and tile reading as themselves rather than as grey.
+
+`npm run scenes` builds all three clean; `npm run check` clean, 267 tests.

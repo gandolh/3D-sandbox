@@ -690,7 +690,7 @@
         ],
         "baseElevation": 2.6,
         "pitch": 26,
-        "overhang": 0.15,
+        "overhang": 0.3,
         "ridgeBearing": 0,
         "material": "glass-house"
       }
@@ -749,6 +749,10 @@
           ],
           [
             -9.5,
+            31
+          ],
+          [
+            -5.5,
             31
           ]
         ],

@@ -3,7 +3,7 @@ import * as THREE from "three";
 import { Evaluator } from "three-bvh-csg";
 import { describe, expect, it } from "vitest";
 import { downwardFaces, faces, inwardFaces, slopes } from "./normals.js";
-import { BuildingMass, Roof, Run, ScatterField, loadScene, type Level, type Wall } from "@solstice/schema";
+import { BuildingMass, Roof, Run, ScatterField, bounds, loadScene, type Level, type Wall } from "@solstice/schema";
 import {
   UnsupportedRoofError,
   buildMass,
@@ -246,8 +246,27 @@ describe("generating the reference scene", () => {
     const scene = generateScene(doc);
     expect(scene.subject.children.length).toBeGreaterThan(0);
     expect(scene.context.children.length).toBeGreaterThan(0);
-    expect(scene.stats.instances).toBe(284);
+    // 260 since the forest stopped growing through the neighbours: the six
+    // masses plus a 2 m skirt take about 24 trees out of the 284 it used to
+    // place.
+    expect(scene.stats.instances).toBe(260);
     scene.dispose();
+  });
+
+  it("plants no tree inside a building", () => {
+    // The count above cannot see this, which is why it is separate. The forest
+    // covers 120 × 120 m and used to exclude one rectangle — the house
+    // clearing — so every one of the six neighbours had trees growing through
+    // its walls. n-03 is 108 m², about two trees' worth at this density.
+    const field = doc.context.scatter[0]!;
+    const buildings = doc.context.masses.map((mass) => bounds(mass.footprint));
+    const planted = scatterInstances(field);
+    expect(planted.length).toBeGreaterThan(200);
+
+    const trespassing = planted.filter(({ position: [x, , z] }) =>
+      buildings.some((b) => x >= b.minX && x <= b.maxX && z >= b.minZ && z <= b.maxZ),
+    );
+    expect(trespassing).toEqual([]);
   });
 
   it("keeps the subject far cheaper than the context, which is the point of the split", () => {

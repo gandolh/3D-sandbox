@@ -97,7 +97,22 @@ export const Roof = z.strictObject({
   baseElevation: Meters,
   /** Roof pitch. Must be 0 for `flat`. */
   pitch: Degrees.min(0).max(85).default(30),
-  /** How far the roof oversails the walls. */
+  /**
+   * The **least** the declared `footprint` oversails the walls beneath it, on
+   * any one side.
+   *
+   * Descriptive, not generative: `buildRoof` builds straight from `footprint`
+   * and never reads this. The author draws the roof at its true extent, and
+   * this states what that drawing is supposed to achieve, so a linter can catch
+   * a footprint that no longer matches the intent.
+   *
+   * Settled on 2026-09-12, because three scenes had used it three ways — one
+   * where it matched, one where the footprint was the walls exactly (no eave
+   * anywhere, despite declaring 0.15) and one where the drawing oversailed by
+   * twice what it declared. A roof that must be flush on one side — a
+   * mid-terrace against its party walls — declares 0 and carries its real eave
+   * in the footprint.
+   */
   overhang: Meters.min(0).default(0.4),
   /** Ridge direction for `gable`, in plan degrees clockwise from +Z (north). */
   ridgeBearing: Degrees.optional(),

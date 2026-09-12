@@ -146,3 +146,31 @@ Polycount goes into the manifest (Poly Haven reports it; it is not something we
 have to measure), and a lint rule warns when a level's subject placements exceed
 the budget. The budget is a warning, not an error: it is a judgement about this
 machine, and a machine with more memory is allowed a different one.
+
+## `overhang` describes the roof footprint; it does not generate it (2026-09-12)
+
+`Roof.overhang` is **the least the declared `footprint` oversails the walls
+beneath it, on any one side**. The author draws the roof at its true extent;
+this states what that drawing is meant to achieve.
+
+Forced by finding the field used three ways in three scenes: villa's matched its
+drawing, Elmsgate's roof footprint *was* the walls exactly — no eave anywhere,
+while declaring 0.15, on the two elevations two of its three shots are of — and
+Greenhollow's greenhouse oversailed by 0.3 while declaring 0.15. A field nobody
+agrees on is a field that means nothing.
+
+- *Rejected*: making it generative — `buildRoof` insets or grows the footprint
+  by `overhang`. Tempting, because it makes the declaration load-bearing and the
+  drift impossible. But a single scalar cannot express the common real case: a
+  mid-terrace is flush at the party walls and eaved front and back, and a hip
+  roof's overhang follows the eave line, not a bounding box. Generating from one
+  number would make the schema unable to describe buildings it can currently
+  draw.
+- *Consequence*: a roof that must be flush on one side declares `0` and carries
+  its real eave in the footprint, with a comment saying so.
+- *Consequence*: `roof-covers-walls` currently passes `overhang` to
+  `boundsContain` as a **tolerance**, which loosens the check in the wrong
+  direction — it permits a roof *smaller* than its walls by that much. Under
+  this decision the rule should assert the footprint extends at least `overhang`
+  beyond the walls on every side. That is a `packages/schema` change and belongs
+  to brief 27.

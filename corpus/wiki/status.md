@@ -37,10 +37,8 @@ is operated there by hand. Nothing in `apps/` or `packages/` waits on it.
 
 Four audit rounds on 2026-09-12 — twelve lenses in all — produced **24 briefs
 (22–45)**. The full ranked lists are in [log.md](../log.md). Implementation
-started the same day; **22, 23, 39, 40 and 41 are done**.
-
-One live bug remains: villa's **forest grows through all six neighbouring
-houses** (brief 42).
+started the same day; **22, 23, 39, 40, 41 and 42 are done, and every live bug
+the audit found is fixed.** What is left is structural work and hardening.
 
 **Nothing in this repo can path-trace on the current machine.** WSL2 with no
 hardware GL — the browser reports no `KHR_parallel_shader_compile`, and the
@@ -101,7 +99,7 @@ migrations, and the two unbaked conifers that only the regression fixture uses.
 | 39 | [Switching scenes keeps the first one's assets](../briefs/done/39-switching-scenes-keeps-the-first-ones-assets.md) | done |
 | 40 | [Every render leaks the GPU](../briefs/done/40-every-render-leaks-the-gpu.md) | done |
 | 41 | [A render can be undermined while it runs](../briefs/done/41-a-render-can-be-undermined-while-it-runs.md) | done |
-| 42 | [Bring the fixture forward](../briefs/todo/42-bring-the-fixture-forward.md) | todo |
+| 42 | [Bring the fixture forward](../briefs/done/42-bring-the-fixture-forward.md) | done |
 | 43 | [Impostor quads are the wrong shape](../briefs/todo/43-impostor-quads-are-the-wrong-shape.md) | todo |
 | 44 | [The dome and the render disagree after sunset](../briefs/todo/44-the-dome-and-the-render-disagree-after-sunset.md) | todo |
 | 45 | [Scatter counts and seeds](../briefs/todo/45-scatter-counts-and-seeds.md) | todo |

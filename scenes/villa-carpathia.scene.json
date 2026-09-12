@@ -26,31 +26,41 @@
       "label": "Lime Plaster 04",
       "source": "polyhaven",
       "slug": "clay_plaster",
-      "roughness": 0.82
+      "baseColor": "#E9E1D3",
+      "roughness": 0.82,
+      "textureScale": 2.4
     },
     "roof-clay-tile": {
       "label": "Clay Roof Tile",
       "source": "polyhaven",
       "slug": "roof_tiles_14",
-      "roughness": 0.68
+      "baseColor": "#9C5540",
+      "roughness": 0.68,
+      "textureScale": 1.6
     },
     "slab-concrete": {
       "label": "Board-formed Concrete",
       "source": "ambientcg",
       "slug": "Concrete034",
-      "roughness": 0.9
+      "baseColor": "#B9B5AD",
+      "roughness": 0.9,
+      "textureScale": 3
     },
     "grass-meadow": {
       "label": "Meadow Grass",
       "source": "polyhaven",
       "slug": "leafy_grass",
-      "roughness": 1
+      "baseColor": "#5C7B43",
+      "roughness": 1,
+      "textureScale": 4
     },
     "asphalt-road": {
       "label": "Worn Asphalt",
       "source": "ambientcg",
       "slug": "Asphalt026A",
-      "roughness": 0.95
+      "baseColor": "#47474A",
+      "roughness": 0.95,
+      "textureScale": 4
     },
     "render-neighbour": {
       "label": "Neutral Render",
@@ -316,6 +326,114 @@
             [
               -14,
               16
+            ]
+          ],
+          [
+            [
+              -48,
+              20
+            ],
+            [
+              -33,
+              20
+            ],
+            [
+              -33,
+              33
+            ],
+            [
+              -48,
+              33
+            ]
+          ],
+          [
+            [
+              -32,
+              22
+            ],
+            [
+              -18,
+              22
+            ],
+            [
+              -18,
+              34
+            ],
+            [
+              -32,
+              34
+            ]
+          ],
+          [
+            [
+              -15,
+              21
+            ],
+            [
+              1,
+              21
+            ],
+            [
+              1,
+              34
+            ],
+            [
+              -15,
+              34
+            ]
+          ],
+          [
+            [
+              4,
+              22
+            ],
+            [
+              18,
+              22
+            ],
+            [
+              18,
+              34
+            ],
+            [
+              4,
+              34
+            ]
+          ],
+          [
+            [
+              21,
+              20
+            ],
+            [
+              36,
+              20
+            ],
+            [
+              36,
+              34
+            ],
+            [
+              21,
+              34
+            ]
+          ],
+          [
+            [
+              38,
+              23
+            ],
+            [
+              51,
+              23
+            ],
+            [
+              51,
+              35
+            ],
+            [
+              38,
+              35
             ]
           ]
         ]
