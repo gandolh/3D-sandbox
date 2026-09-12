@@ -144,9 +144,16 @@ export function generateScene(
      * whole wall — and false for a loaded glTF, which already has UVs that were
      * authored against its own maps.
      */
-    options: { project?: boolean } = {},
+    options: { project?: boolean; twoSided?: boolean } = {},
   ): THREE.Mesh => {
-    const material = resolveMaterial(materials, materialId);
+    const shared = resolveMaterial(materials, materialId);
+    // A flat surface needs both its sides, and the shared material cannot give
+    // it one without giving it to every other surface that names the same
+    // material. Cloned per mesh, which is a handful of them.
+    const material =
+      options.twoSided !== true
+        ? shared
+        : Object.assign(shared.clone(), { side: THREE.DoubleSide, name: shared.name });
     let placed = geometry;
     if (options.project !== false && material.map !== null) {
       placed = boxProjectUv(geometry, doc.materials[materialId]?.textureScale ?? 2);
@@ -203,7 +210,17 @@ export function generateScene(
       for (const part of structure) part.dispose();
     }
     if (climber.length > 0 && run.climber !== undefined) {
-      attach(subject, stats.subject, mergeSimple(climber), run.climber, `run:${run.id}:climber`);
+      // Two-sided, because a leaf is a plane and a plane has a back.
+      //
+      // The cluster is two quads crossed precisely so foliage reads from any
+      // direction — and with the default `FrontSide` every triangle facing away
+      // from the viewer was culled, so from underneath the canopy the approach
+      // shot showed sky through it. Same class as the inverted roads and
+      // roofs, different mechanism: nothing here is wound backwards, the
+      // surface simply only had one side and needed two.
+      attach(subject, stats.subject, mergeSimple(climber), run.climber, `run:${run.id}:climber`, {
+        twoSided: true,
+      });
       for (const part of climber) part.dispose();
     }
   }

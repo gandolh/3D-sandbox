@@ -37,12 +37,10 @@ is operated there by hand. Nothing in `apps/` or `packages/` waits on it.
 
 Four audit rounds on 2026-09-12 — twelve lenses in all — produced **24 briefs
 (22–45)**. The full ranked lists are in [log.md](../log.md). Implementation
-started the same day; **22 and 39 are done**.
+started the same day; **22, 23 and 39 are done**.
 
-Four live bugs remain:
+Three live bugs remain:
 
-- Every **road and pavement renders black** — `buildRoad` winds its ribbon
-  backwards. Third instance of a class the tests could never catch.
 - **Every render leaks GPU memory**; a four-shot queue compounds it until the
   context is lost.
 - A **scene switch during a render** frees the geometry it is tracing, and the
@@ -83,7 +81,7 @@ migrations, and the two unbaked conifers that only the regression fixture uses.
 | 20 | [A scene picker](../briefs/done/20-scene-picker.md) | done |
 | 21 | [Elmsgate, a two-storey town house](../briefs/done/21-a-town-house.md) | done |
 | 22 | [Collider rotation units](../briefs/done/22-collider-rotation-units.md) | done |
-| 23 | [Normals face outward](../briefs/todo/23-normals-face-outward.md) | todo |
+| 23 | [Normals face outward](../briefs/done/23-normals-face-outward.md) | done |
 | 24 | [Physics cache ignores sizes](../briefs/todo/24-physics-cache-ignores-sizes.md) | todo |
 | 25 | [Defer the heavy half](../briefs/todo/25-defer-the-heavy-half.md) | todo |
 | 26 | [Stop shipping source maps](../briefs/todo/26-stop-shipping-source-maps.md) | todo |

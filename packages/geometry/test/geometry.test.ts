@@ -2,11 +2,14 @@ import { readFileSync } from "node:fs";
 import * as THREE from "three";
 import { Evaluator } from "three-bvh-csg";
 import { describe, expect, it } from "vitest";
-import { BuildingMass, Roof, ScatterField, loadScene, type Level, type Wall } from "@solstice/schema";
+import { downwardFaces, faces, inwardFaces, slopes } from "./normals.js";
+import { BuildingMass, Roof, Run, ScatterField, loadScene, type Level, type Wall } from "@solstice/schema";
 import {
   UnsupportedRoofError,
   buildMass,
+  buildRoad,
   buildRoof,
+  buildRun,
   buildWall,
   extrudePolygon,
   ensureStandardAttributes,
@@ -323,27 +326,10 @@ describe("extruded polygons", () => {
   });
 });
 
+// The filtering these two share now lives in `./normals.ts`, with the rest of
+// the facing guard. It was written here for the gable bug and then the same
+// bug turned up in roads, which is the argument for one home.
 describe("gable slopes face the sky", () => {
-  /**
-   * The pitched faces only.
-   *
-   * Bounded at both ends on purpose: below 0.1 are the vertical faces (gable
-   * ends, and a mass's extruded walls), above 0.95 are the horizontal ones (a
-   * mass's floor and ceiling caps, which come along because `buildMass` merges
-   * walls and roof into one geometry). Averaging without the upper bound reads
-   * a correct roof as half wrong, because a downward cap cancels a slope.
-   */
-  const slopes = (g: { getAttribute(n: string): { array: ArrayLike<number> } }): number[] => {
-    const n = g.getAttribute("normal").array;
-    const out: number[] = [];
-    for (let t = 0; t < n.length / 9; t++) {
-      const ny = (n[t * 9 + 1]! + n[t * 9 + 4]! + n[t * 9 + 7]!) / 3;
-      if (Math.abs(ny) < 0.1 || Math.abs(ny) > 0.95) continue;
-      out.push(ny);
-    }
-    return out;
-  };
-
   const footprint = [
     [-3.25, 1.4],
     [3.25, 1.4],
@@ -469,5 +455,121 @@ describe("attribute consistency", () => {
     const merged = mergeSimple([new THREE.BoxGeometry(1, 1, 1), new THREE.ConeGeometry(1, 2, 6)]);
     expect(hasStandardAttributes(merged)).toBe(true);
     expect(merged.getAttribute("uv").count).toBe(merged.getAttribute("position").count);
+  });
+});
+
+/**
+ * The facing guard, applied to every builder that winds triangles by hand.
+ *
+ * Three bugs in this repo have been this one bug — the gable branch of
+ * `buildRoof`, the same branch of `buildMass`, and `buildRoad` — and all three
+ * survived a passing suite for the same reason: **a bounding box is identical
+ * whether a surface faces the sky or the ground.** The assertions live in
+ * `./normals.ts` so there is one of them rather than one per bug.
+ */
+describe("hand-wound surfaces face outward", () => {
+  const rect: [number, number][] = [
+    [-3.25, 1.4],
+    [3.25, 1.4],
+    [3.25, 10.6],
+    [-3.25, 10.6],
+  ];
+
+  const road = (path: [number, number][]) =>
+    buildRoad({ id: "r", path, width: 6, material: "asphalt" } as never);
+
+  it("lays a road face-up, straight and round a bend", () => {
+    // The shipped winding produced (0, −1, 0) on every triangle, and every road
+    // in all three scenes rendered pure black against lit terrain. It read as
+    // "asphalt is dark" in two briefs' screenshots.
+    for (const path of [
+      [[0, 0], [20, 0]] as [number, number][],
+      [[0, 0], [20, 0], [20, 20]] as [number, number][],
+      // Backwards, and diagonally: the winding must not depend on which way
+      // the centreline happens to run.
+      [[20, 20], [20, 0], [0, 0]] as [number, number][],
+      [[0, 0], [-14, 9]] as [number, number][],
+    ]) {
+      const geometry = road(path);
+      expect(faces(geometry).length).toBe((path.length - 1) * 2);
+      expect(downwardFaces(geometry)).toEqual([]);
+    }
+  });
+
+  it("winds every closed solid outward", () => {
+    const solids: [string, THREE.BufferGeometry][] = [
+      ["gabled mass", buildMass(BuildingMass.parse({ id: "m", footprint: rect, height: 5.8, roofKind: "gable", pitch: 38, material: "m" }))],
+      ["flat mass", buildMass(BuildingMass.parse({ id: "m", footprint: rect, height: 5.8, roofKind: "flat", material: "m" }))],
+      ["extrusion", extrudePolygon(rect, 0, 3)],
+      ["wall solid", wallSolid(wall(), level())],
+    ];
+    for (const [name, geometry] of solids) {
+      expect([name, inwardFaces(geometry)]).toEqual([name, []]);
+    }
+  });
+
+  it("winds every run's posts, rails and hedge outward", () => {
+    for (const kind of ["fence", "pergola", "hedge"] as const) {
+      const run = Run.parse({
+        id: "r",
+        kind,
+        path: [[0, 0], [10, 0]],
+        width: 1.2,
+        height: 2.2,
+        spacing: 2,
+        material: "m",
+        ...(kind === "pergola" ? { climber: "m" } : {}),
+      });
+      const { structure } = buildRun(run);
+      expect(structure.length).toBeGreaterThan(0);
+      for (const part of structure) expect([kind, inwardFaces(part)]).toEqual([kind, []]);
+    }
+  });
+
+  it("keeps winding through mergeSimple", () => {
+    // The merge copies vertices in order and so preserves winding by
+    // construction — which is exactly the kind of claim that stops being true
+    // silently. `buildMass`, the proxy tree and `prepareAsset` all rely on it.
+    const box = new THREE.BoxGeometry(2, 3, 4);
+    const before = faces(box).map((f) => f.normal.toArray().map((n) => Math.round(n)));
+    const after = faces(mergeSimple([box])).map((f) => f.normal.toArray().map((n) => Math.round(n)));
+    expect(after).toEqual(before);
+    expect(inwardFaces(mergeSimple([box]))).toEqual([]);
+  });
+
+  /**
+   * The fourth instance, and a different mechanism.
+   *
+   * A pergola's climber is crossed quads — flat planes, deliberately, so that
+   * foliage reads from any direction. Nothing about them is wound backwards.
+   * But three's default `FrontSide` culls a plane's back, so every leaf facing
+   * away from the camera vanished, and from under the canopy — where the
+   * approach shot puts the viewer — the pergola showed sky through it.
+   *
+   * Hence a facing bug with no inverted triangle in it: the surface only had
+   * one side and needed two.
+   */
+  it("gives the climber's leaves both their sides", () => {
+    const doc = loadScene(
+      JSON.parse(readFileSync(new URL("../../../scenes/greenhollow.scene.json", import.meta.url), "utf8")),
+    ).document;
+    const scene = generateScene(doc);
+    const climbers: THREE.Mesh[] = [];
+    scene.root.traverse((o) => {
+      if ((o as THREE.Mesh).isMesh === true && o.name.endsWith(":climber")) climbers.push(o as THREE.Mesh);
+    });
+    expect(climbers.length).toBeGreaterThan(0);
+    for (const mesh of climbers) {
+      expect((mesh.material as THREE.Material).side).toBe(THREE.DoubleSide);
+    }
+    // And nothing else got dragged two-sided with it: a solid rendered from
+    // both sides costs fill rate and hides inversions from the eye.
+    let oneSided = 0;
+    scene.root.traverse((o) => {
+      const mesh = o as THREE.Mesh;
+      if (mesh.isMesh !== true || mesh.name.endsWith(":climber")) return;
+      if ((mesh.material as THREE.Material).side === THREE.FrontSide) oneSided++;
+    });
+    expect(oneSided).toBeGreaterThan(0);
   });
 });

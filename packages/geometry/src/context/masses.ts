@@ -88,8 +88,13 @@ export function buildRoad(road: RoadNetwork): THREE.BufferGeometry {
     const b1 = [b[0] + nx, y, b[1] + nz];
     const b2 = [b[0] - nx, y, b[1] - nz];
 
-    positions.push(...a1, ...a2, ...b2);
-    positions.push(...a1, ...b2, ...b1);
+    // Wound so the ribbon faces the sky. `n` is the left perpendicular of the
+    // travel direction, which fixes the handedness: a1 → b2 → a2 and a1 → b1 →
+    // b2 both cross to +Y for a segment running any direction. Reversed — which
+    // is how this shipped — `computeVertexNormals` derives (0, −1, 0) from the
+    // winding and every road in every scene renders pure black.
+    positions.push(...a1, ...b2, ...a2);
+    positions.push(...a1, ...b1, ...b2);
   }
 
   const geometry = new THREE.BufferGeometry();

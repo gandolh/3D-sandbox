@@ -620,3 +620,39 @@ Confirmed in the browser — Elmsgate's pavement is textured, and `pavement-ston
 is an id Greenhollow does not have.
 
 258 tests, `npm run check` clean.
+
+## 2026-09-12 — The facing guard, and a fourth instance
+
+Brief 23. `buildRoad` wound both triangles of every quad backwards, so every
+road in all three scenes rendered pure black — visible in two earlier briefs'
+screenshots and read as "asphalt is dark". Confirmed fixed in the viewport at
+13:00: lit grey asphalt.
+
+The brief's real subject was the class, not the instance. Three bugs have now
+been the same bug, and all three survived a passing suite because **a bounding
+box is identical whether a surface faces the sky or the ground**. So the
+assertion now lives once, in `packages/geometry/test/normals.ts`, and reads
+positions rather than the normal attribute — winding is what goes wrong, and the
+normal attribute is downstream of it. Deliberately per-triangle: a signed volume
+or a mean normal lets one inverted face hide behind fifty correct ones, which is
+exactly how the gable bug survived.
+
+Every hand-wound builder swept. Roads were broken; the two gable paths, the
+extruder, the wall solid, all three run kinds and `mergeSimple` were clean and
+are now pinned. `proxyTreeGeometry` flags six triangles that are the cylinder's
+top cap — an interior face of a non-convex merge, a limit of the convexity
+heuristic rather than a bug, and the guard now says where it applies.
+
+**The fourth instance had no inverted triangle in it.** A pergola's climber is
+crossed flat quads, on purpose, so foliage reads from any direction — and every
+material this package builds is three's default `FrontSide`, which culls a
+plane's back. So from under the canopy, which is where the approach shot puts
+the viewer, the pergola showed sky through itself. The crossing existed
+precisely to prevent that and the culling undid it.
+
+Worth naming, because it widens the class: *a surface facing away from where you
+are standing* is the bug. Backwards winding is one way to get there; one-sided
+material on a two-sided surface is another. Fixed by cloning that one mesh's
+material two-sided, and the test asserts nothing else became so.
+
+263 tests.
