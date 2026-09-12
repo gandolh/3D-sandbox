@@ -70,3 +70,23 @@ The test suite **locks the inconsistency in**: `colliders.test.ts:166` asserts
 - A test asserts the collider's yaw agrees with the mesh's yaw for the same
   placement, and fails if the conversion is removed.
 - No remaining raw use of a `Degrees` document field as radians in `packages/physics`.
+
+---
+
+## Outcome — 2026-09-12
+
+Done as specified. `colliders.ts:70` now reads
+`rotationY: degToRad(placement.rotationY)`, and `CuboidCollider.rotationY`
+carries a doc comment saying the unit out loud and why it is stated — the field
+silently accepted two units, which is the whole mechanism.
+
+The test that pinned the bug asserted a bare `30`. Replacing it with
+`degToRad(30)` would have been a tautology: the test would only prove the
+implementation calls the function the test calls. So the new test turns the yaw
+back into a **direction**, using the same rotation three applies to the geometry
+for the same placement — `(x, z) → (x·cos + z·sin, −x·sin + z·cos)`. A placement
+at `rotationY: 90` must send the box's local +X axis to −Z. Passing the degrees
+through sends it to roughly `(−0.45, 0, −0.89)`, which is what shipped.
+
+Verified by removing the conversion again: two tests fail, including the new
+one. Restored, 17 pass.

@@ -80,3 +80,43 @@ all**: nothing in the overlay, and drop-to-rest falls through to the terrain.
   every scene, in any order.
 - Assets are still downloaded exactly once per session.
 - `npm run check` exits 0.
+
+---
+
+## Outcome — 2026-09-12
+
+Done as specified, by splitting the two lifetimes the code had conflated.
+
+**The library is what loads; the view of it is derived.** `SandboxEngine` no
+longer holds a `MaterialSource`. It holds an `AssetLibrary` — `{ assets,
+materialsFor }` — and calls `materialsFor(doc)` inside `setDocument`, so the
+mapping is a function of the document being generated rather than of whichever
+one happened to be open when 273 MB finished arriving. `setAssets` dropped a
+parameter as a result, which is the shape of the fix: the caller no longer has a
+document to pass, so it can no longer pass the wrong one.
+
+**Sizes stopped being filtered.** `LoadedAssets` now exposes `sizes` for the
+whole library, and `Viewport` stores that. The old map was built from the first
+document's placements, and `deriveColliders` skips what it has no size for — so
+a bench a later scene placed got no collider at all. The library knows every
+size; let the document do its own selecting.
+
+Two things found while fixing it, both in files this brief owns:
+
+- **The collider overlay's effect read `assetSizes` without depending on it.**
+  So an overlay drawn before the models arrived kept its missing boxes until the
+  next unrelated edit. Added to the deps.
+- The asset download still happens exactly once — nothing in the load callback
+  reads the document any more, which is what makes both orderings work.
+
+Tested headlessly in `asset-loader.test.ts`: one library resolves two documents'
+differing material ids, neither leaking into the other's lookup and the first
+view unchanged by the second being taken; and `sizes` covers every loaded model
+rather than one scene's slice. The stubbed loaders are now restored in
+`afterEach` — a spy left standing would make a later test pass for the wrong
+reason.
+
+Confirmed in the browser, which the brief's own note said had not been possible
+before: loaded Greenhollow, waited for the models, switched to Elmsgate.
+Elmsgate's pavement renders textured, and `pavement-stone` is an id Greenhollow
+does not have — under the bug it resolved to nothing.

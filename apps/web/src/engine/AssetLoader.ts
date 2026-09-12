@@ -25,6 +25,16 @@ export interface LoadedAssets {
   assets: AssetSource;
   /** Built per document, because material ids are the document's, not the library's. */
   materialsFor(doc: SceneDocument): MaterialSource;
+  /**
+   * Every loaded model's size, by asset id — the whole library, not one
+   * document's slice of it.
+   *
+   * The physics derivation skips any placement whose size it does not know, so
+   * a table filtered to the first document's placements silently denied
+   * colliders to everything a later scene placed and the first one did not.
+   * The library knows all of them; let the document do its own selecting.
+   */
+  sizes: ReadonlyMap<string, readonly [number, number, number]>;
 }
 
 export async function loadAssets(signal?: AbortSignal): Promise<LoadedAssets> {
@@ -116,11 +126,15 @@ function bundle(
   impostors: ReadonlyMap<string, ImpostorAsset>,
   libraryMaps: ReadonlyMap<string, MaterialMaps>,
 ): LoadedAssets {
+  const sizes = new Map<string, readonly [number, number, number]>();
+  for (const [id, asset] of entries) sizes.set(id, asset.size);
+
   return {
     assets: {
       get: (id) => entries.get(id),
       impostor: (id) => impostors.get(id),
     },
+    sizes,
     // The document names materials by its own ids; the library names them
     // `<source>/<slug>`. This is the only place that knows both.
     materialsFor: (doc) => {

@@ -582,3 +582,41 @@ at −X, not +X. Everything downstream is internally consistent, so no scene is
 wrong on its own terms — but a plan transcribed from paper is built as its mirror
 image. That is a decision, not a bug fix, because changing it silently changes
 what every existing scene means.
+
+## 2026-09-12 — Two units and two lifetimes
+
+The first two briefs off the audit queue, both live bugs, both the same shape:
+**a value that meant one thing being read as another.**
+
+**22 — degrees read as radians.** `deriveColliders` copied `placement.rotationY`
+straight into `CuboidCollider.rotationY`. The document stores degrees; both
+consumers — `quaternionFromY` and the viewport's overlay — read radians, and so
+does the mesh the collider is meant to be shaped like. Elmsgate's bench sat at
+180° with a collider at 180 **radians**. The conversion is one call, and
+`degToRad` was already imported and never used.
+
+The interesting half was the test. The old one asserted a bare `30`; changing it
+to `degToRad(30)` would only have proved the implementation calls the function
+the test calls. The new one turns the yaw back into a direction — a quarter turn
+must send the box's local +X axis to −Z, under the rotation three applies to the
+geometry for the same placement. Verified by taking the conversion back out: it
+fails.
+
+**39 — one document's names used for every document.** The material mapping is
+the only thing that knows both the document's material ids and the library's
+`<source>/<slug>` names, and it was built once, when the download resolved,
+against whichever scene was open at that moment. The library and the view of it
+had been given the same lifetime. Separating them is most of the fix:
+`SandboxEngine` now holds `{ assets, materialsFor }` and resolves the view
+inside `setDocument`. `setAssets` lost a parameter as a result — the caller no
+longer has a document to pass, so it can no longer pass the wrong one.
+
+`assetSizes` had the same shape and a quieter consequence: filtered to the first
+document's placements, and `deriveColliders` skips what it has no size for, so a
+later scene's bench got no collider at all. Now the whole library's sizes are
+published and the document selects from them.
+
+Confirmed in the browser — Elmsgate's pavement is textured, and `pavement-stone`
+is an id Greenhollow does not have.
+
+258 tests, `npm run check` clean.

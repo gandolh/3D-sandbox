@@ -9,6 +9,15 @@ export interface CuboidCollider {
   entity: string;
   halfExtents: [number, number, number];
   position: [number, number, number];
+  /**
+   * Yaw in **radians**, always.
+   *
+   * Stated because it has been got wrong: the document stores a placement's
+   * rotation in degrees, and copying that field straight in here is a
+   * conversion the type cannot refuse. Everything downstream — `world.ts`'s
+   * `quaternionFromY`, the viewport's collider overlay — reads radians, and so
+   * does the mesh the collider is supposed to be shaped like.
+   */
   rotationY: number;
 }
 
@@ -67,7 +76,9 @@ export function deriveColliders(doc: SceneDocument, sizes?: PlacementSizes): Cub
         // `prepareAsset` grounds geometry on y = 0 to match — so the collider's
         // centre is half its height above the stated position.
         position: [placement.position[0], placement.position[1] + (sy * scale) / 2, placement.position[2]],
-        rotationY: placement.rotationY,
+        // The document speaks degrees; every consumer of this field reads
+        // radians. `packages/geometry` converts the same field for the mesh.
+        rotationY: degToRad(placement.rotationY),
       });
     }
   }

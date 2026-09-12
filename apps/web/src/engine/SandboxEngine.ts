@@ -21,6 +21,20 @@ import {
 import { frameShot, shotCamera } from "./shot.js";
 
 /**
+ * The loaded asset library, and how to read it for one document.
+ *
+ * Two lifetimes deliberately kept apart. The library — geometries, impostor
+ * atlases, texture maps keyed by the library's own `<source>/<slug>` names — is
+ * downloaded once per session and shared by every scene. The `MaterialSource`
+ * is keyed by *the document's* material ids, so it is a view, valid only for
+ * the document it was built from.
+ */
+export interface AssetLibrary {
+  assets: AssetSource;
+  materialsFor(doc: SceneDocument): MaterialSource;
+}
+
+/**
  * What to render. Without a `shot` the request frames whatever the viewport is
  * currently looking at; with one, the shot's camera and solar override win.
  */
@@ -67,10 +81,8 @@ export class SandboxEngine {
   private lastSolar: ReturnType<typeof resolveSolar> | null = null;
   /** Kept so a shot's solar override can be re-resolved against the site. */
   private lastDocument: SceneDocument | null = null;
-  /** Real models when they have loaded; until then the generator uses proxies. */
-  private assets: AssetSource | null = null;
-  /** Real PBR maps when they have loaded; until then every material is a colour. */
-  private materials: MaterialSource | null = null;
+  /** The loaded library, once. Until it arrives the generator uses proxies. */
+  private library: AssetLibrary | null = null;
   private readonly colliderOverlay = new THREE.Group();
 
   constructor(
@@ -137,10 +149,15 @@ export class SandboxEngine {
     this.generated?.root.removeFromParent();
 
     this.lastDocument = doc;
+    // `materialsFor` is resolved here, per document, and never cached: material
+    // ids belong to the document, not to the library, so a map built for one
+    // scene resolves almost nothing in the next. Held once, it bound the
+    // library to whichever scene happened to be open when the download
+    // finished, and every scene after that rendered untextured.
+    const library = this.library;
     this.generated = generateScene(doc, {
       includeContext: options.includeContext,
-      ...(this.assets === null ? {} : { assets: this.assets }),
-      ...(this.materials === null ? {} : { materials: this.materials }),
+      ...(library === null ? {} : { assets: library.assets, materials: library.materialsFor(doc) }),
     });
     this.scene.add(this.generated.root);
     this.setSolar(doc);
@@ -155,14 +172,12 @@ export class SandboxEngine {
   /**
    * Hand the engine its loaded models. Regenerates, because the scene standing
    * on screen was built from proxies.
+   *
+   * The library is what is shared and what is downloaded once; the per-document
+   * view of it is derived on every `setDocument`.
    */
-  setAssets(
-    assets: AssetSource,
-    materials: MaterialSource,
-    options: { includeContext: boolean },
-  ): void {
-    this.assets = assets;
-    this.materials = materials;
+  setAssets(library: AssetLibrary, options: { includeContext: boolean }): void {
+    this.library = library;
     if (this.lastDocument !== null) this.setDocument(this.lastDocument, options);
   }
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { Level, SceneDocument, Wall } from "@solstice/schema";
-import { deriveColliders, wallColliders, type CuboidCollider } from "../src/colliders.js";
+import { deriveColliders, degToRad, wallColliders, type CuboidCollider } from "../src/colliders.js";
 import { baseScene } from "./fixtures.js";
 
 const level = Level.parse({ id: "L1", name: "Ground", elevation: 0, height: 2.7 });
@@ -163,7 +163,28 @@ describe("placement colliders", () => {
     const table = deriveColliders(withPlacements(), sizes).find((c) => c.entity === "table-01");
     expect(table?.halfExtents).toEqual([0.6, 0.375, 0.4]);
     expect(table?.position).toEqual([2, 0.375, 3]);
-    expect(table?.rotationY).toBe(30);
+    expect(table?.rotationY).toBeCloseTo(degToRad(30));
+  });
+
+  /**
+   * The collider's yaw must mean the same thing as the mesh's.
+   *
+   * Asserting a number against `degToRad(90)` alone would only prove the
+   * implementation calls the function the test calls. So this turns the yaw
+   * back into a direction, using the rotation three applies to the geometry for
+   * the same placement — `geometry.rotateY(degToRad(rotationY))`, which maps
+   * (x, z) to (x·cos + z·sin, −x·sin + z·cos). A quarter turn must send the
+   * box's local +X axis to −Z. Copying the degrees through sends it to roughly
+   * (−0.45, 0, −0.89), which is what shipped.
+   */
+  it("yaws the box the way the same placement's mesh is yawed", () => {
+    const doc = { ...withPlacements(), subject: { ...withPlacements().subject,
+      placements: [{ id: "table-01", asset: "a/table", position: [0, 0, 0], rotationY: 90, scale: 1 }] } } as SceneDocument;
+    const table = deriveColliders(doc, sizes).find((c) => c.entity === "table-01");
+    const yaw = table!.rotationY;
+    const [hx] = table!.halfExtents;
+    expect(hx * Math.cos(yaw)).toBeCloseTo(0);
+    expect(-hx * Math.sin(yaw)).toBeCloseTo(-hx);
   });
 
   it("scales extents and the lift together", () => {

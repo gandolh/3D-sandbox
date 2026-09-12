@@ -228,19 +228,13 @@ export function Viewport() {
     const assetLoad = new AbortController();
     void loadAssets(assetLoad.signal).then((loaded) => {
       if (assetLoad.signal.aborted) return;
-      const doc = getState().document;
-      if (doc === null) return;
-      engine.setAssets(loaded.assets, loaded.materialsFor(doc), {
-        includeContext: getState().showContext,
-      });
-
-      const sizes = new Map<string, readonly [number, number, number]>();
-      for (const id of new Set(doc.subject.placements.map((p) => p.asset))) {
-        const asset = loaded.assets.get(id);
-        if (asset !== undefined) sizes.set(id, asset.size);
-      }
-      setAssetSizes(sizes);
-      if (sizes.size > 0) setStatus(`${sizes.size} model(s) loaded`);
+      // Nothing here reads the current document, and that is the point. What
+      // arrives is the library; the per-document view of it is derived on every
+      // `setDocument`, so this works whether the load lands before or after the
+      // scene the user ends up on.
+      engine.setAssets(loaded, { includeContext: getState().showContext });
+      setAssetSizes(loaded.sizes);
+      if (loaded.sizes.size > 0) setStatus(`${loaded.sizes.size} model(s) loaded`);
     });
 
     return () => {
@@ -272,7 +266,10 @@ export function Viewport() {
     engineRef.current?.setColliderOverlay(
       showColliders ? collidersFor(doc, sizesFromMap(assetSizes)) : null,
     );
-  }, [doc, revision, showColliders]);
+    // `assetSizes` is in the deps because it arrives late: without it the
+    // overlay drawn before the models loaded would keep its missing placement
+    // boxes until the next edit.
+  }, [doc, revision, showColliders, assetSizes]);
 
   return (
     <div className="relative min-w-0 flex-1 bg-viewport">

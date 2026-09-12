@@ -35,17 +35,14 @@ is operated there by hand. Nothing in `apps/` or `packages/` waits on it.
 
 ## Next
 
-Four audit rounds on 2026-09-12 — twelve lenses in all — produced **24 queued
-briefs (22–45)**. The full ranked lists are in [log.md](../log.md).
+Four audit rounds on 2026-09-12 — twelve lenses in all — produced **24 briefs
+(22–45)**. The full ranked lists are in [log.md](../log.md). Implementation
+started the same day; **22 and 39 are done**.
 
-Six of them are **live bugs**, not improvements:
+Four live bugs remain:
 
 - Every **road and pavement renders black** — `buildRoad` winds its ribbon
   backwards. Third instance of a class the tests could never catch.
-- **Placement colliders are rotated in degrees** while both consumers read radians.
-- **Every scene after the first renders with the wrong assets** — the material
-  binding attaches to whichever document was open when the 135 MB finished
-  loading, and is never rebuilt. New with the scene picker.
 - **Every render leaks GPU memory**; a four-shot queue compounds it until the
   context is lost.
 - A **scene switch during a render** frees the geometry it is tracing, and the
@@ -85,7 +82,7 @@ migrations, and the two unbaked conifers that only the regression fixture uses.
 | 19 | [Render the whole shot list](../briefs/done/19-render-the-whole-shot-list.md) | done |
 | 20 | [A scene picker](../briefs/done/20-scene-picker.md) | done |
 | 21 | [Elmsgate, a two-storey town house](../briefs/done/21-a-town-house.md) | done |
-| 22 | [Collider rotation units](../briefs/todo/22-collider-rotation-units.md) | todo |
+| 22 | [Collider rotation units](../briefs/done/22-collider-rotation-units.md) | done |
 | 23 | [Normals face outward](../briefs/todo/23-normals-face-outward.md) | todo |
 | 24 | [Physics cache ignores sizes](../briefs/todo/24-physics-cache-ignores-sizes.md) | todo |
 | 25 | [Defer the heavy half](../briefs/todo/25-defer-the-heavy-half.md) | todo |
@@ -102,7 +99,7 @@ migrations, and the two unbaked conifers that only the regression fixture uses.
 | 36 | [Reach Cancel without a mouse](../briefs/todo/36-reach-cancel-without-a-mouse.md) | todo |
 | 37 | [A home for shared primitives](../briefs/todo/37-a-home-for-shared-primitives.md) | todo |
 | 38 | [Tests that do not hold weight](../briefs/todo/38-tests-that-do-not-hold-weight.md) | todo |
-| 39 | [Switching scenes keeps the first one's assets](../briefs/todo/39-switching-scenes-keeps-the-first-ones-assets.md) | todo |
+| 39 | [Switching scenes keeps the first one's assets](../briefs/done/39-switching-scenes-keeps-the-first-ones-assets.md) | done |
 | 40 | [Every render leaks the GPU](../briefs/todo/40-every-render-leaks-the-gpu.md) | todo |
 | 41 | [A render can be undermined while it runs](../briefs/todo/41-a-render-can-be-undermined-while-it-runs.md) | todo |
 | 42 | [Bring the fixture forward](../briefs/todo/42-bring-the-fixture-forward.md) | todo |
