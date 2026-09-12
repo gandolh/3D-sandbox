@@ -1,7 +1,13 @@
 import * as THREE from "three";
 import type { ScatterInstance } from "./scatter.js";
 
-/** A baked angle atlas: one row of `angles` square views around the subject. */
+/**
+ * A baked angle atlas: one row of `angles` **square** views around the subject.
+ *
+ * Square is the load-bearing word. Each cell covers `max(sx, sy, sz)` metres in
+ * both axes, centred on the bounding-box centre — so the subject is letterboxed
+ * inside it and the consumer has to know that. See `buildImpostorGeometry`.
+ */
 export interface ImpostorAsset {
   /** The atlas, `angles * cell` wide by `cell` tall. */
   texture: THREE.Texture;
@@ -33,8 +39,39 @@ export function buildImpostorGeometry(
   const normals: number[] = [];
   const uvs: number[] = [];
 
-  const baked = impostor.size[1];
-  const aspect = baked === 0 ? 1 : Math.max(impostor.size[0], impostor.size[2]) / baked;
+  const [sx, sy, sz] = impostor.size;
+
+  // What one atlas cell actually contains. `assets/bake/impostor.js` sets
+  // `half = max(sx, sy, sz) / 2` and renders an orthographic frustum of ±half
+  // in **both** axes, so every cell is a square `S × S` metres centred on the
+  // bounding-box centre — never a tight crop of the subject.
+  //
+  // The quad used to be built from `max(sx, sz) / sy`, which is the subject's
+  // own aspect, and those two are the same thing only when the subject is
+  // exactly as wide as it is tall. For `tree_small_02` that drew every tree in
+  // the forest 5.8 % too narrow. Off that near-cubic case it falls apart: a
+  // shrub baked at [6, 2, 6] gives S = 6 and an aspect of 3.0, so the quad was
+  // 2 m tall by 6 m wide while the subject occupied only v ∈ [⅓, ⅔] of the
+  // cell — two thirds of a metre tall, hovering above the ground, with empty
+  // atlas above and below it.
+  const cell = Math.max(sx, sy, sz);
+
+  // Widest the silhouette can be from any angle in the row, so a quad never
+  // clips the subject at the angles between the two extremes.
+  const width = Math.max(sx, sz);
+
+  // Rather than draw the whole square cell and let the empty parts alpha-test
+  // away — which works, but puts geometry below the terrain for anything
+  // wider than it is tall — the quad is the subject's own box and the UVs name
+  // the sub-rectangle of the cell it occupies. Same picture, no waste, and the
+  // base lands on y = 0 by construction rather than by luck.
+  const uInset = cell === 0 ? 0 : (1 - width / cell) / 2;
+  const v0 = cell === 0 ? 0 : 0.5 - sy / cell / 2;
+  const v1 = cell === 0 ? 1 : 0.5 + sy / cell / 2;
+
+  // `height` is the field's nominal instance height, so the subject's own
+  // height is what maps to it.
+  const aspect = sy === 0 ? 1 : width / sy;
 
   const slice = (degrees: number): number => {
     const step = 360 / impostor.angles;
@@ -50,8 +87,10 @@ export function buildImpostorGeometry(
     // on the ground. Scatter positions are ground points, not centres.
     for (const plane of [0, 90]) {
       const uIndex = slice(instance.rotationY + plane);
-      const u0 = uIndex / impostor.angles;
-      const u1 = (uIndex + 1) / impostor.angles;
+      const cellU0 = uIndex / impostor.angles;
+      const cellU1 = (uIndex + 1) / impostor.angles;
+      const u0 = cellU0 + (cellU1 - cellU0) * uInset;
+      const u1 = cellU1 - (cellU1 - cellU0) * uInset;
 
       const angle = THREE.MathUtils.degToRad(instance.rotationY + plane);
       const dx = Math.cos(angle);
@@ -64,10 +103,10 @@ export function buildImpostorGeometry(
         [x - (dx * w) / 2, h, z - (dz * w) / 2],
       ];
       const uv: [number, number][] = [
-        [u0, 0],
-        [u1, 0],
-        [u1, 1],
-        [u0, 1],
+        [u0, v0],
+        [u1, v0],
+        [u1, v1],
+        [u0, v1],
       ];
 
       // Normal perpendicular to the plane, so ambient light reads sensibly. It

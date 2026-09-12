@@ -164,6 +164,25 @@ agrees on is a field that means nothing.
   beyond the walls on every side. That is a `packages/schema` change and belongs
   to brief 27.
 
+## The atlas cell is authoritative; the consumer letterboxes (2026-09-12)
+An impostor cell is a **square** of `max(sx, sy, sz)` metres centred on the
+bounding-box centre — that is what `assets/bake/impostor.js` renders, and the
+consumer adapts to it.
+
+- *Rejected*: making the baker frame tightly and record the real extent. It
+  wastes less atlas, which is a genuine benefit, but it needs every existing
+  bake redone on a GPU and it changes the meta format. The consumer already has
+  everything it needs: `impostor.json` records `size`.
+- *Why it mattered*: `buildImpostorGeometry` was building its quad from
+  `max(sx, sz) / sy` — the subject's *own* aspect — which equals the cell only
+  when the subject is as wide as it is tall. Every tree in the forest was 5.8 %
+  too narrow. A shrub baked at `[6, 2, 6]` would have drawn two thirds of a
+  metre of shrub hovering 0.67 m above the ground.
+- *Consequence*: the quad is the subject's box and the UVs name the
+  sub-rectangle of the cell it occupies, rather than the quad being the whole
+  square cell with the empty parts alpha-tested away. Same picture; no geometry
+  below the terrain.
+
 ---
 
 Decisions about **how much geometry a document may ask for** — the placement

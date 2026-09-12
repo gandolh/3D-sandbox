@@ -72,3 +72,53 @@ question) or any wide shrub is, it becomes obvious and wrong.
 - A wide, short asset renders at its true size, standing on the ground.
 - `tree_small_02` renders at w/h 0.9420, not 0.8874.
 - `npm run check` exits 0.
+
+---
+
+## Outcome — 2026-09-12
+
+**The cell is authoritative; the consumer letterboxes.** Recorded in
+`decisions-scene.md`. The alternative — reframing the baker tightly — wastes
+less atlas and is genuinely better on that axis, but it needs every existing
+bake redone on a GPU and changes the meta format, and the consumer already has
+what it needs: `impostor.json` records `size`. The brief called this the
+cheaper correct answer and it is.
+
+**Not the whole square cell, though.** The obvious reading of "letterbox" is to
+draw the full `S × S` cell and let the empty margins alpha-test away. That is
+correct and it puts geometry below the terrain for anything wider than it is
+tall — the `[6, 2, 6]` shrub's quad would span `y ∈ [-2, 4]`. Instead the quad
+is the **subject's own box** and the UVs name the sub-rectangle of the cell it
+occupies. Same picture, no waste, and the base lands on `y = 0` by construction
+rather than by arithmetic that happens to come out right.
+
+Width comes from `max(sx, sz)` — the widest the silhouette can be at any angle
+in the row, so the quad never clips the subject at the angles between the two
+extremes it was measured from.
+
+**Numbers, both the brief's cases verified in the tests:**
+
+| asset | cell | before | after |
+|---|---|---|---|
+| `tree_small_02` `[2.9167, 4.5567, 4.2925]` | 4.5567 m² | w/h **0.8874** | w/h **0.94202** |
+| shrub `[6, 2, 6]` at height 2 | 6 m² | 0.67 m tall, hovering 0.67 m up | 2 m tall, 6 m wide, on the ground |
+
+**The test is written against the failure mode the brief named.** A bounding-box
+assertion cannot catch this — the old `[6, 2, 6]` geometry's box was also 2 m
+tall, which is exactly how it survived. So the test reads the **UVs alongside
+the positions**: `v ∈ [⅓, ⅔]` is the assertion that says the subject is drawn
+where it stands, and no position-only check could have made it.
+
+**Two existing tests changed and were not wrong.** `gives the two planes
+different atlas slices` and `picks the slice nearest the rotation` asserted the
+u range ran to the raw cell boundaries. With the fixture baked `3 × 5 × 3` its
+cell is 5 m and the subject takes the middle 60 %, so the range is now inset by
+20 % of a cell each side. The assertions were updated with the reason beside
+them rather than loosened.
+
+**Nothing re-baked, and nothing needs to be.** `assets-src/**/impostor/*.json`
+is untouched; the fix is entirely on the consuming side, which is the property
+that made this the right call. The two unbaked conifers (still a standing open
+question) will now come out right whenever they are baked.
+
+`npm run check` clean, **317 tests** (was 313).
