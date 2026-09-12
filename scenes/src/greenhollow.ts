@@ -36,7 +36,41 @@ const GARAGE_EAVE = 2.8;
 const GREENHOUSE_EAVE = 2.6;
 const PORCH_EAVE = 2.7;
 
-const HOUSE = rect(-5.5, 22, 11, 10);
+/**
+ * The house: 11 × 12 m, grown 2 m south of where it first stood.
+ *
+ * The footprint follows the brief rather than the other way round. A 98 m²
+ * interior cannot hold a big living room, a kitchen, a bathroom and three
+ * bedrooms without lying about one of them — the arithmetic runs out at two
+ * bedrooms — so the plan asked for 2 m more depth and got it. Growing *south*,
+ * toward the road, is the only direction available: the porch holds the west,
+ * the garage the east, and the kitchen garden and the pond the north.
+ */
+const HOUSE = rect(-5.5, 20, 11, 12);
+
+/**
+ * Where the internal walls run, in metres.
+ *
+ * The plan is a **central-hall type**: one spine from the front door to the
+ * living room, rooms either side, no room passing through another. That is the
+ * Banat *tindă* — the hall that reaches every room and the attic — and it is
+ * also what an American Foursquare does with its central core. Both traditions
+ * arrive at it for the same reason: on a squarish plan it is the shortest
+ * circulation that still gives every room two external walls.
+ *
+ * Zoning follows served/servant: kitchen and bathroom are stacked on the east
+ * side, back to back across `WET`, so all the plumbing is in one wall. The
+ * bedrooms take the quiet west and the north-east corner; the living room takes
+ * the north gable, which is where the garden, the pond and the orchard are.
+ *
+ * Clear dimensions, with 0.12 partitions centred on these lines.
+ */
+const SPINE_W = -0.6; // hall's west wall
+const SPINE_E = 1.2; // hall's east wall
+const BED_1_2 = 23.9; // between the two west bedrooms
+const WET = 24.3; // kitchen | bathroom, the one plumbing wall
+const DAY = 27.4; // the sleeping/serving half | the living room
+const BED_3_W = 2.0; // living room | north-east bedroom
 const PORCH = rect(-9.5, 23, 4, 8);
 const GARAGE = rect(7, 20, 7, 7);
 const GREENHOUSE = rect(-10, 36, 5, 6);
@@ -46,26 +80,140 @@ const GREENHOUSE = rect(-10, 36, 5, 6);
 // The house: walls run anticlockwise from the south-west corner, so W-01 is the
 // street-facing front — the wall the pergola arrives at.
 let houseWalls = wallsFromFootprint(HOUSE, { material: "plaster-lime", thickness: 0.3 });
+
+/**
+ * The street gable, and the one rule it obeys.
+ *
+ * The ridge runs north–south, so this is a **gable end facing the road** — the
+ * pattern across the Banat and most of central Europe, where the narrow, tall,
+ * decorated end is the face the village sees and the long eaved side is
+ * private. The door is not central: it lands on the hall, which sits east of
+ * the middle, and the two living-room windows are then spaced evenly about the
+ * *living room's* own centre rather than the wall's. A front that is symmetric
+ * about a room it does not contain is the commonest tell of a plan drawn
+ * elevation-first.
+ *
+ * Offsets are measured from x = −5.5.
+ */
 houseWalls = withOpenings(houseWalls, "W-01", [
-  windowOpening("w-f1", 1.4, 1.5, 1.3, 0.95),
-  doorOpening("d-front", 4.9, 1.2, 2.2),
-  windowOpening("w-f2", 8.0, 1.5, 1.3, 0.95),
+  windowOpening("w-f1", 0.65, 1.5, 1.45, 0.85), // bedroom 1, at x −4.85
+  windowOpening("w-f2", 3.15, 1.5, 1.45, 0.85), // bedroom 1, at x −2.35
+  doorOpening("d-front", 6.1, 1.2, 2.3), // the hall, at x 0.6…1.8
+  windowOpening("w-f3", 8.65, 1.2, 1.45, 0.85), // kitchen, at x 3.15
 ]);
+
+/**
+ * The east flank, facing the alley and the garage.
+ *
+ * The working side of the house, so the openings answer to the rooms behind
+ * them rather than to a rhythm: a wide kitchen window over where a sink goes, a
+ * small high one to the bathroom for privacy, and a full window to the
+ * north-east bedroom. Offsets from z = 20.
+ */
 houseWalls = withOpenings(houseWalls, "W-02", [
-  windowOpening("w-e1", 2.2, 1.3, 1.3, 0.95),
-  windowOpening("w-e2", 6.4, 1.3, 1.3, 0.95),
+  windowOpening("w-e1", 1.9, 1.6, 1.3, 0.95), // kitchen
+  windowOpening("w-e2", 5.0, 0.7, 0.6, 1.75), // bathroom, high and small
+  windowOpening("w-e3", 8.6, 1.3, 1.45, 0.85), // bedroom 3
 ]);
-// The garden side, facing the pond and the orchard: the big windows go here.
+
+/**
+ * The garden gable: the living room's face, and the best one.
+ *
+ * Everything here is bigger than anywhere else on the house, because this is
+ * the wall the pond, the orchard and the evening sit in front of. The garden
+ * door is not centred on the wall either — it is centred on the living room,
+ * which stops 2 m short of the east corner where bedroom 3 is. Offsets from
+ * x = 5.5 running west.
+ */
 houseWalls = withOpenings(houseWalls, "W-03", [
-  windowOpening("w-g1", 1.6, 2.2, 1.7, 0.75),
-  doorOpening("d-garden", 5.0, 1.2, 2.2),
-  windowOpening("w-g2", 8.2, 2.2, 1.7, 0.75),
+  windowOpening("w-g1", 1.25, 1.3, 1.45, 0.85), // bedroom 3, at x 3.6
+  windowOpening("w-g2", 3.7, 2.4, 1.9, 0.55), // living room, east of the door
+  doorOpening("d-garden", 6.4, 1.4, 2.3), // living room, centred on the room at x −1.6
+  windowOpening("w-g3", 8.1, 2.4, 1.9, 0.55), // living room, west of the door
 ]);
-// The west wall opens onto the porch.
+
+/**
+ * The west flank, under the porch.
+ *
+ * This is the *prispă* side — the long, eaved, shaded elevation the porch runs
+ * along, which in the vernacular is where the household actually lives in
+ * summer. So it gets a second door: you step off the porch straight into the
+ * living room, which is the move the whole type is built around. The two
+ * bedroom windows below it are small and high-silled, facing the afternoon sun.
+ * Offsets from z = 32 running south.
+ */
 houseWalls = withOpenings(houseWalls, "W-04", [
-  doorOpening("d-porch", 3.4, 1.0, 2.1),
-  windowOpening("w-p1", 6.2, 1.2, 1.2, 0.95),
+  doorOpening("d-porch", 1.8, 1.1, 2.3), // living room, off the porch
+  windowOpening("w-p1", 5.6, 1.2, 1.3, 0.95), // bedroom 2
+  windowOpening("w-p2", 9.1, 1.2, 1.3, 0.95), // bedroom 1
 ]);
+
+/**
+ * The partitions, and the chimney.
+ *
+ * Internal walls are 0.12 — a single leaf, plastered both sides — against the
+ * 0.30 of the external envelope, which is the honest ratio for a masonry house
+ * and reads immediately in plan.
+ *
+ * The stack is the one piece of the house that is not a partition. It is
+ * modelled as a short, very thick wall carried up past the ridge, and it is
+ * placed **inside** the plan rather than on a gable: an internal flue stays
+ * within the thermal envelope, so its mass radiates into the house overnight
+ * instead of into the weather, it drafts better for being warm, and it
+ * penetrates the roof near the ridge where the flashing is simplest. Every
+ * tradition that had to survive a winter put it there. A stack strapped to an
+ * outside wall is a nineteenth-century convenience, not a first principle.
+ *
+ * It sits on the living room's south wall at x ≈ 0.3 — a metre off the ridge,
+ * back-to-back with the hall, so one mass warms both.
+ */
+const INTERNAL = { material: "plaster-lime", thickness: 0.12, height: HOUSE_EAVE } as const;
+const partition = (
+  id: string,
+  start: [number, number],
+  end: [number, number],
+  openings: WallSpec["openings"] = [],
+): WallSpec => ({ id, start, end, ...INTERNAL, openings });
+
+const houseInternals: WallSpec[] = [
+  // The spine: hall's west wall, with the two bedroom doors off it.
+  partition("P-hall-w", [SPINE_W, 20.3], [SPINE_W, DAY], [
+    doorOpening("d-bed1", 1.6, 0.9, 2.1),
+    doorOpening("d-bed2", 5.2, 0.9, 2.1),
+  ]),
+  // The spine's east wall, with the kitchen and bathroom doors.
+  partition("P-hall-e", [SPINE_E, 20.3], [SPINE_E, DAY], [
+    doorOpening("d-kitchen", 1.3, 0.9, 2.1),
+    doorOpening("d-bath", 5.0, 0.8, 2.1),
+  ]),
+  // Between the two west bedrooms. No door: a bedroom reached through another
+  // bedroom is the thing a central hall exists to avoid.
+  partition("P-bed-1-2", [-5.2, BED_1_2], [SPINE_W, BED_1_2]),
+  // Kitchen | bathroom — the plumbing wall, so both wet rooms share one stack
+  // of pipes instead of running two.
+  partition("P-wet", [SPINE_E, WET], [5.2, WET]),
+  // The day/night line. West of the hall it closes the bedrooms off; east of it
+  // the bathroom. The living-room door is the wide one, on the spine.
+  partition("P-day-w", [-5.2, DAY], [SPINE_W, DAY]),
+  partition("P-day-hall", [SPINE_W, DAY], [SPINE_E, DAY], [
+    doorOpening("d-living", 0.3, 1.2, 2.3),
+  ]),
+  partition("P-day-e", [SPINE_E, DAY], [5.2, DAY]),
+  // Living room | bedroom 3.
+  partition("P-bed3", [BED_3_W, DAY], [BED_3_W, 31.7], [doorOpening("d-bed3", 0.6, 0.9, 2.1)]),
+  // The chimney: 1.4 × 0.7 of masonry, carried to 8.4 m — clear of a ridge that
+  // stands at 7.69.
+  {
+    id: "P-chimney",
+    start: [-0.4, DAY],
+    end: [1.0, DAY],
+    material: "plaster-lime",
+    thickness: 0.7,
+    height: 8.4,
+    openings: [],
+  },
+];
+houseWalls = [...houseWalls, ...houseInternals];
 
 let garageWalls = wallsFromFootprint(GARAGE, {
   prefix: "G",
@@ -284,13 +432,29 @@ const greenhollow: SceneDocumentInput = {
       {
         id: "roof-house",
         kind: "gable",
-        // Ridge runs east–west, so the gable ends face the road and the garden
-        // and the long eaves shelter the porch side.
-        footprint: rect(-6.0, 21.5, 12, 11),
+        /**
+         * Ridge north–south: gable to the road, eaves down the long flanks.
+         *
+         * The comment here used to claim exactly this while the value said
+         * `90`, which is a ridge running east–west — gables facing the porch
+         * and the alley, eaves over the road and the garden. The drawing had
+         * been the opposite of its own description since it was written.
+         *
+         * `0` is also the one that is right. A gable end to the street is the
+         * near-universal village pattern from the Banat to the Rhine: the
+         * narrow decorated end is what the road sees, and the long private
+         * flank runs back down the plot. It is what puts an **eave over the
+         * porch**, which is the whole point of a porch on that side — a gable
+         * there would shed its water straight down the open edge.
+         *
+         * Slopes now span the 12 m width, so the ridge stands at 3.0 + 12/2 ×
+         * tan 38° = 7.69 m. The chimney is carried to 8.4.
+         */
+        footprint: rect(-6.0, 19.5, 12, 13),
         baseElevation: HOUSE_EAVE,
         pitch: 38,
         overhang: 0.5,
-        ridgeBearing: 90,
+        ridgeBearing: 0,
         material: "roof-clay-tile",
       },
       {
@@ -334,8 +498,8 @@ const greenhollow: SceneDocumentInput = {
         id: "pergola-vine",
         kind: "pergola",
         path: [
-          [0, 2],
-          [0, 21.4],
+          [1.2, 2],
+          [1.2, 19.4],
         ],
         width: 3.6,
         height: 2.6,
@@ -387,13 +551,26 @@ const greenhollow: SceneDocumentInput = {
     ],
 
     placements: [
+      /**
+       * The hearth end of the living room.
+       *
+       * Two chairs and a table turned to face the chimney breast, which is what
+       * makes a fireplace read as one: the mass alone is just a pier. Poly Haven
+       * has no fireplace, no stove and no bed, so the firebox itself and the
+       * three bedrooms stay unfurnished rather than being faked — a proxy box
+       * where a hearth should be reads worse than an empty room, which is the
+       * same call the pond's absent fountain got.
+       */
+      { id: "chair-hearth-w", asset: "polyhaven/ArmChair_01", position: [-0.75, 0, 29.5], rotationY: 152 },
+      { id: "chair-hearth-e", asset: "polyhaven/ArmChair_01", position: [1.35, 0, 29.5], rotationY: 208 },
+      { id: "table-hearth", asset: "polyhaven/CoffeeTable_01", position: [0.3, 0, 29.1], rotationY: 0 },
       // A bench under the vine and a table out on the grass. Deliberately a
       // little above the ground — drop-to-floor is what settles them.
       //
       // There is no fountain: Poly Haven has none, and the pond reads perfectly
       // well on its own. A proxy box in the middle of the water read worse than
       // nothing at all.
-      { id: "bench-vine", asset: "polyhaven/painted_wooden_bench", position: [-1.2, 0.5, 12.0], rotationY: 90 },
+      { id: "bench-vine", asset: "polyhaven/painted_wooden_bench", position: [0, 0.5, 12.0], rotationY: 90 },
       { id: "table-garden", asset: "polyhaven/outdoor_table_chair_set_01", position: [2.4, 0.7, 33.8], rotationY: 15 },
     ],
   },
@@ -532,7 +709,7 @@ const greenhollow: SceneDocumentInput = {
       // The whole plot from above the road: gate and wall at the front, the
       // pergola running up the middle, garage right, porch and greenhouse left,
       // orchard at the back.
-      camera: { position: [40, 34, -22], target: [0, 0, 28], focalLength: 30 },
+      camera: { position: [40, 34, -22], target: [0, 0, 26], focalLength: 30 },
       render: { width: 1920, height: 1080, samples: 600 },
     },
     {
@@ -544,7 +721,11 @@ const greenhollow: SceneDocumentInput = {
       // below the lens so the vine reads as a soffit across the top of the
       // frame rather than as the subject, and the vanishing point stays on the
       // front door.
-      camera: { position: [0, 1.72, 0.8], target: [0, 1.55, 23], focalLength: 35 },
+      // Re-aimed when the house grew 2 m south and the door moved east with
+      // the plan: the pergola, the camera and the vanishing point all sit on
+      // x = 1.2 now, and the target is the gable end at z = 20 rather than a
+      // point 3 m inside the living room.
+      camera: { position: [1.2, 1.72, 0.8], target: [1.2, 1.6, 20], focalLength: 35 },
       render: { width: 1920, height: 1080, samples: 600 },
     },
     {
@@ -552,7 +733,7 @@ const greenhollow: SceneDocumentInput = {
       name: "Garden three-quarter",
       // From behind the pond, looking back at the garden elevation with the
       // greenhouse to the left and the orchard out of frame behind.
-      camera: { position: [13.5, 4.4, 41.5], target: [-1.5, 2.2, 28], focalLength: 40 },
+      camera: { position: [13.5, 4.4, 41.5], target: [-1.8, 2.4, 30.6], focalLength: 40 },
       // The garden side faces north-east, so it is a morning elevation or it is
       // nothing.
       solar: { date: "2026-09-12", time: "08:40", hdri: "kloppenheim_02" },

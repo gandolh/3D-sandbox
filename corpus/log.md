@@ -737,3 +737,52 @@ tolerance, loosening containment in the **wrong direction** — it permits a roo
 smaller than its walls. Left for brief 27, recorded in the decision.
 
 267 tests.
+
+## 2026-09-12 — Greenhollow's house gets a plan
+
+Brief 46, asked for directly: research what American and European domestic
+architecture actually does, and give the house a big living room with a
+fireplace, a kitchen, a bathroom and three bedrooms.
+
+It had been four external walls around an empty box. Windows, two doors, no
+rooms — every interior view was of a shed.
+
+The two traditions converge, which is the useful finding. The **Banat village
+house** organises everything around the *tindă*, an entry hall that reaches
+every room and the attic, with a *prispă* down the long flank and the **gable
+end to the street**. The **American Foursquare** puts four rooms around a
+central core. Different century, different continent, same move: on a squarish
+plan the central hall is the shortest circulation that still gives every room
+two external walls. Both also put the hearth *inside* — a flue in the envelope
+keeps its mass in the house, drafts better for staying warm, and comes out near
+the ridge.
+
+**The footprint had to grow, and that is the honest part.** 98 m² cannot hold
+that programme: the arithmetic runs out at two bedrooms, and every layout that
+fits three leaves a 25 m² living room, which is not "big". So the house went
+11 × 10 → 11 × 12, southward — the porch holds the west, the garage the east,
+the garden the north. 118.6 m², and the schedule closes to 118.7.
+
+Fenestration follows the plan rather than the elevation: the front door is not
+centred on the gable, because the hall is not centred either, and the
+living-room windows are spaced about the living room's centre. A front symmetric
+about a room it does not contain is the classic tell of a plan drawn
+elevation-first.
+
+**One old contradiction surfaced.** `roof-house` declared `ridgeBearing: 90`
+under a comment claiming the gables faced the road and the garden. Bearing 90
+faces them at the porch and the alley — the drawing had been the opposite of its
+own description since it was written. Turning it to `0` is what the comment
+meant *and* what the type wants: an eave over the porch, because a gable there
+sheds its water down the veranda's open edge. That is the third time this week a
+comment and the thing it described disagreed, after the `overhang` field and the
+colonnade's missing leg.
+
+No beds, no stove and no fireplace exist in Poly Haven, so the bedrooms and the
+firebox are left unfurnished instead of proxied — the pond's absent fountain
+decided that precedent. The hearth end gets two chairs and a table facing the
+breast, because a masonry mass with nothing addressing it reads as a pier.
+
+270 tests. The chimney test is the one that matters: there is no chimney
+primitive, so its height is a literal that has to agree with a roof height
+nothing computes for it.

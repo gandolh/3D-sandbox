@@ -592,3 +592,63 @@ describe("hand-wound surfaces face outward", () => {
     expect(oneSided).toBeGreaterThan(0);
   });
 });
+
+/**
+ * Greenhollow's house plan, and the one number that can break silently.
+ *
+ * The chimney is a wall carried past the ridge — there is no chimney primitive,
+ * so its height is a literal that has to agree with a roof height nothing
+ * computes for it. Widen the house, change the pitch, or raise the eave, and
+ * the stack quietly ends up *inside* the roof: still rendered, still lit, and
+ * wrong in a way no bounding box or triangle count would show.
+ */
+describe("the house at Greenhollow", () => {
+  const doc = loadScene(
+    JSON.parse(readFileSync(new URL("../../../scenes/greenhollow.scene.json", import.meta.url), "utf8")),
+  ).document;
+  const ground = doc.subject.levels.find((l) => l.id === "ground")!;
+
+  it("carries the chimney clear of the ridge", () => {
+    const chimney = ground.walls.find((w) => w.id === "P-chimney")!;
+    const roof = doc.subject.roofs.find((r) => r.id === "roof-house")!;
+
+    // Ridge bearing 0 means the slopes span the footprint's width, so that is
+    // the span the rise is taken from.
+    expect(roof.ridgeBearing).toBe(0);
+    const box = bounds(roof.footprint);
+    const rise = ((box.maxX - box.minX) / 2) * Math.tan((roof.pitch * Math.PI) / 180);
+    const ridge = roof.baseElevation + rise;
+
+    expect(chimney.height).toBeDefined();
+    expect(chimney.height!).toBeGreaterThan(ridge);
+    // And not absurdly clear of it either — a stack standing two metres proud
+    // of the ridge is a factory, not a house.
+    expect(chimney.height! - ridge).toBeLessThan(1.5);
+  });
+
+  it("gives every room its own door off the hall", () => {
+    // The plan's whole claim is that no room is reached through another. The
+    // hall's two walls carry four doors; the day line carries the living room's;
+    // the living room carries bedroom 3's.
+    const doors = ground.walls
+      .filter((w) => w.id.startsWith("P-"))
+      .flatMap((w) => w.openings.filter((o) => o.kind === "door").map((o) => o.id));
+    expect(doors.sort()).toEqual([
+      "d-bath",
+      "d-bed1",
+      "d-bed2",
+      "d-bed3",
+      "d-kitchen",
+      "d-living",
+    ]);
+  });
+
+  it("keeps partitions thinner than the envelope", () => {
+    // 0.12 against 0.30 — a single leaf against a masonry wall. Reading the
+    // ratio off a plan is how you tell which walls hold the roof up.
+    const external = ground.walls.filter((w) => /^W-\d/.test(w.id));
+    const internal = ground.walls.filter((w) => w.id.startsWith("P-") && w.id !== "P-chimney");
+    expect(external.every((w) => w.thickness === 0.3)).toBe(true);
+    expect(internal.every((w) => w.thickness === 0.12)).toBe(true);
+  });
+});
