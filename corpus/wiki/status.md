@@ -113,6 +113,30 @@ the question it was built to answer. What it found was older code:
 A scene picker in the toolbar switches between all three scenes, which is also
 the first time `villa-carpathia` has been openable. **255 tests pass.**
 
+**The deploy is not this repo's work.** It lives in the `vps-deploy` estate and
+is operated there by hand — `node cli.ts solstice pre-deploy` then `deploy`, with
+one sudo line on the box for the Caddyfile, which is estate-wide and rewrites
+routes for all 18 stacks. Nothing in `apps/` or `packages/` is waiting on it.
+
+**The format generalises, and three bugs were hiding behind that.**
+[Elmsgate](../briefs/done/21-a-town-house.md) is a two-storey mid-terrace on a
+6.5 m lot — party walls, a railed forecourt, a walled yard. It needed no new
+entity type, and `Subject.levels` holding two things worked first time, which is
+the question it was built to answer. What it found was older code:
+
+- **Every gable roof with a ridge along X had its slopes wound inside out** —
+  normals pointing into the building. Greenhollow's house and garage both
+  declare `ridgeBearing: 90` and have been wrong in every render of the
+  reference scene. Fixed in `subject/roofs.ts` and `context/masses.ts`, pinned
+  by a test over all four bearings.
+- **`Run` built every fence as two rows of posts**, which is right for a pergola
+  and wrong for a railing. The linter had been warning about the symptom.
+- **`BuildingMass` could not declare a ridge bearing**, so a row of terraced
+  neighbours could never line up with the house they abut.
+
+A scene picker in the toolbar switches between all three scenes, which is also
+the first time `villa-carpathia` has been openable. **255 tests pass.**
+
 **The deploy is written, dry-run clean, and still not executed** — and now for a
 known reason rather than an untested one. `/var/www` on the box is root-owned
 and `/etc/caddy/Caddyfile` needs sudo with a password, so the two steps a human
