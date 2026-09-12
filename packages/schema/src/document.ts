@@ -3,10 +3,27 @@ import { AssetId, Id, MaterialId } from "./ids.js";
 
 /* ── shared shapes ─────────────────────────────────────────────── */
 
+/**
+ * The furthest any coordinate may sit from the origin, in metres.
+ *
+ * A site is a place, not the solar system. 100 km is already absurd for a
+ * building — it is Bucharest to Ploiești and back — and being finite is what
+ * matters: `z.number()` rejects NaN and Infinity but accepts 1e15, where
+ * `1e15 + 0.001 === 1e15` in float64. Any lattice stepping by less than an
+ * ULP of its own start point does not advance and therefore does not
+ * terminate. Not slowly: never, with no allocation and no error to catch.
+ *
+ * At 1e5 a millimetre is still ~1e11 times the ULP, so the failure is not
+ * merely unlikely at this bound — it is arithmetically unreachable.
+ */
+export const MAX_COORDINATE = 100_000;
+
+const Coordinate = z.number().finite().min(-MAX_COORDINATE).max(MAX_COORDINATE);
+
 /** `[x, z]` — plan space, because Y is up. */
-export const PlanSchema = z.tuple([z.number(), z.number()]);
+export const PlanSchema = z.tuple([Coordinate, Coordinate]);
 /** `[x, y, z]` — world space. */
-export const WorldSchema = z.tuple([z.number(), z.number(), z.number()]);
+export const WorldSchema = z.tuple([Coordinate, Coordinate, Coordinate]);
 /** A closed polygon; the edge from last back to first is implicit. */
 export const PolygonSchema = PlanSchema.array().min(3);
 
@@ -166,8 +183,18 @@ export const ScatterField = z.strictObject({
   /** Assets picked from at random. At least one. */
   assets: AssetId.array().min(1),
   area: PolygonSchema,
-  /** Instances per 100 m² of `area`. */
-  density: z.number().finite().positive(),
+  /**
+   * Instances per 100 m² of `area`.
+   *
+   * Capped at 1 000 — ten per square metre, which is denser than any planting
+   * a person would describe and still leaves a lawn's worth of headroom. The
+   * cap is not the real guard (that is `scatter-density-is-sane`, which counts
+   * actual instances against the budget); it is the one that holds when a
+   * misplaced exponent makes the polygon's size irrelevant. These documents are
+   * AI-authored, so `1e9` is not an exotic adversarial input — it is the
+   * expected typo, and it used to reach the sampler as 4 × 10¹¹ attempts.
+   */
+  density: z.number().finite().positive().max(1_000),
   /**
    * Deterministic placement — the same seed must give the same forest.
    *
@@ -188,8 +215,16 @@ export const ScatterField = z.strictObject({
    * anything planted by a person — an orchard, a vineyard, a nursery bed.
    */
   arrangement: z.enum(["random", "rows"]).default("random"),
-  /** `[along, across]` row spacing in metres. Only read when `arrangement` is `rows`. */
-  rowSpacing: z.tuple([PositiveMeters, PositiveMeters]).default([6, 6]),
+  /**
+   * `[along, across]` row spacing in metres. Only read when `arrangement` is
+   * `rows`.
+   *
+   * Floored at 10 cm for the same reason `density` has a ceiling: the lattice
+   * has one cell per spacing² of the field's bounds, so a spacing of 1e-6 over
+   * a 100 m field is 10²² cells. Nothing downstream can refuse that in time to
+   * matter, and no planting has rows a millimetre apart.
+   */
+  rowSpacing: z.tuple([PositiveMeters.min(0.1), PositiveMeters.min(0.1)]).default([6, 6]),
   /**
    * Nominal height of one instance, in metres, before `scaleRange`.
    *

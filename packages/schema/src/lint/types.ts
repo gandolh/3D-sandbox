@@ -38,12 +38,19 @@ export interface LintOptions {
    * is the documented way this project breaks its own render button.
    */
   maxScatterInstances?: number;
+  /**
+   * Multiple of `maxScatterInstances` above which the field stops being a
+   * warning and becomes an **error**, so the document cannot be saved at all.
+   * See `scatter-density-is-sane` for why there are two thresholds.
+   */
+  scatterErrorMultiple?: number;
 }
 
 export interface ResolvedOptions {
   knownAssets: ReadonlySet<string> | undefined;
   minOpeningEdgeMargin: number;
   maxScatterInstances: number;
+  scatterErrorMultiple: number;
 }
 
 /** What a rule returns. `lintScene` resolves `entities` before anyone sees it. */
@@ -58,4 +65,5 @@ export interface Rule {
 export const DEFAULTS = {
   minOpeningEdgeMargin: 0.25,
   maxScatterInstances: 4000,
+  scatterErrorMultiple: 10,
 } as const;

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  MAX_COORDINATE,
   POST_HALF_WIDTH,
   polygonNetArea,
   scatterSeed,
@@ -79,27 +80,31 @@ describe("scatter lattice", () => {
     expect(lattice.countZ).toBe(10);
   });
 
-  it("terminates at a coordinate where a float step would not advance", () => {
+  it("terminates at the largest coordinate the schema admits", () => {
     // `1e15 + 0.001 === 1e15`, so the accumulating form this replaced never
-    // moved and never ended. The integer form simply reports how many cells
-    // fit, and the caller loops that many times.
+    // moved and never ended. Two things stop that now and both are tested:
+    // the schema refuses the coordinate (see "document ceiling"), and the
+    // lattice reports a count rather than a step to accumulate.
     const f = ScatterField.parse({
       id: "f",
       assets: ["a/b"],
       area: [
-        [1e15, 1e15],
-        [1e15, 1e15 + 10],
-        [1e15 + 10, 1e15 + 10],
-        [1e15 + 10, 1e15],
+        [MAX_COORDINATE - 10, MAX_COORDINATE - 10],
+        [MAX_COORDINATE - 10, MAX_COORDINATE],
+        [MAX_COORDINATE, MAX_COORDINATE],
+        [MAX_COORDINATE, MAX_COORDINATE - 10],
       ],
       density: 1,
       height: 4,
       arrangement: "rows",
-      rowSpacing: [0.001, 0.001],
+      rowSpacing: [0.1, 0.1],
     });
     const lattice = scatterLattice(f);
-    expect(Number.isFinite(lattice.countX)).toBe(true);
-    expect(Number.isFinite(lattice.countZ)).toBe(true);
+    expect(lattice.countX).toBe(100);
+    expect(lattice.countZ).toBe(100);
+    // The step is still resolvable at this magnitude, which is the property
+    // `MAX_COORDINATE` was chosen for.
+    expect(lattice.originX + lattice.stepX).toBeGreaterThan(lattice.originX);
   });
 });
 
@@ -159,5 +164,80 @@ describe("scatter seed", () => {
     expect(Number.isInteger(hash)).toBe(true);
     expect(hash).toBeGreaterThanOrEqual(0);
     expect(hash).toBeLessThan(2 ** 32);
+  });
+});
+
+describe("the document ceiling", () => {
+  const field = (over: Record<string, unknown>) => ({
+    id: "bed",
+    assets: ["a/b"],
+    area: [
+      [0, 0],
+      [0, 100],
+      [100, 100],
+      [100, 0],
+    ],
+    density: 1,
+    ...over,
+  });
+
+  it("refuses a coordinate past ±100 km", () => {
+    expect(() =>
+      ScatterField.parse(
+        field({
+          area: [
+            [1e15, 1e15],
+            [1e15, 1e15 + 10],
+            [1e15 + 10, 1e15 + 10],
+            [1e15 + 10, 1e15],
+          ],
+        }),
+      ),
+    ).toThrow();
+  });
+
+  it("refuses a density no planting could mean", () => {
+    expect(() => ScatterField.parse(field({ density: 1e9 }))).toThrow();
+    // The band below the cap is still authorable — a dense ground cover is a
+    // real thing, and a schema that forbids it is wrong in the other direction.
+    expect(() => ScatterField.parse(field({ density: 900 }))).not.toThrow();
+  });
+
+  it("refuses rows a millimetre apart", () => {
+    expect(() =>
+      ScatterField.parse(field({ arrangement: "rows", rowSpacing: [1e-6, 1e-6] })),
+    ).toThrow();
+  });
+
+  it("makes an absurd field an error, not a warning", () => {
+    // The exact document from the brief: it used to parse, lint with a
+    // *warning*, and be persisted by `PUT /api/scenes/:id` as a legitimate
+    // authored scene, because `loadScene` only refuses on errors.
+    const input = baseScene();
+    input.context = {
+      ...input.context,
+      scatter: [field({ density: 1000 }) as never],
+    };
+    const findings = lintScene(SceneDocument.parse(input)).filter(
+      (f) => f.rule === "scatter-density-is-sane",
+    );
+    expect(findings).toHaveLength(1);
+    expect(findings[0]!.severity).toBe("error");
+  });
+
+  it("keeps the merely-expensive field a warning", () => {
+    // 10 000 m² at 60 per 100 m² is 6 000 — over the 4 000 budget, well under
+    // the 40 000 ceiling. An author who wants this and will wait is making a
+    // legitimate choice.
+    const input = baseScene();
+    input.context = {
+      ...input.context,
+      scatter: [field({ density: 60 }) as never],
+    };
+    const findings = lintScene(SceneDocument.parse(input)).filter(
+      (f) => f.rule === "scatter-density-is-sane",
+    );
+    expect(findings).toHaveLength(1);
+    expect(findings[0]!.severity).toBe("warning");
   });
 });

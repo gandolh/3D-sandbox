@@ -136,17 +136,6 @@ has to change.
   fidelity tiers were drawn for, and this is the first time the line has had to
   carry weight.
 
-## A subject placement carries a triangle budget (2026-09-11)
-
-One hero tree beside the house is 17.4 M triangles in the BVH — heavy but
-survivable on a GPU, and legitimate under the tier split. "Legitimate" needs a
-number, though, or the tier boundary is a vibe.
-
-Polycount goes into the manifest (Poly Haven reports it; it is not something we
-have to measure), and a lint rule warns when a level's subject placements exceed
-the budget. The budget is a warning, not an error: it is a judgement about this
-machine, and a machine with more memory is allowed a different one.
-
 ## `overhang` describes the roof footprint; it does not generate it (2026-09-12)
 
 `Roof.overhang` is **the least the declared `footprint` oversails the walls
@@ -174,3 +163,8 @@ agrees on is a field that means nothing.
   this decision the rule should assert the footprint extends at least `overhang`
   beyond the walls on every side. That is a `packages/schema` change and belongs
   to brief 27.
+
+---
+
+Decisions about **how much geometry a document may ask for** — the placement
+triangle budget and the scatter ceiling — live in [budgets.md](budgets.md).

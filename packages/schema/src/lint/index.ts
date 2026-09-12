@@ -46,6 +46,7 @@ export function lintScene(doc: SceneDocument, options: LintOptions = {}): LintFi
     knownAssets: options.knownAssets,
     minOpeningEdgeMargin: options.minOpeningEdgeMargin ?? DEFAULTS.minOpeningEdgeMargin,
     maxScatterInstances: options.maxScatterInstances ?? DEFAULTS.maxScatterInstances,
+    scatterErrorMultiple: options.scatterErrorMultiple ?? DEFAULTS.scatterErrorMultiple,
   };
 
   const findings: LintFinding[] = RULES.flatMap((rule) =>

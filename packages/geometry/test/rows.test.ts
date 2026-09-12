@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ScatterField } from "@solstice/schema";
+import { ScatterField } from "@solstice/schema";
 import { scatterInstances } from "../src/context/scatter.js";
 
 const field = (over: Partial<ScatterField> = {}): ScatterField => ({
@@ -61,5 +61,41 @@ describe("row-arranged scatter", () => {
     const random = scatterInstances(field({ arrangement: "random", density: 10 }));
     // 600 m² at 10 per 100 m².
     expect(random).toHaveLength(60);
+  });
+});
+
+describe("the sampler cannot be asked for more than it can draw", () => {
+  const bigField = (over: Record<string, unknown>) =>
+    ScatterField.parse({
+      id: "bed",
+      assets: ["a"],
+      area: [
+        [0, 0],
+        [0, 1000],
+        [1000, 1000],
+        [1000, 0],
+      ],
+      density: 1000,
+      ...over,
+    });
+
+  // With a timeout, because the failure being guarded against is not a wrong
+  // answer — it is no answer. `maxAttempts = target * 40 + 1000` scaled with
+  // the number it was meant to limit, so a hectare at the maximum density was
+  // ~4 × 10¹⁰ attempts: not slow, unreachable.
+  it("clamps a scattered field the linter would have refused", { timeout: 5000 }, () => {
+    // 1 000 000 m² at 1 000 per 100 m² is ten million instances.
+    const instances = scatterInstances(bigField({}));
+    expect(instances.length).toBeLessThanOrEqual(200_000);
+    expect(instances.length).toBeGreaterThan(0);
+  });
+
+  it("refuses a lattice past the ceiling rather than walking it", { timeout: 5000 }, () => {
+    // Spacing is bounded below and coordinates above, but their *ratio* is
+    // not: 1 000 m at 0.1 m spacing is 10⁸ cells, each of which would draw
+    // five random numbers and run two point-in-polygon tests.
+    expect(() => scatterInstances(bigField({ arrangement: "rows", rowSpacing: [0.1, 0.1] }))).toThrow(
+      RangeError,
+    );
   });
 });

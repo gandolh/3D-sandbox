@@ -10,6 +10,25 @@ import { mulberry32, pick, randomBetween } from "../random.js";
 import { pointInPolygon } from "../polygon.js";
 import { ensureStandardAttributes } from "../attributes.js";
 
+/**
+ * The most instances one field may place, whatever the document asks for.
+ *
+ * Absolute, not a multiple of the target. `maxAttempts = target * 40 + 1000`
+ * was the only bound here, and a bound that scales with the number it is
+ * meant to limit is not a bound — `density: 1e9` over a hectare came to about
+ * 4 × 10¹¹ attempts and the tab died.
+ *
+ * The linter refuses such a document outright now (`scatter-density-is-sane`
+ * fires as an error past 10× the budget), so reaching this clamp means
+ * something got past the linter: a field built in code, a rule disabled, a
+ * future arrangement. That is exactly when a generator should still not be
+ * able to hang the machine it runs on. 200 000 is ~50× the budget and roughly
+ * a second of sampling.
+ */
+const MAX_INSTANCES = 200_000;
+/** And an absolute ceiling on the work spent trying to reach that. */
+const MAX_ATTEMPTS = 2_000_000;
+
 export interface ScatterInstance {
   asset: string;
   position: [number, number, number];
@@ -30,7 +49,7 @@ export function scatterInstances(field: ScatterField): ScatterInstance[] {
   // render will fit in the triangle budget and the API quotes it to say how big
   // the scene is; a generator that computed its own would eventually make both
   // of them wrong at once, which is the failure mode with no symptom.
-  const target = estimateScatterInstances(field).instances;
+  const target = Math.min(estimateScatterInstances(field).instances, MAX_INSTANCES);
   if (target === 0) return [];
 
   const b = bounds(field.area);
@@ -39,7 +58,7 @@ export function scatterInstances(field: ScatterField): ScatterInstance[] {
 
   // Bounded so a pathological polygon cannot spin forever; a field that cannot
   // hit its target simply produces fewer instances.
-  const maxAttempts = target * 40 + 1000;
+  const maxAttempts = Math.min(target * 40 + 1000, MAX_ATTEMPTS);
   let attempts = 0;
 
   while (out.length < target && attempts < maxAttempts) {
@@ -83,6 +102,16 @@ function rowInstances(field: ScatterField): ScatterInstance[] {
   // Integer counts from the shared lattice, not `x += step` until it passes the
   // edge. Accumulating loses the last row to rounding, and at large coordinates
   // `x + step === x`, so the loop stops advancing without ever stopping.
+  const cells = lattice.countX * lattice.countZ;
+  if (cells > MAX_INSTANCES) {
+    // A lattice can be enormous without any single number looking wrong:
+    // spacing is bounded below and coordinates above, but their ratio is not.
+    // Refusing is better than a viewport that never paints again.
+    throw new RangeError(
+      `scatter field "${field.id}" lays out ${cells.toLocaleString("en-GB")} lattice cells, past the ${MAX_INSTANCES.toLocaleString("en-GB")} ceiling`,
+    );
+  }
+
   for (let iz = 0; iz < lattice.countZ; iz++) {
     const z = lattice.originZ + iz * lattice.stepZ;
     for (let ix = 0; ix < lattice.countX; ix++) {

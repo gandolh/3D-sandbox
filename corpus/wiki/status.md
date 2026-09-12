@@ -87,7 +87,7 @@ migrations, and the two unbaked conifers that only the regression fixture uses.
 | 27 | [Arm the unproven rules](../briefs/todo/27-arm-the-unproven-rules.md) | todo |
 | 28 | [Close the cross-origin surface](../briefs/done/28-close-the-cross-origin-surface.md) | done |
 | 29 | [Writing a scene must not destroy one](../briefs/done/29-writing-a-scene-must-not-destroy-one.md) | done |
-| 30 | [Give the document a ceiling](../briefs/todo/30-give-the-document-a-ceiling.md) | todo |
+| 30 | [Give the document a ceiling](../briefs/done/30-give-the-document-a-ceiling.md) | done |
 | 31 | [Contain the bake server](../briefs/done/31-contain-the-bake-server.md) | done |
 | 32 | [Type-check the scenes](../briefs/done/32-typecheck-the-scenes.md) | done |
 | 33 | [Make the README true](../briefs/done/33-make-the-readme-true.md) | done |

@@ -40,6 +40,16 @@ export const polygonsHaveArea: Rule = {
  * document where a single number can produce unbounded geometry. A photoreal
  * tree is 50–200k triangles, so a few thousand instances is already tens of
  * millions and the render button stops working.
+ *
+ * **Two thresholds, and the second one refuses the document.** A warning is the
+ * right answer for a field that is merely expensive — an author who wants
+ * 6 000 trees and is prepared to wait is making a legitimate choice, and a
+ * linter that forbids it is wrong. But a warning is the wrong answer for
+ * `density: 1e9`, which used to parse, lint, and be persisted by
+ * `PUT /api/scenes/:id` as a legitimate authored scene, because `loadScene`
+ * only refuses on errors. Past a hard multiple of the budget the number has
+ * stopped describing an intention, and the linter's stated job — that an
+ * invalid document is never written — has to include it.
  */
 export const scatterDensityIsSane: Rule = {
   name: "scatter-density-is-sane",
@@ -49,12 +59,19 @@ export const scatterDensityIsSane: Rule = {
       if (net < 1e-3) return []; // polygons-have-area owns this
 
       if (instances <= opts.maxScatterInstances) return [];
+
+      const ceiling = opts.maxScatterInstances * opts.scatterErrorMultiple;
+      const over = instances > ceiling;
+      const count = instances.toLocaleString("en-GB");
+      const area = Math.round(net).toLocaleString("en-GB");
       return [
         {
           rule: "scatter-density-is-sane",
-          severity: "warning",
+          severity: over ? "error" : "warning",
           path: `context.scatter[${i}]`,
-          message: `scatter field "${field.id}" yields about ${instances.toLocaleString("en-GB")} instances over ${Math.round(net).toLocaleString("en-GB")} m² — above the ${opts.maxScatterInstances.toLocaleString("en-GB")} budget, which will make the path tracer's BVH build unusable`,
+          message: over
+            ? `scatter field "${field.id}" yields about ${count} instances over ${area} m² — past the ${ceiling.toLocaleString("en-GB")} hard ceiling, ${opts.scatterErrorMultiple}× the budget. This is not a scene that renders slowly; it is a number no machine can draw`
+            : `scatter field "${field.id}" yields about ${count} instances over ${area} m² — above the ${opts.maxScatterInstances.toLocaleString("en-GB")} budget, which will make the path tracer's BVH build unusable`,
         },
       ];
     });
