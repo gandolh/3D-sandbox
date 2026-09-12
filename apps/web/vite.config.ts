@@ -109,5 +109,21 @@ export default defineConfig({
     port: 5173,
     proxy: { "/api": { target: "http://localhost:5174", changeOrigin: true } },
   },
-  build: { target: "es2023", sourcemap: true },
+  build: {
+    target: "es2023",
+    /**
+     * No maps in the production build.
+     *
+     * They were 11.2 MB against a 4.3 MB bundle — nearly three times the app,
+     * for a deployment that is a static folder on a VPS with no error
+     * reporting to consume them. Nobody would ever read one.
+     *
+     * This is not a secrecy argument: the repo is the user's own and the source
+     * is not a secret. It is a bytes argument, and if error reporting ever
+     * lands, the answer is `"hidden"` — maps generated and uploaded to the
+     * reporter but not served beside the bundle — rather than back to `true`.
+     * Dev keeps its maps; Vite serves those regardless of this flag.
+     */
+    sourcemap: false,
+  },
 });

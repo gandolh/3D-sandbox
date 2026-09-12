@@ -67,3 +67,34 @@ Both are readable cross-origin *because* of the CORS setting above.
 - The dev client still saves through the API.
 - A 500 carries no filesystem path.
 - `npm run check` exits 0.
+
+---
+
+## Outcome — 2026-09-12
+
+All four done.
+
+1. **`origin: true` → a named list**, in `Config.allowedOrigins`, overridable by
+   `SOLSTICE_ALLOWED_ORIGINS`. The default lists localhost and 127.0.0.1 on both
+   5173 and 5174, because Vite picks the next free port when one is taken and a
+   fresh clone failing with a CORS error that looks like an API bug is a bad
+   first five minutes.
+
+   The comment states the distinction the brief insisted on: unauthenticated is
+   fine for something on loopback reachable only by its own client. Reflecting
+   origins is not a relaxed CORS setting — it removes the browser's own
+   same-origin protection, so every website the user visits becomes a caller.
+
+2. **500s return `{ error: "internal" }`** and log the detail. Everything above
+   that branch — lint findings, `UnsafeIdError`, `SceneNotFoundError`,
+   `SyntaxError` — is the API deliberately explaining itself and is untouched.
+
+3. **`scenesDir` is gone from `/api/health`**, replaced by `scenesConfigured`. A
+   health check that publishes an absolute filesystem path is telling an
+   unauthenticated caller the layout of the host.
+
+4. **Tested.** A preflight from `https://evil.example` gets **no**
+   `access-control-allow-origin` at all — the absence is the assertion, since
+   without it the browser refuses to hand the response to the calling page. Plus
+   a test that a forced 500 carries no filesystem path, and one that the health
+   check does not either.

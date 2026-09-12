@@ -69,3 +69,32 @@ the same check done loosely and should be tightened in the same pass.
 - A traversing `asset` writes no file anywhere and is refused.
 - A normal bake still works end to end.
 - `npm run check` exits 0.
+
+---
+
+## Outcome — 2026-09-12
+
+All five done, and the guards moved somewhere they can be tested.
+
+`assets/bake/paths.ts` now holds `ASSET_ID` and `insideRoot`, because `serve.ts`
+is a script that binds a port and **a traversal guard that has never been run
+against `../` is a guard on paper**. `vitest.config.ts` gained
+`assets/test/**` — `assets/` is scripts rather than a workspace, but this is
+security code and has to be tested like it.
+
+1. **Containment is checked with a trailing separator.** `startsWith(root)` is
+   not containment: `/srv/project/assets-src-evil` starts with
+   `/srv/project/assets-src` and is a different directory. Both the upload path
+   and the static handler now use `insideRoot`.
+2. **`asset` is validated positively** against `<source>/<slug>`. A negative
+   rule has to anticipate every encoding; a positive one does not — `..%2f`, a
+   backslash, a leading slash and an absolute path all simply fail to be two
+   slug segments. The containment check stays behind it as belt and braces, so
+   no future edit to the pattern silently reopens the hole.
+3. **The static handler resolves rather than joins**, so a normalised `..` in
+   the URL cannot escape before the check sees it.
+4. **Bound to `127.0.0.1` explicitly.** This server writes files into the repo
+   on an unauthenticated POST; Vite's default host has changed between major
+   versions before, and that is not a thing to inherit.
+5. **Tested**: fourteen traversal attempts rejected, three real ids accepted,
+   and the sibling-directory case that a bare `startsWith` gets wrong.

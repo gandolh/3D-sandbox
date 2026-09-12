@@ -15,9 +15,11 @@ import { mkdir, stat, writeFile } from "node:fs/promises";
 import { dirname, extname, join, normalize, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createServer } from "vite";
+import { ASSET_ID, insideRoot } from "./paths.js";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const assetsRoot = resolve(here, "..", "..", "assets-src");
+const insideAssets = (path: string): boolean => insideRoot(assetsRoot, path);
 
 const TYPES: Record<string, string> = {
   ".gltf": "model/gltf+json",
@@ -31,15 +33,18 @@ const server = await createServer({
   root: here,
   configFile: false,
   logLevel: "warn",
-  server: { port: 5199, strictPort: true },
+  // Loopback explicitly. This server writes files into the repo on an
+  // unauthenticated POST; it must never be reachable from the network, and
+  // Vite's default host has changed between major versions before.
+  server: { host: "127.0.0.1", port: 5199, strictPort: true },
   plugins: [
     {
       name: "bake-endpoints",
       configureServer(vite) {
         vite.middlewares.use("/assets-src", (req, res, next) => {
           const rel = normalize(decodeURIComponent((req.url ?? "/").split("?")[0] ?? "/"));
-          const file = join(assetsRoot, rel);
-          if (!file.startsWith(assetsRoot)) {
+          const file = resolve(assetsRoot, "." + (rel.startsWith("/") ? rel : `/${rel}`));
+          if (!insideAssets(file)) {
             res.statusCode = 403;
             res.end();
             return;
@@ -72,9 +77,23 @@ const server = await createServer({
                 const meta = String(form.get("meta"));
                 const atlas = form.get("atlas") as File;
 
+                if (!ASSET_ID.test(asset)) {
+                  res.statusCode = 400;
+                  res.end("asset must be <source>/<slug>");
+                  return;
+                }
+
                 // Beside the source, under `impostor/`, which is what the
                 // manifest scan will pick up and what gets committed.
-                const outDir = join(assetsRoot, dirname(asset), "impostor");
+                const outDir = resolve(assetsRoot, dirname(asset), "impostor");
+                // Belt and braces: the pattern above already makes this
+                // unreachable, and it is one line to guarantee rather than
+                // argue that no future edit to the pattern reopens it.
+                if (!insideAssets(outDir)) {
+                  res.statusCode = 400;
+                  res.end("outside the assets root");
+                  return;
+                }
                 await mkdir(outDir, { recursive: true });
                 await writeFile(join(outDir, "atlas.png"), Buffer.from(await atlas.arrayBuffer()));
                 await writeFile(join(outDir, "impostor.json"), `${meta}\n`);

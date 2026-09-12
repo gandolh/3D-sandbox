@@ -1,4 +1,4 @@
-import { mkdtemp, readFile, writeFile, rm } from "node:fs/promises";
+import { mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -181,5 +181,121 @@ describe("the index is derived, not authoritative", () => {
   it("can be rebuilt from nothing", async () => {
     const rebuilt = await index.reindex(dir);
     expect(rebuilt.indexed).toEqual(["villa-carpathia"]);
+  });
+});
+
+/**
+ * Who may call this API, and what it says when it fails.
+ *
+ * The service is deliberately unauthenticated and bound to loopback, which is a
+ * settled decision and fine. What was not fine was `origin: true` on top of it:
+ * that reflects the caller's own origin back, which is not a relaxed CORS
+ * setting but the removal of the browser's same-origin protection. Any page in
+ * any tab could read every scene on the machine and delete them.
+ */
+describe("the cross-origin boundary", () => {
+  const preflight = (origin: string) =>
+    app.inject({
+      method: "OPTIONS",
+      url: "/api/scenes",
+      headers: { origin, "access-control-request-method": "DELETE" },
+    });
+
+  it("lets the dev client through", async () => {
+    const res = await preflight("http://localhost:5173");
+    expect(res.headers["access-control-allow-origin"]).toBe("http://localhost:5173");
+  });
+
+  it("does not reflect a foreign origin", async () => {
+    const res = await preflight("https://evil.example");
+    // The absence is the whole assertion: with no allow-origin header the
+    // browser refuses to hand the response to the calling page.
+    expect(res.headers["access-control-allow-origin"]).toBeUndefined();
+  });
+
+  it("keeps a 500's detail out of the response", async () => {
+    // Deleting the scenes directory out from under a running app is the
+    // cheapest way to reach the unanticipated-failure branch. Whatever comes
+    // back must not carry a filesystem path.
+    await rm(dir, { recursive: true, force: true });
+    const res = await app.inject({
+      method: "PUT",
+      url: "/api/scenes/villa-carpathia",
+      payload: reference,
+    });
+    expect(res.statusCode).toBeGreaterThanOrEqual(400);
+    expect(JSON.stringify(res.json())).not.toContain(dir);
+  });
+
+  it("does not publish the scenes directory on the health check", async () => {
+    expect(JSON.stringify((await get("/api/health")).json())).not.toContain(dir);
+  });
+});
+
+/**
+ * Writing a scene must not be able to destroy one.
+ *
+ * Two separate promises: a write either lands whole or not at all, and a write
+ * built on a stale read is refused rather than silently winning.
+ */
+describe("writing a scene", () => {
+  const read = () => app.inject({ method: "GET", url: "/api/scenes/villa-carpathia" });
+
+  it("hands out the version the caller is holding", async () => {
+    const res = await read();
+    expect(Number(res.headers["x-scene-mtime"])).toBeGreaterThan(0);
+  });
+
+  it("refuses a write built on a stale read", async () => {
+    const before = await read();
+    const stale = Number(before.headers["x-scene-mtime"]);
+
+    // Someone else saves in the meantime.
+    const meanwhile = { ...reference, title: "Changed by someone else" };
+    await app.inject({ method: "PUT", url: "/api/scenes/villa-carpathia", payload: meanwhile });
+
+    const res = await app.inject({
+      method: "PUT",
+      url: "/api/scenes/villa-carpathia",
+      headers: { "x-scene-mtime": String(stale) },
+      payload: { ...reference, title: "Would have clobbered it" },
+    });
+    expect(res.statusCode).toBe(409);
+
+    // And it changed nothing: the other person's title is still on disk.
+    const after = await read();
+    expect((after.json() as { title: string }).title).toBe("Changed by someone else");
+  });
+
+  it("accepts a write that carries the current version", async () => {
+    const before = await read();
+    const res = await app.inject({
+      method: "PUT",
+      url: "/api/scenes/villa-carpathia",
+      headers: { "x-scene-mtime": String(before.headers["x-scene-mtime"]) },
+      payload: { ...reference, title: "Edited" },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(((await read()).json() as { title: string }).title).toBe("Edited");
+  });
+
+  it("does not create a scene through PUT", async () => {
+    // A typo'd id used to write a second scene beside the one being edited,
+    // and the index listed it. Creation has exactly one door, and it is POST.
+    const res = await app.inject({
+      method: "PUT",
+      url: "/api/scenes/villa-carpthia",
+      payload: { ...reference, id: "villa-carpthia" },
+    });
+    expect(res.statusCode).toBe(404);
+    expect(await readdir(dir)).not.toContain("villa-carpthia.scene.json");
+  });
+
+  it("leaves no temp files beside the scenes", async () => {
+    // The atomic write puts its temp file in the same directory on purpose —
+    // rename is only atomic within a filesystem — so it has to clean up after
+    // itself or the index would start scanning half-written documents.
+    await app.inject({ method: "PUT", url: "/api/scenes/villa-carpathia", payload: reference });
+    expect((await readdir(dir)).filter((f) => f.endsWith(".tmp"))).toEqual([]);
   });
 });

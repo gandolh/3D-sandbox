@@ -83,12 +83,12 @@ migrations, and the two unbaked conifers that only the regression fixture uses.
 | 23 | [Normals face outward](../briefs/done/23-normals-face-outward.md) | done |
 | 24 | [Physics cache ignores sizes](../briefs/todo/24-physics-cache-ignores-sizes.md) | todo |
 | 25 | [Defer the heavy half](../briefs/todo/25-defer-the-heavy-half.md) | todo |
-| 26 | [Stop shipping source maps](../briefs/todo/26-stop-shipping-source-maps.md) | todo |
+| 26 | [Stop shipping source maps](../briefs/done/26-stop-shipping-source-maps.md) | done |
 | 27 | [Arm the unproven rules](../briefs/todo/27-arm-the-unproven-rules.md) | todo |
-| 28 | [Close the cross-origin surface](../briefs/todo/28-close-the-cross-origin-surface.md) | todo |
-| 29 | [Writing a scene must not destroy one](../briefs/todo/29-writing-a-scene-must-not-destroy-one.md) | todo |
+| 28 | [Close the cross-origin surface](../briefs/done/28-close-the-cross-origin-surface.md) | done |
+| 29 | [Writing a scene must not destroy one](../briefs/done/29-writing-a-scene-must-not-destroy-one.md) | done |
 | 30 | [Give the document a ceiling](../briefs/todo/30-give-the-document-a-ceiling.md) | todo |
-| 31 | [Contain the bake server](../briefs/todo/31-contain-the-bake-server.md) | todo |
+| 31 | [Contain the bake server](../briefs/done/31-contain-the-bake-server.md) | done |
 | 32 | [Type-check the scenes](../briefs/todo/32-typecheck-the-scenes.md) | todo |
 | 33 | [Make the README true](../briefs/todo/33-make-the-readme-true.md) | todo |
 | 34 | [A truncated download is forever](../briefs/todo/34-a-truncated-download-is-forever.md) | todo |

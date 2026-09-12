@@ -1,4 +1,4 @@
-import { readFile, readdir, rm, writeFile, stat } from "node:fs/promises";
+import { open, readFile, readdir, rename, rm, stat, unlink } from "node:fs/promises";
 import { basename, join, resolve, sep } from "node:path";
 import { SceneValidationError, loadScene, serializeScene, type SceneDocument } from "@solstice/schema";
 
@@ -9,6 +9,16 @@ export class UnsafeIdError extends Error {
   constructor(id: string) {
     super(`"${id}" is not a valid scene id — letters, digits, hyphen and underscore only`);
     this.name = "UnsafeIdError";
+  }
+}
+
+export class StalePreconditionError extends Error {
+  constructor(
+    readonly id: string,
+    readonly current: number,
+  ) {
+    super(`Scene "${id}" has changed on disk since you read it`);
+    this.name = "StalePreconditionError";
   }
 }
 
@@ -72,6 +82,19 @@ export async function writeSceneFile(
   scenesDir: string,
   id: string,
   input: unknown,
+  /**
+   * The `mtimeMs` the caller last saw, when it has one.
+   *
+   * Absent means "write regardless", which is what a create does. Present and
+   * stale throws `StalePreconditionError` rather than overwriting: the previous
+   * behaviour was last-write-wins with no signal, so two tabs open on one scene
+   * silently destroyed each other's work.
+   *
+   * Compared with a 1 ms tolerance because `mtimeMs` survives a round trip
+   * through JSON as a float and some filesystems store coarser timestamps than
+   * they report.
+   */
+  expectedMtime?: number,
 ): Promise<WriteResult> {
   const path = scenePath(scenesDir, id);
   const { document } = loadScene(input);
@@ -88,10 +111,63 @@ export async function writeSceneFile(
     ]);
   }
 
-  const serialized = serializeScene(document);
-  await writeFile(path, serialized, "utf8");
-  return { document, bytes: Buffer.byteLength(serialized) };
+  // The precondition is checked as late as possible and still before the write,
+  // which is as close to atomic as a filesystem gets without locking. Two
+  // clients saving the same scene in the same millisecond can still race; the
+  // window this closes is the realistic one — a tab left open for an hour while
+  // the file changed underneath it.
+  if (expectedMtime !== undefined) {
+    const current = await mtimeOrNull(path);
+    if (current === null) throw new SceneNotFoundError(id);
+    if (Math.abs(current - expectedMtime) > 1) throw new StalePreconditionError(id, current);
+  }
+
+  await writeAtomically(path, serializeScene(document));
+  return { document, bytes: Buffer.byteLength(serializeScene(document)) };
 }
+
+/**
+ * Write, or leave the previous file exactly as it was.
+ *
+ * A bare `writeFile` truncates the target and then streams into it, so a
+ * process killed mid-write — or a full disk — leaves a **half a scene** on
+ * disk, and this project's whole premise is that the files are the truth. A
+ * temp file in the same directory, fsynced, then renamed over the target, gives
+ * a reader either the old document or the new one and never a torn one:
+ * `rename` within a filesystem is atomic, which is exactly why the temp file
+ * must be a sibling rather than in `/tmp`.
+ *
+ * The fsync matters as much as the rename. Without it the rename can reach the
+ * disk before the bytes do, and a power loss leaves a correctly-named empty
+ * file where the old one was.
+ */
+async function writeAtomically(path: string, contents: string): Promise<void> {
+  const temp = `${path}.${process.pid.toString(36)}${Date.now().toString(36)}.tmp`;
+  let handle;
+  try {
+    handle = await open(temp, "wx");
+    await handle.writeFile(contents, "utf8");
+    await handle.sync();
+  } finally {
+    await handle?.close();
+  }
+  try {
+    await rename(temp, path);
+  } catch (error) {
+    // A failed rename must not leave litter beside the scenes it failed to
+    // replace — those are the files the index scans.
+    await unlink(temp).catch(() => undefined);
+    throw error;
+  }
+}
+
+const mtimeOrNull = async (path: string): Promise<number | null> => {
+  try {
+    return (await stat(path)).mtimeMs;
+  } catch {
+    return null;
+  }
+};
 
 export async function deleteSceneFile(scenesDir: string, id: string): Promise<void> {
   const path = scenePath(scenesDir, id);

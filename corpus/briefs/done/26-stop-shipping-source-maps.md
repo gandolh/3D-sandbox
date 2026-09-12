@@ -49,3 +49,23 @@ different question; this brief is about what reaches `dist`.
 
 - The flag carries a comment saying which way it was decided and why.
 - `npm run check` exits 0 and `npm run build:web` still produces a working client.
+
+---
+
+## Outcome — 2026-09-12
+
+They go. `sourcemap: false` for the production build, with the reasoning beside
+the flag rather than left as an unexamined literal.
+
+**Not a secrecy argument** — the repo is the user's own and the source is not a
+secret. A bytes argument: 11.2 MB of maps against a 4.3 MB bundle, nearly three
+times the app, for a deployment that is a static folder on a VPS with no error
+reporting to consume them. Nobody would ever read one.
+
+The comment names the condition that would change the answer: if error
+reporting ever lands, the right setting is `"hidden"` — maps generated and
+uploaded to the reporter, not served beside the bundle — rather than back to
+`true`. Dev keeps its maps; Vite serves those regardless of the flag.
+
+**Measured:** `apps/web/dist` 15.5 MB → **4.3 MB**. The JS bundle is unchanged at
+4,260 kB (1,487 kB gzipped) — brief 25 is the one that moves that number.

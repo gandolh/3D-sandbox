@@ -70,3 +70,40 @@ is present and unused.
 - No code path can leave a scene file truncated.
 - A stale `PUT` is refused with 409 and the file is unchanged.
 - `npm run check` exits 0.
+
+---
+
+## Outcome — 2026-09-12
+
+Both defects closed, and the third question the brief asked was answered rather
+than deferred.
+
+**1 — The write is atomic.** Temp file as a **sibling** of the target, written,
+`fsync`ed, then renamed over it. Each part earns its place: the sibling because
+`rename` is only atomic within a filesystem, so a temp file in `/tmp` would be a
+copy; the fsync because without it the rename can reach the disk before the
+bytes do, and a power loss leaves a correctly-named empty file where the
+document was. A failed rename unlinks its temp file — litter beside the scenes
+is litter the index scans.
+
+**2 — `PUT` is conditional.** A read returns `x-scene-mtime`; a write may echo
+it, and a mismatch is **409** with the current mtime, having changed nothing. In
+a header rather than the body because the body is a `SceneDocument` and has to
+stay exactly that — a stray field would be a lint finding on the way back in.
+
+A write with no precondition still proceeds: a caller that never read the file
+has nothing to be stale about, and scripts that generate scenes wholesale are
+legitimate.
+
+**3 — `PUT` no longer creates, and here is why.** That reading of `PUT` is
+defensible in the abstract and wrong here: the id comes from a URL a person
+typed, and the cost of a typo was a **second scene** silently appearing beside
+the one they meant to edit, with the index dutifully listing it. Creation has
+exactly one door — `POST /api/scenes`, which already refuses to clobber. The
+existence check reads the disk rather than the index, because the index is a
+derived cache and a scene dropped in by hand is a real scene before any rescan
+notices it.
+
+Five tests: the version is handed out, a stale write is refused **and the other
+person's edit is still on disk afterwards**, a current write succeeds, a PUT to
+an unknown id 404s and creates no file, and no `.tmp` is left beside the scenes.
