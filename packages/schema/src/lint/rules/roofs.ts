@@ -89,12 +89,24 @@ export const roofCoversWalls: Rule = {
       const wallBounds = bounds(covered.flatMap((w) => [w.start, w.end]));
       const roofBounds = roofBox;
 
-      if (!boundsContain(roofBounds, wallBounds, roof.overhang)) {
+      // **Negative** tolerance, and the sign is the whole check.
+      //
+      // `boundsContain(outer, inner, t)` tests `inner.minX >= outer.minX - t`,
+      // so passing `+overhang` *loosened* containment — it permitted a roof
+      // **smaller** than its walls by exactly the amount it is declared to
+      // oversail them by. The rule read as "the roof covers the walls, give or
+      // take the eave" and meant "the roof may fall short by an eave".
+      //
+      // `overhang` is settled (decisions-scene.md, 2026-09-12) as *the least
+      // the declared footprint oversails the walls beneath it, on any one
+      // side*. So the footprint must reach at least that far past them, which
+      // is the negative tolerance.
+      if (!boundsContain(roofBounds, wallBounds, EAVE_EPSILON - roof.overhang)) {
         out.push({
           rule: "roof-covers-walls",
           severity: "error",
           path,
-          message: `roof "${roof.id}" does not cover the walls of level "${host.id}" — ${covered.length} wall(s) beneath it — footprint spans x ${roofBounds.minX.toFixed(2)}…${roofBounds.maxX.toFixed(2)}, z ${roofBounds.minZ.toFixed(2)}…${roofBounds.maxZ.toFixed(2)} but those walls span x ${wallBounds.minX.toFixed(2)}…${wallBounds.maxX.toFixed(2)}, z ${wallBounds.minZ.toFixed(2)}…${wallBounds.maxZ.toFixed(2)}`,
+          message: `roof "${roof.id}" does not cover the walls of level "${host.id}" by its declared ${roof.overhang} m overhang — ${covered.length} wall(s) beneath it — footprint spans x ${roofBounds.minX.toFixed(2)}…${roofBounds.maxX.toFixed(2)}, z ${roofBounds.minZ.toFixed(2)}…${roofBounds.maxZ.toFixed(2)} but those walls span x ${wallBounds.minX.toFixed(2)}…${wallBounds.maxX.toFixed(2)}, z ${wallBounds.minZ.toFixed(2)}…${wallBounds.maxZ.toFixed(2)}`,
         });
       }
     });
@@ -115,6 +127,20 @@ export const roofCoversWalls: Rule = {
  * bounds overlap rather than wall containment, because a roof that is too small
  * for its building still sits squarely on it and must still be an error.
  */
+/**
+ * Slack on the eave comparison, in metres.
+ *
+ * A footprint is authored as `rect(7 - 0.4, …, 7 + 0.4)` and comes out as
+ * `14.399999999999999`, so a roof declaring exactly the eave it draws misses an
+ * exact `>=` by 2 × 10⁻¹⁵ m. Both of Greenhollow's outbuildings did, the moment
+ * this comparison started pointing the right way.
+ *
+ * A millimetre, because that is the smallest distance the document's own units
+ * comment says anyone means — thicknesses are quoted in mm — and because an
+ * eave short by less than that is not a drawing anyone would redo.
+ */
+const EAVE_EPSILON = 1e-3;
+
 /** How much of a roof must sit over a structure before it is that structure's. */
 const MAJORITY = 0.5;
 

@@ -157,12 +157,13 @@ agrees on is a field that means nothing.
   draw.
 - *Consequence*: a roof that must be flush on one side declares `0` and carries
   its real eave in the footprint, with a comment saying so.
-- *Consequence*: `roof-covers-walls` currently passes `overhang` to
-  `boundsContain` as a **tolerance**, which loosens the check in the wrong
-  direction — it permits a roof *smaller* than its walls by that much. Under
-  this decision the rule should assert the footprint extends at least `overhang`
-  beyond the walls on every side. That is a `packages/schema` change and belongs
-  to brief 27.
+- *Consequence*: `roof-covers-walls` used to pass `overhang` to `boundsContain`
+  as a **tolerance**, which loosened the check in the wrong direction — it
+  permitted a roof *smaller* than its walls by that much. Fixed in brief 27
+  (2026-09-12): the tolerance is now negative, so the footprint must reach at
+  least `overhang` past the walls on every side, with a **1 mm** slack because a
+  footprint authored as `rect(7 - 0.4, …)` comes out as `14.399999999999999`
+  and missed an exact comparison by 2 × 10⁻¹⁵ m.
 
 ## The atlas cell is authoritative; the consumer letterboxes (2026-09-12)
 An impostor cell is a **square** of `max(sx, sy, sz)` metres centred on the

@@ -5,6 +5,7 @@ import {
   estimateScatterInstances,
   SceneValidationError,
   hasErrors,
+  RULES,
   lintScene,
   loadScene,
   resolveEntities,
@@ -409,5 +410,316 @@ describe("estimateScatterInstances", () => {
       exclude: [[[-14, -16], [14, -16], [14, 16], [-14, 16]]],
     });
     expect(estimateScatterInstances(forest).instances).toBe(284);
+  });
+});
+
+describe("roof-covers-walls, the overhang direction", () => {
+  // Handed over from brief 42, which settled what `overhang` means: *the least
+  // the declared footprint oversails the walls beneath it, on any one side*.
+  // The rule passed `+overhang` to `boundsContain` as a tolerance, which
+  // loosens containment — it permitted a roof **smaller** than its walls by
+  // exactly the amount it is declared to oversail them by.
+  const roofOver = (inset: number): LintFinding[] => {
+    const doc = baseScene();
+    // Walls span x 0…6, z 0…8. `inset` grows the footprint past them.
+    doc.subject!.roofs![0]!.footprint = [
+      [-inset, -inset],
+      [6 + inset, -inset],
+      [6 + inset, 8 + inset],
+      [-inset, 8 + inset],
+    ];
+    doc.subject!.roofs![0]!.overhang = 0.4;
+    return lint(doc).filter((f) => f.rule === "roof-covers-walls");
+  };
+
+  it("accepts a roof that oversails by its declared overhang", () => {
+    expect(roofOver(0.4)).toEqual([]);
+    expect(roofOver(0.6)).toEqual([]);
+  });
+
+  it("rejects a roof that only just covers the walls", () => {
+    // Flush is the case the old tolerance permitted: the roof reaches the
+    // walls exactly while declaring a 0.4 m eave. Elmsgate shipped like this.
+    const found = roofOver(0);
+    expect(found).toHaveLength(1);
+    expect(found[0]!.severity).toBe("error");
+    expect(found[0]!.message).toMatch(/by its declared 0\.4 m overhang/);
+  });
+
+  it("rejects a roof that falls short of its declared eave", () => {
+    expect(roofOver(0.2)).toHaveLength(1);
+  });
+
+  it("does not fail a footprint that misses by float noise", () => {
+    // `rect(7 - 0.4, …)` produces 14.399999999999999, so a roof declaring
+    // exactly the eave it draws misses an exact `>=` by 2e-15 m. Both of
+    // Greenhollow's outbuildings did, the moment this comparison started
+    // pointing the right way.
+    const doc = baseScene();
+    doc.subject!.roofs![0]!.footprint = [
+      [0 - 0.4, 0 - 0.4],
+      [6 + 0.4 - Number.EPSILON * 8, -0.4],
+      [6 + 0.4 - Number.EPSILON * 8, 8 + 0.4],
+      [-0.4, 8 + 0.4],
+    ];
+    doc.subject!.roofs![0]!.overhang = 0.4;
+    expect(lint(doc).filter((f) => f.rule === "roof-covers-walls")).toEqual([]);
+  });
+});
+
+/* ── the rules that were registered but never proved to fire ──────── */
+
+const withRun = (over: Record<string, unknown>): SceneDocumentInput => {
+  const doc = baseScene();
+  doc.subject = {
+    ...doc.subject,
+    runs: [
+      {
+        id: "r-01",
+        kind: "pergola",
+        path: [
+          [0, 0],
+          [8, 0],
+        ],
+        width: 2.4,
+        height: 2.4,
+        spacing: 3,
+        material: "wall",
+        ...over,
+      } as never,
+    ],
+  };
+  return doc;
+};
+
+const runFindings = (over: Record<string, unknown>) =>
+  lint(withRun(over)).filter((f) => f.rule === "run-is-well-formed");
+
+describe("run-is-well-formed", () => {
+  // Five checks, one test each. One of them — the `kind !== "fence"` guard —
+  // was edited two days before this brief was written with nothing asserting
+  // that any of the five still worked.
+
+  it("rejects a repeated point", () => {
+    const found = runFindings({
+      path: [
+        [0, 0],
+        [0, 0],
+        [8, 0],
+      ],
+    });
+    expect(found.map((f) => f.severity)).toContain("error");
+    expect(found[0]!.message).toMatch(/repeats the same point/);
+  });
+
+  it("warns when a run is narrower than its own two rows of posts", () => {
+    const found = runFindings({ width: 0.1 });
+    expect(found).toHaveLength(1);
+    expect(found[0]!.severity).toBe("warning");
+    expect(found[0]!.message).toMatch(/narrower than its own posts/);
+  });
+
+  it("does not fire that check on a fence, which stands on one row", () => {
+    // The guard added by brief 21. A fence's `width` is the thickness of the
+    // thing, so a small number is correct, and this rule used to call every
+    // railing a mistake.
+    expect(runFindings({ kind: "fence", width: 0.1 })).toHaveLength(0);
+    expect(runFindings({ kind: "hedge", width: 0.1 })).toHaveLength(0);
+  });
+
+  it("warns when the post spacing exceeds the whole path", () => {
+    const found = runFindings({ spacing: 40 });
+    expect(found).toHaveLength(1);
+    expect(found[0]!.severity).toBe("warning");
+    expect(found[0]!.message).toMatch(/posts only at its ends/);
+  });
+
+  it("warns about a pergola you cannot walk under", () => {
+    const found = runFindings({ height: 1.6 });
+    expect(found).toHaveLength(1);
+    expect(found[0]!.severity).toBe("warning");
+    expect(found[0]!.message).toMatch(/cannot walk under/);
+  });
+
+  it("warns about a climber on something that cannot carry one", () => {
+    const found = runFindings({ kind: "fence", climber: "wall" });
+    expect(found).toHaveLength(1);
+    expect(found[0]!.severity).toBe("warning");
+    expect(found[0]!.message).toMatch(/only a pergola carries one/);
+  });
+});
+
+describe("polygons-have-area", () => {
+  it("catches a slab polygon with three collinear points", () => {
+    const doc = baseScene();
+    doc.subject!.levels![0]!.slabs = [
+      {
+        id: "slab-flat",
+        polygon: [
+          [0, 0],
+          [4, 0],
+          [8, 0],
+        ],
+        thickness: 0.2,
+        material: "wall",
+      },
+    ];
+    expect(rules(lint(doc))).toContain("polygons-have-area");
+  });
+});
+
+describe("shot-camera-is-valid", () => {
+  it("catches a camera looking at its own position", () => {
+    const doc = baseScene();
+    doc.shots = [
+      {
+        id: "s-01",
+        name: "Nowhere",
+        camera: { position: [3, 2, 3], target: [3, 2, 3], focalLength: 35 },
+      },
+    ];
+    expect(rules(lint(doc))).toContain("shot-camera-is-valid");
+  });
+});
+
+/* ── the guard that stops a fourteenth unarmed rule ───────────────── */
+
+/**
+ * One document per rule that trips it.
+ *
+ * This map is the mechanism, not the tests above. `asset-resolves` was
+ * registered in `RULES` and never actually armed, and **eight invented Poly
+ * Haven slugs shipped** in Greenhollow as a result. The fixture tests prove a
+ * good document stays quiet, which is not the same thing — a rule that can
+ * never fire also stays quiet.
+ *
+ * Adding a rule to `RULES` without adding a key here fails the suite, which is
+ * the actual failure mode being closed.
+ */
+const FIRES: Record<string, () => LintFinding[]> = {
+  "unique-ids": () => lint(withRun({ id: "W-01" })),
+  "wall-not-degenerate": () => {
+    const doc = baseScene();
+    doc.subject!.levels![0]!.walls![0]!.end = [0, 0];
+    return lint(doc);
+  },
+  "opening-fits-wall": () => {
+    const doc = baseScene();
+    doc.subject!.levels![0]!.walls![0]!.openings = [
+      { id: "w-1", kind: "window", offset: 5.5, width: 1.4, height: 1.2, sill: 0.9 },
+    ];
+    return lint(doc);
+  },
+  "opening-fits-height": () => {
+    const doc = baseScene();
+    doc.subject!.levels![0]!.walls![0]!.openings = [
+      { id: "w-1", kind: "window", offset: 1, width: 1.4, height: 2.4, sill: 0.9 },
+    ];
+    return lint(doc);
+  },
+  "openings-do-not-overlap": () => {
+    const doc = baseScene();
+    doc.subject!.levels![0]!.walls![0]!.openings = [
+      { id: "w-1", kind: "window", offset: 1, width: 1.4, height: 1.2, sill: 0.9 },
+      { id: "w-2", kind: "window", offset: 1.8, width: 1.4, height: 1.2, sill: 0.9 },
+    ];
+    return lint(doc);
+  },
+  "roof-covers-walls": () => {
+    const doc = baseScene();
+    doc.subject!.roofs![0]!.footprint = [
+      [2, 2],
+      [4, 2],
+      [4, 4],
+      [2, 4],
+    ];
+    return lint(doc);
+  },
+  "run-is-well-formed": () => lint(withRun({ height: 1.6 })),
+  "polygons-have-area": () => {
+    const doc = baseScene();
+    doc.subject!.levels![0]!.slabs = [
+      {
+        id: "slab-flat",
+        polygon: [
+          [0, 0],
+          [4, 0],
+          [8, 0],
+        ],
+        thickness: 0.2,
+        material: "wall",
+      },
+    ];
+    return lint(doc);
+  },
+  "material-resolves": () => {
+    const doc = baseScene();
+    doc.subject!.levels![0]!.walls![0]!.material = "no-such-material";
+    return lint(doc);
+  },
+  "asset-resolves": () => {
+    const doc = baseScene();
+    doc.subject = {
+      ...doc.subject,
+      placements: [
+        { id: "p-01", asset: "polyhaven/not_a_real_slug", position: [1, 0, 1], rotationY: 0 },
+      ],
+    };
+    return lint(doc, { knownAssets: new Set(["polyhaven/ArmChair_01"]) });
+  },
+  "scatter-density-is-sane": () => {
+    const doc = baseScene();
+    doc.context = {
+      ...doc.context,
+      scatter: [
+        {
+          id: "forest",
+          assets: ["polyhaven/tree_small_02"],
+          area: [
+            [0, 0],
+            [0, 100],
+            [100, 100],
+            [100, 0],
+          ],
+          density: 60,
+        } as never,
+      ],
+    };
+    return lint(doc);
+  },
+  "shot-camera-is-valid": () => {
+    const doc = baseScene();
+    doc.shots = [
+      {
+        id: "s-01",
+        name: "Nowhere",
+        camera: { position: [3, 2, 3], target: [3, 2, 3], focalLength: 35 },
+      },
+    ];
+    return lint(doc);
+  },
+  "materials-are-used": () => {
+    const doc = baseScene();
+    doc.materials = {
+      ...doc.materials,
+      spare: { label: "Spare", source: "procedural", baseColor: "#123456" },
+    };
+    return lint(doc);
+  },
+};
+
+describe("every registered rule is armed", () => {
+  it.each(RULES.map((r) => r.name))("%s has a document that trips it", (name) => {
+    const build = FIRES[name];
+    // The message a future author needs, at the moment they need it.
+    expect(build, `no firing document for "${name}" — add one to FIRES`).toBeDefined();
+    expect(rules(build!())).toContain(name);
+  });
+
+  it("has no firing document for a rule that no longer exists", () => {
+    // The other direction: a deleted rule leaving dead scaffolding behind is
+    // how a list stops describing the thing it lists.
+    const registered = new Set(RULES.map((r) => r.name));
+    expect(Object.keys(FIRES).filter((name) => !registered.has(name))).toEqual([]);
   });
 });
