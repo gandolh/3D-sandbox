@@ -473,3 +473,66 @@ The pattern across the whole audit is one thing said three ways: **this codebase
 tests assert that output exists and is roughly the right size, not that it is
 correct.** Bounding boxes instead of directions, counts instead of associations,
 silence on a good document instead of a finding on a bad one.
+
+## [2026-09-12] audit | Rounds 2–4: twelve lenses, twenty-one briefs
+
+Three further audit rounds after the first. Round 2 took the lenses the first
+pass skipped — security and resilience, dependencies and tooling, DX, and the
+chrome as a product. Round 3 went deep on linter semantics and duplication.
+Round 4 covered engine lifecycle, the scene documents, and test quality. Every
+cited line was re-read or re-measured before it was believed.
+
+**The single most valuable finder was engine lifecycle**, because scene
+switching had shipped the day before and nothing had ever checked it. It found
+that **every scene after the first renders with the wrong assets**: `loadAssets`
+runs in a mount-only effect, `materialsFor(doc)` builds a map keyed by *that*
+document's material ids, and `setAssets` stores it forever. Switch scenes and
+only the ids that happen to collide resolve — for Greenhollow → Elmsgate that is
+`asphalt-road` and nothing else. The path-traced render inherits the flat
+materials, so an hour of GPU produces an untextured image. The same shape applies
+to `setAssetSizes`, which is worse: a placement with no known size gets **no
+collider at all**, so drop-to-rest falls through to the terrain.
+
+I could not isolate that one in the browser — the asset load had already resolved
+before the switch landed, and the differential test failed. It is proven by
+construction and recorded as such.
+
+**Security has one finding that is not the locked decision it resembles.**
+`cors({ origin: true })` reflects any origin. The "API is unauthenticated on
+purpose" decision covers *authentication*; it does not cover switching off the
+browser's own same-origin protection. Without CORS a cross-origin `DELETE` fails
+at preflight; reflecting the caller's origin permits it. Any page open in any tab
+can enumerate and `rm` the scene files the project calls its source of truth.
+
+**Two findings are about promises the code makes and does not keep.**
+`writeSceneFile` argues in its own comment that validating before writing is what
+makes "files are truth" safe — and then writes with a bare `writeFile`, so a
+crash mid-write truncates the document and the next reindex silently drops it.
+And `scatter-density-is-sane`, the only guard on document-driven geometry volume,
+is `severity: "warning"` — so it cannot refuse a document, and the sampler's own
+bound, `target * 40 + 1000`, scales with the number it exists to limit.
+
+**The root cause behind six separate findings got its own brief (37).**
+`geometry → schema` and `physics → schema`, and nothing may depend on `geometry`
+— so anything the generator *and its checker* both need has nowhere to live and
+gets copied. That is how `run-is-well-formed` came to hold a literal `2 * 0.08`
+copy of the generator's `POST` constant: the rule is not checking the generator,
+it is checking itself. Eight instances tabulated; two have already caused
+visible bugs.
+
+**Two findings are about this project's own honesty.** The documented quickstart
+cannot work on a fresh clone — every workspace package's only entry is
+`./dist/index.js`, `dist/` is gitignored, and `npm install` does not build. And
+`scenes/` has no `tsconfig.json` and is absent from the root reference graph, so
+1,200 lines of scene authoring — the part a human actually writes by hand — are
+type-checked by nothing at all.
+
+Accessibility was audited for the first time: the status line is **3.20:1 on
+dark and 2.73:1 on light** against a 4.5:1 floor, nothing anywhere is announced,
+severity is colour-only, and the render **Cancel** button sits behind every row
+of the scene tree in tab order.
+
+The theme from round 1 held all the way through, and widened. The tests assert
+that output exists and is roughly the right size, not that it is correct — and
+in one case (`colliders.test.ts:166`) a test asserts the **wrong** value
+outright, which is why the degrees-vs-radians bug ships with `check` green.

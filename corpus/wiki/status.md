@@ -35,13 +35,22 @@ is operated there by hand. Nothing in `apps/` or `packages/` waits on it.
 
 ## Next
 
-A five-lens audit on 2026-09-12 produced **14 vetted findings** from 26 raw, and
-six queued briefs (22–27). The full ranked list, including the Next and Watch
-tiers that were not spec'd, is in [log.md](../log.md).
+Four audit rounds on 2026-09-12 — twelve lenses in all — produced **21 queued
+briefs (22–42)**. The full ranked lists are in [log.md](../log.md).
 
-Two of the six are live bugs rather than improvements: **every road in every
-scene renders black** from an inverted winding, and **placement colliders are
-rotated in degrees** while both consumers read radians.
+Six of them are **live bugs**, not improvements:
+
+- Every **road and pavement renders black** — `buildRoad` winds its ribbon
+  backwards. Third instance of a class the tests could never catch.
+- **Placement colliders are rotated in degrees** while both consumers read radians.
+- **Every scene after the first renders with the wrong assets** — the material
+  binding attaches to whichever document was open when the 135 MB finished
+  loading, and is never rebuilt. New with the scene picker.
+- **Every render leaks GPU memory**; a four-shot queue compounds it until the
+  context is lost.
+- A **scene switch during a render** frees the geometry it is tracing, and the
+  queue reports success anyway.
+- Villa's **forest grows through all six neighbouring houses**.
 
 The theme across the audit is one thing said three ways — this codebase's tests
 assert that output exists and is roughly the right size, not that it is correct.
@@ -82,3 +91,18 @@ migrations, and the two unbaked conifers that only the regression fixture uses.
 | 25 | [Defer the heavy half](../briefs/todo/25-defer-the-heavy-half.md) | todo |
 | 26 | [Stop shipping source maps](../briefs/todo/26-stop-shipping-source-maps.md) | todo |
 | 27 | [Arm the unproven rules](../briefs/todo/27-arm-the-unproven-rules.md) | todo |
+| 28 | [Close the cross-origin surface](../briefs/todo/28-close-the-cross-origin-surface.md) | todo |
+| 29 | [Writing a scene must not destroy one](../briefs/todo/29-writing-a-scene-must-not-destroy-one.md) | todo |
+| 30 | [Give the document a ceiling](../briefs/todo/30-give-the-document-a-ceiling.md) | todo |
+| 31 | [Contain the bake server](../briefs/todo/31-contain-the-bake-server.md) | todo |
+| 32 | [Type-check the scenes](../briefs/todo/32-typecheck-the-scenes.md) | todo |
+| 33 | [Make the README true](../briefs/todo/33-make-the-readme-true.md) | todo |
+| 34 | [A truncated download is forever](../briefs/todo/34-a-truncated-download-is-forever.md) | todo |
+| 35 | [The app cannot tell you what happened](../briefs/todo/35-the-app-cannot-tell-you-what-happened.md) | todo |
+| 36 | [Reach Cancel without a mouse](../briefs/todo/36-reach-cancel-without-a-mouse.md) | todo |
+| 37 | [A home for shared primitives](../briefs/todo/37-a-home-for-shared-primitives.md) | todo |
+| 38 | [Tests that do not hold weight](../briefs/todo/38-tests-that-do-not-hold-weight.md) | todo |
+| 39 | [Switching scenes keeps the first one's assets](../briefs/todo/39-switching-scenes-keeps-the-first-ones-assets.md) | todo |
+| 40 | [Every render leaks the GPU](../briefs/todo/40-every-render-leaks-the-gpu.md) | todo |
+| 41 | [A render can be undermined while it runs](../briefs/todo/41-a-render-can-be-undermined-while-it-runs.md) | todo |
+| 42 | [Bring the fixture forward](../briefs/todo/42-bring-the-fixture-forward.md) | todo |
