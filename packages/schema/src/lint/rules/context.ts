@@ -1,5 +1,5 @@
 import { area } from "../../geometry.js";
-import { estimateScatterInstances } from "../../scatter.js";
+import { estimateScatterInstances } from "../../derive/scatter.js";
 import type { RawFinding, Rule } from "../types.js";
 
 /** Zero-area polygons generate nothing and usually mean transposed coordinates. */

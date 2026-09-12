@@ -1,20 +1,13 @@
 import * as THREE from "three";
-import type { Plan } from "@solstice/schema";
+// `pointInPolygon` moved to `@solstice/schema` so the linter could reach it;
+// re-exported here because every caller in this package already imports from
+// this module, and two import sites for one predicate is how the copy came
+// back last time.
+import { pointInPolygon, type Plan } from "@solstice/schema";
+
 import { ensureStandardAttributes } from "./attributes.js";
 
-/** Ray-casting point-in-polygon. Boundary cases are not meaningful for scatter. */
-export function pointInPolygon(point: Plan, polygon: readonly Plan[]): boolean {
-  const [x, z] = point;
-  let inside = false;
-  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
-    const a = polygon[i]!;
-    const b = polygon[j]!;
-    const intersects =
-      a[1] > z !== b[1] > z && x < ((b[0] - a[0]) * (z - a[1])) / (b[1] - a[1]) + a[0];
-    if (intersects) inside = !inside;
-  }
-  return inside;
-}
+export { pointInPolygon };
 
 /**
  * A `THREE.Shape` in the XY plane from a plan-space polygon.

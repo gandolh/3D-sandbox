@@ -5,4 +5,4 @@ export * from "./document.js";
 export * from "./lint/index.js";
 export * from "./load.js";
 export * from "./builder/index.js";
-export * from "./scatter.js";
+export * from "./derive/index.js";

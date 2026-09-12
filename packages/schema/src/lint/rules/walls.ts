@@ -1,3 +1,4 @@
+import { mToMm } from "../../units.js";
 import { intervalsOverlap, length } from "../../geometry.js";
 import type { RawFinding, Rule } from "../types.js";
 
@@ -65,7 +66,7 @@ export const openingFitsWall: Rule = {
               rule: "opening-fits-wall",
               severity: "error",
               path,
-              message: `opening "${o.id}" sits ${(o.offset * 1000).toFixed(0)} mm from the start of wall "${wall.id}" — below the ${(margin * 1000).toFixed(0)} mm structural minimum`,
+              message: `opening "${o.id}" sits ${mToMm(o.offset).toFixed(0)} mm from the start of wall "${wall.id}" — below the ${mToMm(margin).toFixed(0)} mm structural minimum`,
             });
           }
           if (len - far < margin) {
@@ -73,7 +74,7 @@ export const openingFitsWall: Rule = {
               rule: "opening-fits-wall",
               severity: "error",
               path,
-              message: `opening "${o.id}" sits ${((len - far) * 1000).toFixed(0)} mm from the end of wall "${wall.id}" — below the ${(margin * 1000).toFixed(0)} mm structural minimum`,
+              message: `opening "${o.id}" sits ${mToMm(len - far).toFixed(0)} mm from the end of wall "${wall.id}" — below the ${mToMm(margin).toFixed(0)} mm structural minimum`,
             });
           }
         });
@@ -106,7 +107,7 @@ export const openingFitsHeight: Rule = {
               rule: "opening-fits-height",
               severity: "warning",
               path: `subject.levels[${li}].walls[${wi}].openings[${oi}]`,
-              message: `door "${o.id}" has a sill of ${(o.sill * 1000).toFixed(0)} mm — doors normally start at floor level`,
+              message: `door "${o.id}" has a sill of ${mToMm(o.sill).toFixed(0)} mm — doors normally start at floor level`,
             });
           }
         });

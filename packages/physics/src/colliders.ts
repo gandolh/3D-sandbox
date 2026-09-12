@@ -1,4 +1,13 @@
-import { bounds, degToRad, type SceneDocument, type Level, type Wall } from "@solstice/schema";
+import {
+  bounds,
+  degToRad,
+  wallAngle,
+  wallLength,
+  wallMidpoint,
+  type SceneDocument,
+  type Level,
+  type Wall,
+} from "@solstice/schema";
 
 /** A box collider in world space, rotated only about Y. */
 export interface CuboidCollider {
@@ -130,15 +139,16 @@ export function deriveColliders(doc: SceneDocument, sizes?: PlacementSizes): Cub
  * by offset, so this is arithmetic rather than geometry.
  */
 export function wallColliders(wall: Wall, level: Level): CuboidCollider[] {
-  const [x1, z1] = wall.start;
-  const [x2, z2] = wall.end;
-  const length = Math.hypot(x2 - x1, z2 - z1);
+  const length = wallLength(wall);
   if (length < EPSILON) return [];
 
   const height = wall.height ?? level.height;
-  const rotationY = Math.atan2(-(z2 - z1), x2 - x1);
-  const midX = (x1 + x2) / 2;
-  const midZ = (z1 + z2) / 2;
+  // Shared with the mesh builder rather than recomputed. The collider is meant
+  // to be the shape of the wall, and nothing draws the two on top of each
+  // other, so a sign that drifted apart here would show up only as something
+  // walking through a wall that is plainly there.
+  const rotationY = wallAngle(wall);
+  const [midX, midZ] = wallMidpoint(wall);
   const halfThickness = wall.thickness / 2;
 
   // Local frame: u runs along the wall from its midpoint, v up from the floor.

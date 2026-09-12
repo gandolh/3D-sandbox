@@ -1,4 +1,11 @@
-import type { Level, Placement, SceneDocument, Wall } from "@solstice/schema";
+import {
+  wallBearing,
+  wallLength,
+  type Level,
+  type Placement,
+  type SceneDocument,
+  type Wall,
+} from "@solstice/schema";
 
 /** Where a mesh name like `wall:W-03` points in the document. */
 export interface WallRef {
@@ -40,14 +47,11 @@ export function findEntity(doc: SceneDocument, id: string): EntityRef | null {
   return null;
 }
 
-export const wallLength = (wall: Wall): number =>
-  Math.hypot(wall.end[0] - wall.start[0], wall.end[1] - wall.start[1]);
-
-/** Compass degrees clockwise from +Z (scene north). */
-export const wallBearing = (wall: Wall): number => {
-  const deg = (Math.atan2(wall.end[0] - wall.start[0], wall.end[1] - wall.start[1]) * 180) / Math.PI;
-  return (deg + 360) % 360;
-};
+// Both come from `@solstice/schema`, which is where the geometry generator and
+// the collider builder read them from too. This file had its own copies, so the
+// inspector's readout and the mesh were free to describe the same wall
+// differently.
+export { wallBearing, wallLength };
 
 /**
  * Move a wall's far endpoint so it runs `length` metres in its current

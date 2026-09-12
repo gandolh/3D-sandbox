@@ -80,6 +80,29 @@ boundary. Metres, Y-up, right-handed.
 **Why**: documents are written by hand. Y-up because fighting three.js's native
 axis means fighting every addon.
 
+## Shared primitives live in `@solstice/schema/derive`, not a new package
+_2026-09-12_ — Any computation the **generator** and its **checker** both need
+goes in `packages/schema/src/derive/`, under two rules: no `three` import, and at
+least two callers in different packages.
+Rejected: a new leaf package `@solstice/primitives` that both `schema` and
+`geometry` would depend on.
+**Why**: the dependency direction is `geometry → schema` and `physics → schema`
+with nothing depending on `geometry`. That is right and stays — but it left every
+shared computation homeless, so each one was copied into its checker, and a
+checker holding its own copy of the generator's constant is not checking the
+generator. It is checking itself. Eight of these had accumulated; one had a wall's
+mesh and its collider free to rotate apart, and two of them had already diverged.
+
+The honest objection is that "the document schema" and "geometric facts every
+consumer needs" are different jobs, and a new leaf package would keep them
+separate. It was rejected because the functions in question are *facts about
+document entities* — a wall's angle, a field's instance count, a scene's wall
+count — which is the job `schema` already does; `geometry.ts` and `scatter.ts`
+were already there. A fourth package would add a build edge and a publish target
+to move code between two files that both already live in `schema`. The `derive/`
+folder and its two rules are the boundary instead, and they are cheap to enforce
+by reading.
+
 ## Visual direction: Darkroom
 _2026-09-11_ — Near-black chrome, hairline separation, sun-amber accent.
 Rejected: "Drawing Set" (paper ground, drafting overlays) and "Gallery" (inset

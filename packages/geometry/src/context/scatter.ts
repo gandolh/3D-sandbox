@@ -1,5 +1,10 @@
 import * as THREE from "three";
-import { area, bounds, type ScatterField } from "@solstice/schema";
+import {
+  bounds,
+  estimateScatterInstances,
+  scatterLattice,
+  type ScatterField,
+} from "@solstice/schema";
 import { mulberry32, pick, randomBetween } from "../random.js";
 import { pointInPolygon } from "../polygon.js";
 import { ensureStandardAttributes } from "../attributes.js";
@@ -20,11 +25,11 @@ export interface ScatterInstance {
 export function scatterInstances(field: ScatterField): ScatterInstance[] {
   if (field.arrangement === "rows") return rowInstances(field);
 
-  const net = Math.max(
-    0,
-    area(field.area) - field.exclude.reduce((sum, poly) => sum + area(poly), 0),
-  );
-  const target = Math.round((net / 100) * field.density);
+  // Asked for rather than restated. The linter quotes this number to say the
+  // render will fit in the triangle budget and the API quotes it to say how big
+  // the scene is; a generator that computed its own would eventually make both
+  // of them wrong at once, which is the failure mode with no symptom.
+  const target = estimateScatterInstances(field).instances;
   if (target === 0) return [];
 
   const b = bounds(field.area);
@@ -66,17 +71,21 @@ export function scatterInstances(field: ScatterField): ScatterInstance[] {
  * character is that a person decided how far apart to put the trees.
  */
 function rowInstances(field: ScatterField): ScatterInstance[] {
-  const [along, across] = field.rowSpacing;
-  const b = bounds(field.area);
+  const lattice = scatterLattice(field);
   const rng = mulberry32(field.seed);
   const out: ScatterInstance[] = [];
 
   // A quarter of the spacing, so a tree never wanders into its neighbour's place.
-  const jitterX = along / 4;
-  const jitterZ = across / 4;
+  const jitterX = lattice.stepX / 4;
+  const jitterZ = lattice.stepZ / 4;
 
-  for (let z = b.minZ + across / 2; z <= b.maxZ; z += across) {
-    for (let x = b.minX + along / 2; x <= b.maxX; x += along) {
+  // Integer counts from the shared lattice, not `x += step` until it passes the
+  // edge. Accumulating loses the last row to rounding, and at large coordinates
+  // `x + step === x`, so the loop stops advancing without ever stopping.
+  for (let iz = 0; iz < lattice.countZ; iz++) {
+    const z = lattice.originZ + iz * lattice.stepZ;
+    for (let ix = 0; ix < lattice.countX; ix++) {
+      const x = lattice.originX + ix * lattice.stepX;
       const px = x + randomBetween(rng, -jitterX, jitterX);
       const pz = z + randomBetween(rng, -jitterZ, jitterZ);
       const rotation = rng() * 360;

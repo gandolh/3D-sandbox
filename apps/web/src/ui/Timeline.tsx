@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { dayBounds, sunPosition, utcToLocalClock } from "@solstice/solar";
-import { evaluate, minutesToClock } from "@solstice/animation";
+import { clockToMinutes, evaluate, minutesToClock } from "@solstice/animation";
 import { setSolar, useStore } from "../state/store.js";
 
 const transport = (action: "play" | "pause" | "seek", at?: number): void => {
@@ -10,14 +10,9 @@ const transport = (action: "play" | "pause" | "seek", at?: number): void => {
 };
 
 const HOURS = 24;
-const toMinutes = (hhmm: string): number => {
-  const [h, m] = hhmm.split(":").map(Number);
-  return (h ?? 0) * 60 + (m ?? 0);
-};
-const toClock = (minutes: number): string => {
-  const clamped = Math.max(0, Math.min(HOURS * 60 - 1, Math.round(minutes)));
-  return `${String(Math.floor(clamped / 60)).padStart(2, "0")}:${String(clamped % 60).padStart(2, "0")}`;
-};
+// Both conversions come from `@solstice/animation`. This file had its own copy
+// of `minutesToClock` under a different name while *also* importing the real
+// one, so the same component rendered the clock two ways.
 
 /**
  * Animation time and solar time share one track.
@@ -52,7 +47,7 @@ export function Timeline() {
     playing && animation !== undefined
       ? evaluate(animation, playhead)["solar.minutes"]
       : undefined;
-  const minutes = played ?? (doc === null ? 0 : toMinutes(doc.solar.time));
+  const minutes = played ?? (doc === null ? 0 : clockToMinutes(doc.solar.time));
 
   const solarState = useMemo(() => {
     if (doc === null) return null;
@@ -70,11 +65,11 @@ export function Timeline() {
   const bandStart =
     bounds.sunrise === null
       ? 0
-      : (toMinutes(utcToLocalClock(bounds.sunrise, doc.site.timezone)) / (HOURS * 60)) * 100;
+      : (clockToMinutes(utcToLocalClock(bounds.sunrise, doc.site.timezone)) / (HOURS * 60)) * 100;
   const bandEnd =
     bounds.sunset === null
       ? 100
-      : (toMinutes(utcToLocalClock(bounds.sunset, doc.site.timezone)) / (HOURS * 60)) * 100;
+      : (clockToMinutes(utcToLocalClock(bounds.sunset, doc.site.timezone)) / (HOURS * 60)) * 100;
 
   return (
     <div className="shrink-0 border-t border-line bg-chrome px-4 pt-2.5 pb-3">
@@ -149,7 +144,7 @@ export function Timeline() {
           step={1}
           value={minutes}
           onChange={(event) =>
-            setSolar({ ...doc.solar, time: toClock(Number(event.target.value)) })
+            setSolar({ ...doc.solar, time: minutesToClock(Number(event.target.value)) })
           }
           className="absolute inset-0 h-full w-full cursor-ew-resize opacity-0"
         />

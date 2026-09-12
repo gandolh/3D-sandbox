@@ -1,7 +1,7 @@
 import { DatabaseSync } from "node:sqlite";
 import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
-import { estimateScatterInstances, lintScene } from "@solstice/schema";
+import { estimateScatterInstances, lintScene, sceneCounts } from "@solstice/schema";
 import {
   idFromFilename,
   listSceneFiles,
@@ -135,11 +135,7 @@ export async function summarize(
   document: Awaited<ReturnType<typeof readSceneFile>>,
   bytes?: number,
 ): Promise<SceneSummary> {
-  const walls = document.subject.levels.reduce((n, l) => n + l.walls.length, 0);
-  const openings = document.subject.levels.reduce(
-    (n, l) => n + l.walls.reduce((m, w) => m + w.openings.length, 0),
-    0,
-  );
+  const counts = sceneCounts(document);
   const scatterInstances = document.context.scatter.reduce(
     (n, f) => n + estimateScatterInstances(f).instances,
     0,
@@ -150,9 +146,9 @@ export async function summarize(
     title: document.title,
     bytes: bytes ?? (await sceneBytes(scenesDir, id).catch(() => 0)),
     mtime: await sceneMtime(scenesDir, id).catch(() => 0),
-    walls,
-    openings,
-    shots: document.shots.length,
+    walls: counts.walls,
+    openings: counts.openings,
+    shots: counts.shots,
     scatterInstances,
     warnings: lintScene(document).length,
   };

@@ -23,6 +23,26 @@ export function signedArea(poly: Polygon): number {
 
 export const area = (poly: Polygon): number => Math.abs(signedArea(poly));
 
+/**
+ * Ray-casting point-in-polygon. Boundary cases are not meaningful for scatter.
+ *
+ * Here rather than in `geometry` because the linter needs it too: a rule that
+ * wants to know whether an exclusion actually sits inside its field cannot
+ * import the package that draws the field.
+ */
+export function pointInPolygon(point: Plan, polygon: Polygon): boolean {
+  const [x, z] = point;
+  let inside = false;
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    const a = polygon[i]!;
+    const b = polygon[j]!;
+    const intersects =
+      a[1] > z !== b[1] > z && x < ((b[0] - a[0]) * (z - a[1])) / (b[1] - a[1]) + a[0];
+    if (intersects) inside = !inside;
+  }
+  return inside;
+}
+
 /** Axis-aligned bounds in plan space. */
 export interface Bounds {
   minX: M;

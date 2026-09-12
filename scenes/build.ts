@@ -15,6 +15,7 @@ import {
   SceneValidationError,
   formatFinding,
   loadScene,
+  sceneCounts,
   serializeScene,
 } from "@solstice/schema";
 import { knownAssets } from "../assets/manifest.ts";
@@ -73,14 +74,7 @@ for (const entry of entries) {
     const out = join(here, `${document.id}.scene.json`);
     await writeFile(out, serializeScene(document), "utf8");
 
-    const counts = {
-      walls: document.subject.levels.reduce((n, l) => n + l.walls.length, 0),
-      openings: document.subject.levels.reduce(
-        (n, l) => n + l.walls.reduce((m, w) => m + w.openings.length, 0),
-        0,
-      ),
-      shots: document.shots.length,
-    };
+    const counts = sceneCounts(document);
     console.log(
       `✓ ${document.id}  ${counts.walls} walls, ${counts.openings} openings, ${counts.shots} shots  →  ${document.id}.scene.json`,
     );

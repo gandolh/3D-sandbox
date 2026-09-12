@@ -1,12 +1,7 @@
 import { editDocument, getState, setStatus, useStore } from "../state/store.js";
 import { physicsFor, sizesFromMap } from "../lib/physics.js";
-import {
-  findEntity,
-  setWallBearing,
-  setWallLength,
-  wallBearing,
-  wallLength,
-} from "../lib/entities.js";
+import { mToMm, mmToM, wallBearing, wallLength } from "@solstice/schema";
+import { findEntity, setWallBearing, setWallLength } from "../lib/entities.js";
 import { Divider, Field, PanelTitle } from "./primitives.jsx";
 import { Scroll } from "./Scroll.jsx";
 
@@ -119,8 +114,8 @@ function WallInspector({
         label="Thickness"
         unit="mm"
         step={10}
-        value={wall.thickness * 1000}
-        onCommit={(next) => next > 0 && edit((w) => { w.thickness = next / 1000; })}
+        value={mToMm(wall.thickness)}
+        onCommit={(next) => next > 0 && edit((w) => { w.thickness = mmToM(next); })}
       />
       <Field
         label="Bearing"
