@@ -656,3 +656,52 @@ material on a two-sided surface is another. Fixed by cloning that one mesh's
 material two-sided, and the test asserts nothing else became so.
 
 263 tests.
+
+## 2026-09-12 — The render path: who owns the GPU, and who frees it
+
+Briefs 40 and 41, done together because they are the same file arguing with
+itself about ownership.
+
+**41 — who may start and stop a render.** `startRender` used to open with
+`cancelRender()`, which nulled the session without awaiting it, so the outgoing
+one reached its `finally` minutes later and resized the renderer, re-enabled
+orbit and popped the gizmo back on screen in the middle of the new render. It
+now refuses instead: a queue already exists a layer up, where it can show
+progress and write each file as it lands, and a second invisible one could only
+lose work quietly. Teardown of shared state moved to the engine and is guarded
+by ownership — the session frees its own GPU resources and touches nothing it
+does not own.
+
+The scene picker, Context, Save and both Render buttons are disabled while a
+render runs. `isRendering` finally has a caller, though not the one the brief
+expected: it is still false when a second event arrives in the same tick,
+because `startRender` runs inside an async block. The store's flag, set
+synchronously, is what actually closes that window. Found by trying it in a
+browser rather than by reasoning about it.
+
+**40 — what a render leaves behind.** Upstream's `WebGLPathTracer.dispose()`
+frees three things and leaves two large ones: both path-tracing materials, whose
+uniforms hold the BVH, every triangle's attributes and one 1024² layer per scene
+texture; and `_lowResPathTracer`, an entire second renderer that `dynamicLowRes`
+keeps alive. Also fixed: the cloned render scene's instance buffers, the
+engine's sky, selection box, shadow map and overlay on teardown, an exported
+`disposePhysics` with no callers, and an `AbortSignal` that reached only the
+first of twenty-odd fetches.
+
+**Two things the brief got wrong, both found by doing it rather than reading
+it.** `forceContextLoss()` unconditionally is wrong — it is permanent for that
+canvas, React keeps the same canvas across a Fast Refresh, and it took the app
+down on the first HMR update. And disposing before releasing ownership turned a
+throw into a hang: `this.render` stayed set, the frame loop kept stepping a
+half-disposed session at full rate, and the tab pegged a core. Ownership is
+released first now, and the walk into library privates is wrapped.
+
+**The measurement the brief asked for could not be taken, and that is recorded
+rather than approximated.** This machine has no hardware GL; the path-tracing
+shader's compile does not finish. What is measurable without a context is
+measured in a test: nine disposable resources per material, **zero** of them
+freed by `material.dispose()`, all nine freed by ours, none shared between two
+materials — and an assertion on upstream's source that fails the day they fix
+it, which is the signal to delete the workaround.
+
+266 tests.

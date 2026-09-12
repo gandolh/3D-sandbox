@@ -41,6 +41,18 @@ export async function loadAssets(signal?: AbortSignal): Promise<LoadedAssets> {
   const entries = new Map<string, AssetGeometry>();
   const impostors = new Map<string, ImpostorAsset>();
 
+  /**
+   * Stop, if the caller has stopped caring.
+   *
+   * The signal used to reach only `index.json`, so an unmount let all 273 MB
+   * finish downloading, decoded every glTF and uploaded every texture — and
+   * then the guarded `.then` discarded the lot with no handle to dispose it,
+   * while the remount started the same download again. Checked between stages
+   * because three's loaders take no signal of their own: it cannot cancel a
+   * transfer in flight, but it can stop the next one and stop the work after.
+   */
+  const stopped = (): boolean => signal?.aborted === true;
+
   let index: {
     models?: { id: string; path: string }[];
     impostors?: { id: string; atlas: string; meta: string }[];
@@ -57,8 +69,10 @@ export async function loadAssets(signal?: AbortSignal): Promise<LoadedAssets> {
   const loader = new GLTFLoader();
   await Promise.all(
     (index.models ?? []).map(async (model) => {
+      if (stopped()) return;
       try {
         const gltf = await loader.loadAsync(`/assets-src/${model.path}`);
+        if (stopped()) return;
         const prepared = prepareAsset(gltf.scene);
         // A glTF that parses but carries no mesh is not an asset; letting it in
         // would replace a visible proxy with nothing at all.
@@ -72,12 +86,20 @@ export async function loadAssets(signal?: AbortSignal): Promise<LoadedAssets> {
   const textures = new THREE.TextureLoader();
   await Promise.all(
     (index.impostors ?? []).map(async (entry) => {
+      if (stopped()) return;
       try {
-        const meta = (await (await fetch(`/assets-src/${entry.meta}`)).json()) as {
+        const meta = (await (
+          await fetch(`/assets-src/${entry.meta}`, signal === undefined ? {} : { signal })
+        ).json()) as {
           angles: number;
           size: [number, number, number];
         };
+        if (stopped()) return;
         const texture = await textures.loadAsync(`/assets-src/${entry.atlas}`);
+        if (stopped()) {
+          texture.dispose();
+          return;
+        }
         texture.colorSpace = THREE.SRGBColorSpace;
         // The atlas is a strip of discrete views; filtering across a slice
         // boundary would bleed one angle into the next, and mipmaps would do it
@@ -97,11 +119,17 @@ export async function loadAssets(signal?: AbortSignal): Promise<LoadedAssets> {
   const libraryMaps = new Map<string, MaterialMaps>();
   await Promise.all(
     (index.materials ?? []).map(async (entry) => {
+      if (stopped()) return;
       const maps: MaterialMaps = {};
       await Promise.all(
         Object.entries(entry.maps).map(async ([role, path]) => {
+          if (stopped()) return;
           try {
             const texture = await textures.loadAsync(`/assets-src/${path}`);
+            if (stopped()) {
+              texture.dispose();
+              return;
+            }
             // Only the base colour is colour. Normal, roughness, metalness and
             // occlusion are data, and running them through sRGB decode makes
             // surfaces subtly, unexplainably wrong.

@@ -56,7 +56,6 @@ export interface RenderProgress {
 export class PathTraceSession {
   private readonly tracer: WebGLPathTracer;
   private readonly bvhWorker: GenerateMeshBVHWorker;
-  private readonly previousSize = new THREE.Vector2();
   private readonly startedAt = performance.now();
   private cancelled = false;
   private building = true;
@@ -85,8 +84,6 @@ export class PathTraceSession {
     private readonly camera: THREE.PerspectiveCamera,
     private readonly settings: RenderSettings,
   ) {
-    this.renderer.getSize(this.previousSize);
-
     this.tracer = new WebGLPathTracer(renderer);
     // `setSceneAsync` refuses to run without one, and the point of the async
     // path is that a large BVH build does not freeze the interface. The worker
@@ -188,14 +185,71 @@ export class PathTraceSession {
     return this.captured;
   }
 
-  /** Restore the renderer to what the viewport had. */
+  /**
+   * Free everything this session allocated on the GPU.
+   *
+   * Note what is **not** here: the renderer's size. Restoring it belongs to
+   * whoever owns the renderer, and a session that has been superseded no longer
+   * does — its idea of "previous" is the live session's current size, so
+   * putting it back would shrink the canvas mid-accumulation. `SandboxEngine`
+   * decides; see `startRender`.
+   */
   dispose(): void {
     this.denoiseQuad?.dispose();
     this.denoise?.dispose();
     this.tracer.dispose();
+    try {
+      this.disposeTracerInternals();
+    } catch (error) {
+      // Reaching into a library's privates must never be able to fail a
+      // render's teardown. The cost of this going wrong is the leak we already
+      // had; the cost of it throwing was the whole engine.
+      console.warn("Could not free the path tracer's internals", error);
+    }
     this.bvhWorker.dispose();
     this.scene.environment?.dispose();
-    this.renderer.setSize(this.previousSize.x, this.previousSize.y, false);
+  }
+
+  /**
+   * Free what `WebGLPathTracer.dispose()` leaves on the GPU.
+   *
+   * Upstream (`three-gpu-pathtracer/src/core/WebGLPathTracer.js:496`) disposes
+   * `_quad`, `_quad.material` and `_pathTracer` — and that is all. Two things
+   * survive it, both large:
+   *
+   * - **The path-tracing materials.** `PathTracingRenderer.dispose()` frees its
+   *   render targets and quads but never `this.material`, whose uniforms hold
+   *   the entire BVH as data textures, every triangle's attributes as a
+   *   `DataArrayTexture`, and one 1024×1024 RGBA layer **per scene texture**.
+   * - **`_lowResPathTracer`**, a whole second `PathTracingRenderer` — four
+   *   float targets, a sobol target, two quads and a second material. Nothing
+   *   upstream disposes it, and `dynamicLowRes` is on, so it is sized and used.
+   *
+   * Run a four-shot queue without this and each shot builds a fresh BVH and a
+   * fresh texture array over the same scene while none of the previous ones are
+   * freed. VRAM climbs monotonically and the later shots thrash.
+   *
+   * Written against internals on purpose, and defensively: every access is
+   * optional, so an upstream rename degrades to the leak we already had rather
+   * than throwing. Delete this whole method if upstream ever disposes its own.
+   */
+  private disposeTracerInternals(): void {
+    interface InternalRenderer {
+      dispose?: () => void;
+      material?: THREE.ShaderMaterial;
+    }
+    const tracer = this.tracer as unknown as {
+      _pathTracer?: InternalRenderer;
+      _lowResPathTracer?: InternalRenderer;
+    };
+
+    for (const internal of [tracer._pathTracer, tracer._lowResPathTracer]) {
+      if (internal?.material === undefined) continue;
+      disposeUniformValues(internal.material);
+      internal.material.dispose();
+    }
+    // `_pathTracer` is disposed upstream; this one is not.
+    tracer._lowResPathTracer?.dispose?.();
   }
 
   private report(): RenderProgress {
@@ -215,6 +269,39 @@ export class PathTraceSession {
       elapsedMs: performance.now() - this.startedAt,
     };
   }
+}
+
+/**
+ * Free every GPU resource a material holds in its uniforms.
+ *
+ * `Material.dispose()` releases the compiled program and nothing a uniform
+ * points at — which for a path-tracing material is nearly all of its cost: the
+ * BVH as data textures, every triangle's attributes as a `DataArrayTexture`,
+ * and one 1024×1024 RGBA layer per scene texture.
+ *
+ * The uniforms are **walked rather than named**. Every disposable one is a
+ * fresh instance per material — no module singletons, checked — so this cannot
+ * free something another render still depends on, and it keeps working when
+ * upstream adds a uniform we have never heard of.
+ *
+ * Exported for the test, which is the only place the claim "upstream frees none
+ * of these" can be checked without a GL context.
+ */
+export function disposeUniformValues(material: THREE.ShaderMaterial): number {
+  let freed = 0;
+  for (const uniform of Object.values(material.uniforms)) {
+    const value: unknown = uniform.value;
+    if (
+      typeof value === "object" &&
+      value !== null &&
+      "dispose" in value &&
+      typeof (value as { dispose: unknown }).dispose === "function"
+    ) {
+      (value as { dispose: () => void }).dispose();
+      freed++;
+    }
+  }
+  return freed;
 }
 
 /**

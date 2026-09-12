@@ -181,6 +181,16 @@ export class SandboxEngine {
     if (this.lastDocument !== null) this.setDocument(this.lastDocument, options);
   }
 
+  /** Free the overlay's boxes. Called on every rebuild, and on teardown. */
+  private clearColliderOverlay(): void {
+    for (const child of [...this.colliderOverlay.children]) {
+      this.colliderOverlay.remove(child);
+      const mesh = child as THREE.LineSegments;
+      mesh.geometry.dispose();
+      (mesh.material as THREE.Material).dispose();
+    }
+  }
+
   /**
    * Light the scene at a clock time, without touching the document.
    *
@@ -239,12 +249,7 @@ export class SandboxEngine {
    * through a wall.
    */
   setColliderOverlay(colliders: readonly CuboidCollider[] | null): void {
-    for (const child of [...this.colliderOverlay.children]) {
-      this.colliderOverlay.remove(child);
-      const mesh = child as THREE.LineSegments;
-      mesh.geometry.dispose();
-      (mesh.material as THREE.Material).dispose();
-    }
+    this.clearColliderOverlay();
 
     if (colliders === null) {
       this.colliderOverlay.visible = false;
@@ -339,7 +344,19 @@ export class SandboxEngine {
    * is restored to the viewport's size either way.
    */
   async startRender(request: RenderRequest): Promise<Blob | null> {
-    this.cancelRender();
+    // Refused rather than queued, and rather than superseding.
+    //
+    // Superseding was what shipped: `cancelRender()` nulled the session without
+    // awaiting it, so the outgoing one stayed parked in its build or its poll
+    // and reached its `finally` minutes later — resizing the renderer back to
+    // *its* idea of the viewport, re-enabling orbit and popping the gizmo back
+    // on screen, all in the middle of the new render. Queuing would be
+    // friendlier, but the queue already exists a layer up in `renderQueue`,
+    // where it can show progress and write each file as it lands; a second,
+    // invisible queue in here would only be able to lose work quietly.
+    if (this.render !== null) {
+      throw new Error("A render is already running");
+    }
     const { shot, ...settings } = request;
 
     // A shot's solar override is the whole reason `garden-elevation` differs
@@ -353,6 +370,10 @@ export class SandboxEngine {
         : this.lastSolar;
 
     const renderScene = this.buildRenderScene(solar);
+    // Captured before the session resizes the renderer, and restored by this
+    // method rather than by the session: the renderer is the engine's, and only
+    // the engine knows whether anyone else has taken it over since.
+    const viewportSize = this.renderer.getSize(new THREE.Vector2());
     const camera = shot === undefined ? this.viewportRenderCamera(settings) : shotCamera(shot);
     const session = new PathTraceSession(this.renderer, renderScene, camera, {
       ...settings,
@@ -382,12 +403,40 @@ export class SandboxEngine {
       });
       return this.render === session ? await session.toBlob() : null;
     } finally {
+      // Ownership is released *first*, before anything that can throw.
+      //
+      // Disposal used to come first, and when it threw — it did, reaching into
+      // the tracer's internals — `this.render` stayed set, so the frame loop
+      // went on calling `step()` on a half-disposed session at full rate,
+      // forever. The tab pegged a core and stopped answering. Whatever else
+      // fails in here, the engine must first stop believing a render is live.
+      const owned = this.render === session || this.render === null;
+      if (owned) this.render = null;
+
       session.dispose();
+      // Only the clone's instance buffers, and nothing else.
+      //
+      // `InstancedMesh.copy` allocates a fresh `Float32Array` for
+      // `instanceMatrix`, which the renderer uploads as its own VBO;
+      // `Scene.clear()` only detaches children and frees none of it, so
+      // Greenhollow leaked six instance buffers per render. `InstancedMesh
+      // .dispose()` releases exactly those and leaves geometry and material
+      // alone — which matters, because the clone shares both with the live
+      // scene and disposing them would blank the viewport.
+      renderScene.traverse((object) => {
+        const instanced = object as THREE.InstancedMesh;
+        if (instanced.isInstancedMesh === true) instanced.dispose();
+      });
       renderScene.clear();
-      if (this.render === session) this.render = null;
-      this.orbit.enabled = true;
-      this.reattachSelection();
-      this.events.onRenderProgress(null);
+
+      // A session that has been superseded or torn down must not put shared
+      // state back: the renderer is no longer its to restore.
+      if (owned) {
+        this.renderer.setSize(viewportSize.x, viewportSize.y, false);
+        this.orbit.enabled = true;
+        this.reattachSelection();
+        this.events.onRenderProgress(null);
+      }
     }
   }
 
@@ -512,6 +561,44 @@ export class SandboxEngine {
     this.gizmo.detach();
     this.gizmo.dispose();
     this.orbit.dispose();
+
+    // Everything below this line the engine allocated itself and used to leave
+    // behind. With Vite HMR that is a fresh set per edit, and the browser caps
+    // WebGL contexts at about sixteen — after which the viewport goes black
+    // with no error, which is indistinguishable from the black-render bug.
+    this.sky.geometry.dispose();
+    (this.sky.material as THREE.Material).dispose();
+    this.selectionBox.geometry.dispose();
+    (this.selectionBox.material as THREE.Material).dispose();
+    // A 2048×2048 depth target, and `DirectionalLight.dispose()` does not touch
+    // it.
+    this.sun.shadow.dispose();
+    this.clearColliderOverlay();
+
     this.renderer.dispose();
+
+    /**
+     * Give the context back — but only if the canvas is going with us.
+     *
+     * `renderer.dispose()` in three 0.185 releases the renderer's own resources
+     * and never the context, and a browser allows only about sixteen. But
+     * `forceContextLoss()` is **permanent for that canvas**: nothing can ever
+     * get a context from it again.
+     *
+     * The canvas belongs to React, not to the engine, and React keeps the same
+     * node across a Fast Refresh — so calling this unconditionally meant the
+     * next engine's `new WebGLRenderer({ canvas })` failed outright and the
+     * viewport threw on every HMR update. (Measured, not reasoned: it took the
+     * app down on the first edit after this was added.) A reused canvas reuses
+     * its context anyway, so there is nothing to reclaim in that case.
+     *
+     * Deferred a turn because React runs this cleanup *before* it detaches the
+     * node, so "is it still in the document" is only answerable afterwards.
+     */
+    const canvas = this.canvas;
+    const renderer = this.renderer;
+    setTimeout(() => {
+      if (!canvas.isConnected) renderer.forceContextLoss();
+    }, 0);
   }
 }

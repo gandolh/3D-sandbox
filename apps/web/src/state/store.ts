@@ -39,6 +39,16 @@ export interface AppState {
   assetSizes: ReadonlyMap<string, readonly [number, number, number]>;
   theme: "dark" | "light";
   status: string;
+  /**
+   * Whether a path trace owns the GPU right now.
+   *
+   * Here rather than inside the engine because the controls that must not be
+   * touched during one — the scene picker, the context toggle, Save — are in
+   * the toolbar, nowhere near it. A render can last an hour, and switching
+   * scenes mid-render frees the geometry being traced while the queue goes on
+   * reporting success.
+   */
+  rendering: boolean;
 }
 
 let state: AppState = {
@@ -55,6 +65,7 @@ let state: AppState = {
   assetSizes: new Map(),
   theme: "dark",
   status: "Loading…",
+  rendering: false,
 };
 
 const listeners = new Set<() => void>();
@@ -134,6 +145,8 @@ export const setSceneId = (sceneId: string): void => set({ sceneId });
  */
 export const setPlayhead = (playhead: number): void => set({ playhead });
 export const setPlaying = (playing: boolean): void => set({ playing });
+
+export const setRendering = (rendering: boolean): void => set({ rendering });
 
 export const setAssetSizes = (
   assetSizes: ReadonlyMap<string, readonly [number, number, number]>,

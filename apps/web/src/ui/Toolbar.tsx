@@ -23,6 +23,22 @@ export function Toolbar({ onSave }: { onSave: () => void }) {
   const showColliders = useStore((s) => s.showColliders);
   const shotId = useStore((s) => s.shotId);
   const sceneId = useStore((s) => s.sceneId);
+  /**
+   * A render owns the GPU, and these controls can pull the ground from under it.
+   *
+   * Switching scenes calls `setDocument`, whose first act is to dispose every
+   * geometry and material the running trace is sampling — and because
+   * accumulation carries on from the BVH already uploaded, the queue writes
+   * files and reports success for a scene the user has navigated away from.
+   * The Context toggle regenerates for the same reason. Save serialises a
+   * document that is about to be replaced.
+   *
+   * Disabled rather than blocked-with-a-message: a control that looks live and
+   * silently corrupts an hour of work is worse than one that is plainly not
+   * available yet.
+   */
+  const rendering = useStore((s) => s.rendering);
+  const duringRender = rendering ? "A render is running" : undefined;
   const shots = doc?.shots ?? [];
   const shot = shots.find((s) => s.id === shotId);
 
@@ -33,8 +49,9 @@ export function Toolbar({ onSave }: { onSave: () => void }) {
         <select
           value={sceneId}
           onChange={(event) => setSceneId(event.target.value)}
-          title="Which scene is open"
-          className="rounded-sm border border-line bg-panel px-2 py-[3px] font-mono text-[11.5px] text-muted"
+          disabled={rendering}
+          title={duringRender ?? "Which scene is open"}
+          className="rounded-sm border border-line bg-panel px-2 py-[3px] font-mono text-[11.5px] text-muted disabled:opacity-40"
         >
           {SCENES.map((s) => (
             <option key={s.id} value={s.id}>
@@ -50,11 +67,15 @@ export function Toolbar({ onSave }: { onSave: () => void }) {
 
       <div className="flex-1" />
 
-      <label className="flex cursor-pointer items-center gap-1.5 font-mono text-[10px] tracking-wider text-muted uppercase">
+      <label
+        title={duringRender}
+        className="flex cursor-pointer items-center gap-1.5 font-mono text-[10px] tracking-wider text-muted uppercase has-disabled:cursor-default has-disabled:opacity-40"
+      >
         <input
           type="checkbox"
           checked={showContext}
           onChange={(event) => setShowContext(event.target.checked)}
+          disabled={rendering}
           className="accent-accent"
         />
         Context
@@ -81,7 +102,9 @@ export function Toolbar({ onSave }: { onSave: () => void }) {
       <button
         type="button"
         onClick={onSave}
-        className="rounded-sm border border-line bg-panel px-3 py-1.5 text-[12px] font-medium text-ink"
+        disabled={rendering}
+        title={duringRender}
+        className="rounded-sm border border-line bg-panel px-3 py-1.5 text-[12px] font-medium text-ink disabled:opacity-40"
       >
         Save
       </button>
@@ -126,11 +149,13 @@ export function Toolbar({ onSave }: { onSave: () => void }) {
           );
         }}
         title={
-          shot === undefined
+          duringRender ??
+          (shot === undefined
             ? "Path-trace the current viewport at 1280 × 720"
-            : `Path-trace "${shot.name}" · ${shot.render.width} × ${shot.render.height} · ${shot.render.samples} samples${shot.solar === undefined ? "" : ` · ${shot.solar.time}`}`
+            : `Path-trace "${shot.name}" · ${shot.render.width} × ${shot.render.height} · ${shot.render.samples} samples${shot.solar === undefined ? "" : ` · ${shot.solar.time}`}`)
         }
-        className="rounded-sm border border-accent bg-accent px-3 py-1.5 text-[12px] font-semibold text-accent-ink"
+        disabled={rendering}
+        className="rounded-sm border border-accent bg-accent px-3 py-1.5 text-[12px] font-semibold text-accent-ink disabled:opacity-40"
       >
         Render
       </button>
@@ -172,7 +197,8 @@ export function Toolbar({ onSave }: { onSave: () => void }) {
           )} samples, about ${formatDuration(
             estimateQueue(renderQueue(shots)).seconds,
           )} on the machine this was measured on. Each image downloads as it finishes; cancelling stops the queue.`}
-          className="rounded-sm border border-line bg-panel px-3 py-1.5 text-[12px] text-ink"
+          disabled={rendering}
+          className="rounded-sm border border-line bg-panel px-3 py-1.5 text-[12px] text-ink disabled:opacity-40"
         >
           Render all · ~{formatDuration(estimateQueue(renderQueue(shots)).seconds)}
         </button>

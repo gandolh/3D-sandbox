@@ -73,3 +73,57 @@ the wrong resolution, or minutes of work restart from zero, with no error shown.
   state.
 - `isRendering` has a caller or is gone.
 - `npm run check` exits 0.
+
+---
+
+## Outcome — 2026-09-12
+
+Both defects closed, and verified in the browser.
+
+**1 — A second render is refused, not merged and not superseded.** The brief
+asked for a decision with a reason, and the reason is that **a queue already
+exists a layer up**, in `renderQueue`, where it can show progress and write each
+file as it lands. A second, invisible queue inside the engine could only lose
+work quietly. So `startRender` throws if `this.render` is not null.
+
+**2 — Teardown belongs to whoever still owns the renderer.** The session no
+longer restores the renderer's size at all: `PathTraceSession.dispose()` frees
+GPU resources and nothing shared. The engine captures the viewport size before
+the session resizes and puts it back itself, but only when `this.render` is
+still this session or already null. A superseded session's idea of "previous"
+is the live session's *current* size, which is exactly how the canvas used to
+shrink mid-accumulation.
+
+The `|| null` half matters as much as the equality: after Cancel, `this.render`
+is null and the viewport still needs its size, orbit and gizmo back.
+
+**3 — The guard is on the store's flag, not on `isRendering`** — and finding out
+why took a browser check. `engine.isRendering` is still false when the second
+event arrives: `startRender` runs inside an async block, so two dispatches in
+the same tick both saw an idle engine. `setRendering(true)` is synchronous and
+closes that window; the engine's refusal stays as the backstop, and the flag is
+cleared in a `.finally` so it cannot get stuck true.
+
+`isRendering` now has a caller, as the brief required — just not the one it
+expected.
+
+**4 — The controls that can corrupt a render are disabled.** Scene picker,
+Context, Save and both Render buttons, with a title saying why. Disabled rather
+than blocked-with-a-message: a control that looks live and silently destroys an
+hour of work is worse than one that is plainly unavailable.
+
+**Verified in the browser** rather than in unit tests, because every path here
+needs a GL context. Two render requests dispatched in the same tick:
+
+```
+before: { render: false, save: false, picker: false, context: false,
+          status: "12 model(s) loaded" }
+after:  { render: true,  save: true,  picker: true,  context: true,
+          status: "A render is already running" }
+```
+
+(`true` being `disabled`.) Then reloaded and switched Greenhollow → Elmsgate to
+confirm the engine's new teardown leaves a working app behind: 32,611 tris, the
+scene renders.
+
+`npm run check` clean, 266 tests.

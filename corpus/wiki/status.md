@@ -37,15 +37,16 @@ is operated there by hand. Nothing in `apps/` or `packages/` waits on it.
 
 Four audit rounds on 2026-09-12 — twelve lenses in all — produced **24 briefs
 (22–45)**. The full ranked lists are in [log.md](../log.md). Implementation
-started the same day; **22, 23 and 39 are done**.
+started the same day; **22, 23, 39, 40 and 41 are done**.
 
-Three live bugs remain:
+One live bug remains: villa's **forest grows through all six neighbouring
+houses** (brief 42).
 
-- **Every render leaks GPU memory**; a four-shot queue compounds it until the
-  context is lost.
-- A **scene switch during a render** frees the geometry it is tracing, and the
-  queue reports success anyway.
-- Villa's **forest grows through all six neighbouring houses**.
+**Nothing in this repo can path-trace on the current machine.** WSL2 with no
+hardware GL — the browser reports no `KHR_parallel_shader_compile`, and the
+path-tracing shader's synchronous compile does not finish. The viewport, the
+generator and everything headless are unaffected; only the render path cannot be
+exercised end-to-end here. Brief 40's outcome has the detail.
 
 The theme across the audit is one thing said three ways — this codebase's tests
 assert that output exists and is roughly the right size, not that it is correct.
@@ -98,8 +99,8 @@ migrations, and the two unbaked conifers that only the regression fixture uses.
 | 37 | [A home for shared primitives](../briefs/todo/37-a-home-for-shared-primitives.md) | todo |
 | 38 | [Tests that do not hold weight](../briefs/todo/38-tests-that-do-not-hold-weight.md) | todo |
 | 39 | [Switching scenes keeps the first one's assets](../briefs/done/39-switching-scenes-keeps-the-first-ones-assets.md) | done |
-| 40 | [Every render leaks the GPU](../briefs/todo/40-every-render-leaks-the-gpu.md) | todo |
-| 41 | [A render can be undermined while it runs](../briefs/todo/41-a-render-can-be-undermined-while-it-runs.md) | todo |
+| 40 | [Every render leaks the GPU](../briefs/done/40-every-render-leaks-the-gpu.md) | done |
+| 41 | [A render can be undermined while it runs](../briefs/done/41-a-render-can-be-undermined-while-it-runs.md) | done |
 | 42 | [Bring the fixture forward](../briefs/todo/42-bring-the-fixture-forward.md) | todo |
 | 43 | [Impostor quads are the wrong shape](../briefs/todo/43-impostor-quads-are-the-wrong-shape.md) | todo |
 | 44 | [The dome and the render disagree after sunset](../briefs/todo/44-the-dome-and-the-render-disagree-after-sunset.md) | todo |

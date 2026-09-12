@@ -9,11 +9,12 @@ import {
   setAssetSizes,
   setPlayhead,
   setPlaying,
+  setRendering,
   setStatus,
   useStore,
 } from "../state/store.js";
 import { translateWall } from "../lib/entities.js";
-import { collidersFor, sizesFromMap } from "../lib/physics.js";
+import { collidersFor, disposePhysics, sizesFromMap } from "../lib/physics.js";
 import { loadAssets } from "../engine/AssetLoader.js";
 import { Player } from "../engine/Player.js";
 import type { RenderRequestEvent } from "../engine/queue.js";
@@ -122,14 +123,36 @@ export function Viewport() {
         setPlaying(false);
         commit();
       }
+      // Read from the store, not from the engine.
+      //
+      // `engine.isRendering` is not true yet at this point: `startRender` runs
+      // inside the async block below, so two events dispatched in the same tick
+      // — a double click, a keyboard repeat — both saw an idle engine and both
+      // started. The store flag is set synchronously, right here, which is the
+      // only thing that closes that window. The engine still refuses, as the
+      // backstop; this is what turns a refusal into something readable.
+      if (getState().rendering || engine.isRendering) {
+        setStatus("A render is already running");
+        return;
+      }
+      setRendering(true);
       void (async () => {
         let done = 0;
         for (const [index, request] of queue.entries()) {
-          const blob = await engine.startRender(
-            queue.length === 1
-              ? request
-              : { ...request, queue: { index: index + 1, total: queue.length } },
-          );
+          let blob: Blob | null;
+          try {
+            blob = await engine.startRender(
+              queue.length === 1
+                ? request
+                : { ...request, queue: { index: index + 1, total: queue.length } },
+            );
+          } catch (error) {
+            // Outside the try/catch below until now, so a render that threw
+            // took the whole queue down with an unhandled rejection and no
+            // message — including every shot after it, already paid for.
+            setStatus(`Render failed: ${String(error)}`);
+            break;
+          }
           // Null means cancelled, and cancelling one shot cancels the queue —
           // otherwise the only way out of an hour of renders is to close the tab.
           if (blob === null) break;
@@ -153,7 +176,11 @@ export function Viewport() {
         if (queue.length > 1 && done < queue.length) {
           setStatus(`Queue stopped after ${String(done)} of ${String(queue.length)}`);
         }
-      })();
+      })().finally(() => {
+        // Unconditionally: a flag that can get stuck true disables the Render
+        // button for the rest of the session, and the only way out is a reload.
+        setRendering(false);
+      });
     };
     const onFrame = (event: Event): void => {
       engine.frameShot((event as CustomEvent<Shot>).detail);
@@ -239,6 +266,11 @@ export function Viewport() {
 
     return () => {
       assetLoad.abort();
+      // The Rapier world outlives the document it describes otherwise: it is
+      // cached module-side by revision, and nothing had ever freed it, so every
+      // drop-to-rest since the tab opened stayed resident in the WASM heap.
+      disposePhysics();
+      setRendering(false);
       player.dispose();
       playerRef.current = null;
       window.removeEventListener("solstice:transport", onTransport);
