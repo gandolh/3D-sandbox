@@ -95,7 +95,7 @@ migrations, and the two unbaked conifers that only the regression fixture uses.
 | 35 | [The app cannot tell you what happened](../briefs/todo/35-the-app-cannot-tell-you-what-happened.md) | todo |
 | 36 | [Reach Cancel without a mouse](../briefs/done/36-reach-cancel-without-a-mouse.md) | done |
 | 37 | [A home for shared primitives](../briefs/done/37-a-home-for-shared-primitives.md) | done |
-| 38 | [Tests that do not hold weight](../briefs/todo/38-tests-that-do-not-hold-weight.md) | todo |
+| 38 | [Tests that do not hold weight](../briefs/done/38-tests-that-do-not-hold-weight.md) | done |
 | 39 | [Switching scenes keeps the first one's assets](../briefs/done/39-switching-scenes-keeps-the-first-ones-assets.md) | done |
 | 40 | [Every render leaks the GPU](../briefs/done/40-every-render-leaks-the-gpu.md) | done |
 | 41 | [A render can be undermined while it runs](../briefs/done/41-a-render-can-be-undermined-while-it-runs.md) | done |

@@ -81,3 +81,52 @@ guard the test exists to be.
   changes.
 - `npm run check` exits 0 (with brief 22 applied, or with the test written to
   fail until it is — say which in the outcome note).
+
+---
+
+## Outcome — 2026-09-12
+
+**1 — Already done, by brief 22.** The `expect(placement.rotationY).toBe(30)`
+assertion is gone; `colliders.test.ts` now asserts `toBeCloseTo(degToRad(30))`
+and, beside it, turns the yaw back into a **direction** — a quarter turn must
+send the box's local +X axis to −Z — rather than comparing against the same
+function the implementation calls. Recorded here so the brief's first item is
+closed rather than silently skipped.
+
+**2 — The vacuous roof test is now one that can fail.** It matched on an id
+prefix against a function that never mentions `doc.subject.roofs`, so it could
+not fail from any logic `deriveColliders` has — and a roof collider added under
+an id not literally beginning "roof" would slip straight past the guard.
+
+Rewritten to **add a roof and count**: build the colliders, add a real gable
+roof to the document, and assert the count is unchanged. That is a claim about
+the function's inputs, which is the claim the test was trying to make. Matching
+on `source` — the brief's other suggestion — was rejected because `"roof"` is
+not in the `source` union, so the assertion would have needed a cast to say
+anything, and a test that needs a cast to express its own premise is halfway
+back to where this started.
+
+**3 — `AssetLoader` has a success path now.** The old mapping test stubbed
+`materials: []`, so `maps("wall")` was undefined **whatever the key formula
+did**. It is kept, honestly retitled *"yields no maps when the library holds
+none"*, and five real tests added:
+
+- a model carrying geometry is admitted, with its measured size;
+- a glTF that parses but carries **no mesh** is gated out — not a failure path,
+  the file loads fine, and letting it in replaces a visible proxy with nothing;
+- colour space per **role**: `map` → sRGB, `normalMap` and `roughnessMap` →
+  `NoColorSpace`, because normal and roughness are data and sRGB-decoding them
+  makes surfaces subtly wrong in a way nobody traces back to the loader;
+- the key formula, with a **decoy**: a second document material spelled
+  `source: "clay_plaster", slug: "polyhaven"`, which is the one that would
+  resolve if the formula were reversed. `wall` defined, `decoy` undefined;
+- an impostor atlas and its metadata loading together, including mipmaps off
+  and clamp wrapping.
+
+**Verified by mutation, not by inspection.** Swapping line 172 to
+`` `${slug}/${source}` `` — the brief's exact example — turns **three** tests
+red. Before this brief it turned none red. That is the measurement the brief
+was asking for, and it is the only way to know a test of this kind holds
+weight.
+
+`npm run check` clean, **355 tests** (was 350).

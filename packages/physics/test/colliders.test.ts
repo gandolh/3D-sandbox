@@ -118,7 +118,40 @@ describe("scene colliders", () => {
   });
 
   it("omits roofs — placing furniture on a roof is not a use case", () => {
-    expect(deriveColliders(baseScene()).some((c) => c.id.startsWith("roof"))).toBe(false);
+    // Asserted by *adding a roof and counting*, not by looking for an id that
+    // starts with "roof".
+    //
+    // `colliders.ts` never mentions `doc.subject.roofs`, so an id-prefix check
+    // could not fail from any logic the function has — and if roof support were
+    // ever added under an id that did not literally begin "roof", it would slip
+    // straight past the guard it exists to be. A second roof changing nothing
+    // is a claim about the function's inputs, which is the claim being made.
+    const doc = baseScene();
+    const before = deriveColliders(doc).length;
+    const withRoof: SceneDocument = {
+      ...doc,
+      subject: {
+        ...doc.subject,
+        roofs: [
+          {
+            id: "roof-main",
+            kind: "gable",
+            footprint: [
+              [-0.4, -0.4],
+              [6.4, -0.4],
+              [6.4, 5.4],
+              [-0.4, 5.4],
+            ],
+            baseElevation: 2.7,
+            pitch: 32,
+            overhang: 0.4,
+            material: "m",
+            ridgeBearing: 0,
+          },
+        ],
+      },
+    };
+    expect(deriveColliders(withRoof)).toHaveLength(before);
   });
 
   it("includes neighbouring masses so nothing is placed inside one", () => {
