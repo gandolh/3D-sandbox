@@ -9,6 +9,7 @@ export function Inspector() {
   const doc = useStore((s) => s.document);
   const selection = useStore((s) => s.selection);
   const findings = useStore((s) => s.findings);
+  const loadError = useStore((s) => s.loadError);
 
   const entity = doc !== null && selection !== null ? findEntity(doc, selection) : null;
   const relevant =
@@ -19,7 +20,29 @@ export function Inspector() {
       <PanelTitle>Inspector</PanelTitle>
       <Scroll>
         <div className="px-3 pb-4">
-          {entity === null ? (
+          {loadError !== null ? (
+            /*
+              A failed scene and an empty selection are different states, and
+              this panel used to render the same sentence for both — inviting
+              the user to select something in a scene that never loaded. This
+              one says what went wrong and what to do about it.
+            */
+            <div
+              role="alert"
+              className="mt-3 rounded-sm border border-danger/40 bg-danger/10 p-2 text-[11px] leading-snug text-danger"
+            >
+              <span className="mb-1 block font-mono text-[9.5px] tracking-[0.1em] uppercase">
+                Error · scene not loaded
+              </span>
+              {loadError}
+              <span className="mt-1.5 block text-muted">
+                Nothing is selectable until a scene loads. Pick another from the
+                toolbar, or fix the file and reload.
+              </span>
+            </div>
+          ) : doc === null ? (
+            <p className="py-6 text-center text-[11.5px] text-subtle">Loading the scene…</p>
+          ) : entity === null ? (
             <p className="py-6 text-center text-[11.5px] text-subtle">
               Select something in the viewport or the tree.
             </p>
@@ -51,8 +74,17 @@ export function Inspector() {
                       : "border-warn/40 bg-warn/10 text-warn"
                   }`}
                 >
+                  {/*
+                    The severity in words, not only in hue. This line used to
+                    carry the rule name alone and leave `text-danger` against
+                    `text-warn` to say whether the document is *broken* or
+                    merely suspect — which is the part a user acts on, and the
+                    part a colour-blind user or a greyscale screenshot loses.
+                    The footer counts always used text; the per-finding list a
+                    user actually reads did not.
+                  */}
                   <span className="mb-1 block font-mono text-[9.5px] tracking-[0.1em] uppercase">
-                    {finding.rule}
+                    {finding.severity === "error" ? "Error" : "Warning"} · {finding.rule}
                   </span>
                   {finding.message}
                 </div>

@@ -15,7 +15,21 @@
   --color-input: #1c1f24;
   --color-ink: #e8eaed;
   --color-muted: #8e959d;
-  --color-subtle: #5f666e;
+  /* Contrast against --color-chrome / --color-panel, WCAG AA needs 4.5:1 for
+     body text. Measured 2026-09-12; recompute before changing either ground.
+
+       --color-muted   6.15 / 5.87
+       --color-subtle  4.99 / 4.76   (was #5f666e — 3.20 / 3.06, below the floor)
+
+     `subtle` is the app's own status line, the inspector's empty state, every
+     opening-kind label, badge and axis label: the one place the app says what
+     it just did. It was the least legible text in the interface. */
+  --color-subtle: #7e858d;
+  /* Genuinely de-emphasised, and **never text**. The old `subtle` tone, kept
+     for ornament — currently the scrollbar thumb. A tone this quiet cannot be
+     made legible and still read as quiet; splitting the two is the only way to
+     have both. */
+  --color-faint: #5f666e;
   --color-accent: #e8a33d;
   --color-accent-ink: #1a1204;
   --color-accent-soft: #2b2110;
@@ -38,7 +52,11 @@
   --color-input: #ffffff;
   --color-ink: #1a1c1f;
   --color-muted: #5c6168;
-  --color-subtle: #8b8f95;
+  /*   --color-muted   5.24 / 5.74
+       --color-subtle  4.71 / 5.15   (was #8b8f95 — 2.73 / 2.99, the worse of
+                                      the two themes) */
+  --color-subtle: #64686e;
+  --color-faint: #8b8f95;
   --color-accent: #9a5a12;
   --color-accent-ink: #ffffff;
   --color-accent-soft: #f7e8cf;

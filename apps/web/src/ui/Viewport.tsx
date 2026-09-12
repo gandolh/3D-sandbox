@@ -10,6 +10,7 @@ import {
   setPlayhead,
   setPlaying,
   setRendering,
+  setAlert,
   setStatus,
   useStore,
 } from "../state/store.js";
@@ -154,7 +155,7 @@ export function Viewport() {
             // Outside the try/catch below until now, so a render that threw
             // took the whole queue down with an unhandled rejection and no
             // message — including every shot after it, already paid for.
-            setStatus(`Render failed: ${String(error)}`);
+            setAlert(`Render failed: ${String(error)}`);
             break;
           }
           // Null means cancelled, and cancelling one shot cancels the queue —
@@ -167,7 +168,7 @@ export function Viewport() {
             await save(blob, request, directory);
           } catch (error) {
             // A write that fails must not be counted as a render that landed.
-            setStatus(`Could not write ${filename(request)}: ${String(error)}`);
+            setAlert(`Could not write ${filename(request)}: ${String(error)}`);
             break;
           }
           done += 1;
@@ -178,7 +179,7 @@ export function Viewport() {
           );
         }
         if (queue.length > 1 && done < queue.length) {
-          setStatus(`Queue stopped after ${String(done)} of ${String(queue.length)}`);
+          setAlert(`Queue stopped after ${String(done)} of ${String(queue.length)}`);
         }
       })().finally(() => {
         // Unconditionally: a flag that can get stuck true disables the Render

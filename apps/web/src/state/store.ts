@@ -40,6 +40,30 @@ export interface AppState {
   theme: "dark" | "light";
   status: string;
   /**
+   * Why there is no document, when there is none.
+   *
+   * Separate from `status` because they answer different questions and one of
+   * them has to survive the next message. A scene that fails to parse used to
+   * leave `document` null and say so **only** in the status line — so the
+   * Inspector rendered its ordinary "Select something in the viewport or the
+   * tree" empty state, inviting the user to select something in a scene that
+   * never loaded, and the one contradicting signal was a strip of text that the
+   * next status overwrote.
+   */
+  loadError: string | null;
+  /**
+   * Something failed and the user must be told now, not at the next pause.
+   *
+   * Separate from `status` because the two map onto the two live-region
+   * politenesses: `status` is `aria-live="polite"` and waits its turn, which is
+   * right for "12 model(s) loaded" and wrong for "Render failed" after forty
+   * minutes of GPU. A failure is announced with `role="alert"`.
+   *
+   * Also shown visually, in the footer — this is not a screen-reader-only
+   * channel with a sighted equivalent that says something different.
+   */
+  alert: string | null;
+  /**
    * Whether a path trace owns the GPU right now.
    *
    * Here rather than inside the engine because the controls that must not be
@@ -65,6 +89,8 @@ let state: AppState = {
   assetSizes: new Map(),
   theme: "dark",
   status: "Loading…",
+  loadError: null,
+  alert: null,
   rendering: false,
 };
 
@@ -106,8 +132,20 @@ export function loadDocument(document: SceneDocument, sceneId?: string): void {
     playing: false,
     ...(sceneId === undefined ? {} : { sceneId }),
     status: `${document.title} loaded`,
+    loadError: null,
   });
 }
+
+/** No document, and this is why. Clears when one loads. */
+export const setLoadError = (loadError: string): void =>
+  set({
+    loadError,
+    document: null,
+    findings: [],
+    selection: null,
+    status: loadError,
+    alert: loadError,
+  });
 
 export const select = (selection: string | null): void => set({ selection });
 
@@ -122,7 +160,11 @@ export const setShowColliders = (showColliders: boolean): void =>
 export const setShowContext = (showContext: boolean): void =>
   set({ showContext, revision: state.revision + 1 });
 
-export const setStatus = (status: string): void => set({ status });
+/** The ordinary channel: polite, and it clears any standing alert. */
+export const setStatus = (status: string): void => set({ status, alert: null });
+
+/** The interrupting one. Shown in the footer *and* announced immediately. */
+export const setAlert = (alert: string): void => set({ alert, status: alert });
 
 export const setShotId = (shotId: string | null): void => set({ shotId });
 

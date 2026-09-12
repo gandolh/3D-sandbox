@@ -19,7 +19,7 @@ export function Scroll({ children }: { children: ReactNode }) {
         orientation="vertical"
         className="m-0.5 flex w-1.5 justify-center rounded opacity-0 transition-opacity delay-150 data-[hovering]:opacity-100 data-[hovering]:delay-0 data-[scrolling]:opacity-100 data-[scrolling]:delay-0"
       >
-        <ScrollArea.Thumb className="w-full rounded bg-subtle/60" />
+        <ScrollArea.Thumb className="w-full rounded bg-faint/60" />
       </ScrollArea.Scrollbar>
     </ScrollArea.Root>
   );

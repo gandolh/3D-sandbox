@@ -5,11 +5,12 @@ import { SceneTree } from "./ui/SceneTree.jsx";
 import { Timeline } from "./ui/Timeline.jsx";
 import { Toolbar } from "./ui/Toolbar.jsx";
 import { Viewport } from "./ui/Viewport.jsx";
-import { getState, loadDocument, setStatus, useStore } from "./state/store.js";
+import { getState, loadDocument, setLoadError, setStatus, useStore } from "./state/store.js";
 import { DEFAULT_SCENE_ID, sceneById } from "./scenes.js";
 
 export function App() {
   const status = useStore((s) => s.status);
+  const alert = useStore((s) => s.alert);
   const findings = useStore((s) => s.findings);
   const errors = findings.filter((f) => f.severity === "error").length;
 
@@ -20,12 +21,14 @@ export function App() {
   useEffect(() => {
     const scene = sceneById(sceneId) ?? sceneById(DEFAULT_SCENE_ID);
     if (scene === undefined) {
-      setStatus("No scenes are bundled in this build");
+      setLoadError("No scenes are bundled in this build");
       return;
     }
     const parsed = SceneDocument.safeParse(scene.json);
     if (!parsed.success) {
-      setStatus(`${scene.title} failed to parse: ${parsed.error.issues[0]?.message ?? "unknown"}`);
+      setLoadError(
+        `${scene.title} failed to parse: ${parsed.error.issues[0]?.message ?? "unknown"}`,
+      );
       return;
     }
     loadDocument(parsed.data, scene.id);
@@ -95,8 +98,35 @@ export function App() {
         <Inspector />
       </div>
       <Timeline />
-      <footer className="flex h-[22px] shrink-0 items-center gap-3 border-t border-line bg-chrome px-3.5 font-mono text-[10px] text-subtle">
-        <span>{status}</span>
+      {/*
+        The one place the app says what it just did — a save, a drop, a scene
+        load, a parse failure, every step of a render queue — and until now it
+        said it only to people looking at this strip of the screen.
+
+        `role="status"` is `aria-live="polite"`: announced at the next pause,
+        never interrupting. `aria-atomic` so the whole line is read rather than
+        the changed word alone, which for "12 model(s) loaded" → "3 model(s)
+        loaded" would otherwise announce just a number.
+      */}
+      <footer
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        className="flex h-[22px] shrink-0 items-center gap-3 border-t border-line bg-chrome px-3.5 font-mono text-[10px] text-subtle"
+      >
+        {/*
+          The alert takes the footer's own slot rather than sitting beside it,
+          so the sighted reading and the announced one are the same sentence.
+          `setStatus` clears it, so an alert stays until something else happens
+          rather than until the next repaint.
+        */}
+        {alert === null ? (
+          <span>{status}</span>
+        ) : (
+          <span role="alert" className="text-danger">
+            {status}
+          </span>
+        )}
         {errors > 0 && <span className="text-danger">{errors} error(s)</span>}
         {errors === 0 && findings.length > 0 && (
           <span className="text-warn">{findings.length} warning(s)</span>

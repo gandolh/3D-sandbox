@@ -92,7 +92,7 @@ migrations, and the two unbaked conifers that only the regression fixture uses.
 | 32 | [Type-check the scenes](../briefs/done/32-typecheck-the-scenes.md) | done |
 | 33 | [Make the README true](../briefs/done/33-make-the-readme-true.md) | done |
 | 34 | [A truncated download is forever](../briefs/todo/34-a-truncated-download-is-forever.md) | todo |
-| 35 | [The app cannot tell you what happened](../briefs/todo/35-the-app-cannot-tell-you-what-happened.md) | todo |
+| 35 | [The app cannot tell you what happened](../briefs/done/35-the-app-cannot-tell-you-what-happened.md) | done |
 | 36 | [Reach Cancel without a mouse](../briefs/done/36-reach-cancel-without-a-mouse.md) | done |
 | 37 | [A home for shared primitives](../briefs/done/37-a-home-for-shared-primitives.md) | done |
 | 38 | [Tests that do not hold weight](../briefs/done/38-tests-that-do-not-hold-weight.md) | done |

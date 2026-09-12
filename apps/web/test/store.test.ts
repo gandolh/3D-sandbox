@@ -5,8 +5,11 @@ import {
   getState,
   loadDocument,
   setPlayhead,
+  setAlert,
+  setLoadError,
   setShotId,
   setSolar,
+  setStatus,
 } from "../src/state/store.js";
 import scene from "../../../scenes/greenhollow.scene.json";
 
@@ -55,5 +58,46 @@ describe("cheap setters", () => {
     expect(getState().document).toBe(before.document);
     expect(getState().revision).toBe(before.revision);
     expect(getState().playhead).toBe(4.2);
+  });
+});
+
+describe("what the app tells you", () => {
+  it("distinguishes no document from nothing selected", () => {
+    // These are different states, and the Inspector rendered the same sentence
+    // for both — inviting the user to select something in a scene that never
+    // loaded. `document === null` alone cannot tell them apart, because it is
+    // also true for a moment on every load.
+    loadDocument(SceneDocument.parse(scene));
+    expect(getState().loadError).toBeNull();
+
+    setLoadError("Greenhollow failed to parse: expected number");
+    expect(getState().document).toBeNull();
+    expect(getState().loadError).toMatch(/failed to parse/);
+    // And the selection is dropped, because it pointed into a document that is
+    // no longer there.
+    expect(getState().selection).toBeNull();
+  });
+
+  it("clears a load error when a document arrives", () => {
+    setLoadError("broken");
+    loadDocument(SceneDocument.parse(scene));
+    expect(getState().loadError).toBeNull();
+  });
+
+  it("keeps the polite and the interrupting channels apart", () => {
+    // `status` is announced by a polite live region and waits its turn, which
+    // is right for "12 model(s) loaded" and wrong for "Render failed" after
+    // forty minutes of GPU. Both show in the same footer slot, so the sighted
+    // reading and the announced one are one sentence.
+    setStatus("12 model(s) loaded");
+    expect(getState().alert).toBeNull();
+
+    setAlert("Render failed: out of memory");
+    expect(getState().alert).toBe("Render failed: out of memory");
+    expect(getState().status).toBe("Render failed: out of memory");
+
+    // An alert stands until something else actually happens.
+    setStatus("Saved");
+    expect(getState().alert).toBeNull();
   });
 });

@@ -41,6 +41,32 @@ export function RenderOverlay({
     return () => window.removeEventListener("keydown", onKey);
   }, [onCancel]);
 
+  /*
+    Announced on milestones, never on samples.
+
+    The overlay's numbers change many times a second; a live region carrying
+    them would read the sample counter aloud continuously and be turned off.
+    What a person actually needs is the phase and the queue position — "Shot 2
+    of 4, path tracing" — so the announcement is built from those alone and is
+    therefore only a handful of strings over an hour.
+  */
+  const phase = progress.phase;
+  const announcement = [
+    progress.queue === undefined
+      ? null
+      : `Shot ${progress.queue.index} of ${progress.queue.total}`,
+    phase === "building"
+      ? "building acceleration structure"
+      : phase === "done"
+        ? "render complete"
+        : phase === "cancelled"
+          ? "render cancelled"
+          : "path tracing",
+    progress.label,
+  ]
+    .filter((part): part is string => part !== undefined && part !== null)
+    .join(", ");
+
   const building = progress.phase === "building";
   const pct = building
     ? progress.build * 100
@@ -48,6 +74,9 @@ export function RenderOverlay({
 
   return (
     <div className="pointer-events-auto absolute inset-x-0 bottom-0 flex items-center gap-4 border-t border-line bg-chrome/95 px-4 py-3 backdrop-blur">
+      <span role="status" aria-live="polite" aria-atomic="true" className="sr-only">
+        {announcement}
+      </span>
       <div className="min-w-0 flex-1">
         <div className="mb-1.5 flex items-baseline gap-3 font-mono text-[11px]">
           <span className="font-medium tracking-wider text-accent uppercase">
