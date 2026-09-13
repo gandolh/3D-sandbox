@@ -79,3 +79,32 @@ that is not moving, for as long as it stays selected.
 - Scrubbing the timeline no longer recomputes `dayBounds` per frame.
 - The selection outline still tracks a dragged object exactly as it does now.
 - `npm run check` exits 0.
+
+---
+
+## Outcome — 2026-09-13
+
+**1 — `dayBounds` hoisted out of the per-frame memo.** It now keys on
+`[doc?.site, doc?.solar]` while `sunPosition` keeps `[doc, minutes]`, which is
+the only one of the two that genuinely changes per frame.
+
+The justification is in `dayBounds` itself: it opens with
+`localToUtc(solar.date, "12:00", …)`, pinning its own time to noon, so the
+clock it is handed cannot affect its answer. A new test in
+`packages/solar/test/bounds.test.ts` asserts exactly that property — the same
+date at 00:00, 06:30, 17:42 and 23:59 gives a byte-identical result — plus the
+converse, that a different date *does* change it. That pair is what makes the
+hoist safe rather than merely faster.
+
+**2 — The selection outline moved from the frame loop to `objectChange`.**
+`TransformControls` emits that event when it actually moves something, so the
+box is rebuilt on a drag and on a change of selection, and not otherwise.
+
+The frame loop is now two lines: `orbit.update()` and `render()`. Previously it
+also called `BoxHelper.setFromObject`, which traverses the selected object's
+subtree and rebuilds its bounding box from geometry — for as long as *anything*
+was selected, dragging or not. Selecting a placement backed by a multi-mesh
+glTF and then simply orbiting ran that traversal 60 times a second for an
+object standing perfectly still.
+
+`npm run check` clean, **454 tests**.

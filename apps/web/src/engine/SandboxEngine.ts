@@ -122,6 +122,17 @@ export class SandboxEngine {
     this.gizmo = new TransformControls(this.camera, canvas);
     this.gizmo.setMode("translate");
     this.gizmo.showY = false; // walls live on their level; vertical drag is meaningless
+    // The selection outline follows the object it outlines, on the two events
+    // that can actually move it: a drag, and a change of selection.
+    //
+    // It used to be recomputed in the frame loop for as long as *anything* was
+    // selected, dragging or not — and `BoxHelper.setFromObject` traverses the
+    // object's subtree and rebuilds its bounding box from geometry every call.
+    // Selecting a placement backed by a multi-mesh glTF and then just orbiting
+    // ran that traversal 60 times a second for an object standing still.
+    this.gizmo.addEventListener("objectChange", () => {
+      if (this.gizmo.object !== undefined) this.selectionBox.setFromObject(this.gizmo.object);
+    });
     this.gizmo.addEventListener("dragging-changed", (event) => {
       const dragging = (event as unknown as { value: boolean }).value;
       this.orbit.enabled = !dragging;
@@ -589,9 +600,6 @@ export class SandboxEngine {
     }
 
     this.orbit.update();
-    if (this.selectionBox.visible && this.gizmo.object !== undefined) {
-      this.selectionBox.setFromObject(this.gizmo.object);
-    }
     this.renderer.render(this.scene, this.camera);
   };
 

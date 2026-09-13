@@ -49,18 +49,30 @@ export function Timeline() {
       : undefined;
   const minutes = played ?? (doc === null ? 0 : clockToMinutes(doc.solar.time));
 
+  /**
+   * Sunrise and sunset depend on the **date**, not on the clock.
+   *
+   * `dayBounds` opens by pinning its own time to noon — `localToUtc(solar.date,
+   * "12:00", …)` — so the time-of-day it is handed is irrelevant to its answer.
+   * It used to sit in the same memo as `sunPosition`, keyed on `[doc, minutes]`,
+   * and `minutes` changes on every `requestAnimationFrame` during playback. So
+   * four astronomical calculations were redone ~60 times a second for four
+   * clock times that are identical all day.
+   */
+  const bounds = useMemo(
+    () => (doc === null ? null : dayBounds(doc.site, doc.solar)),
+    [doc?.site, doc?.solar],
+  );
+
+  // This one genuinely does change every frame, which is why the memo exists.
   const solarState = useMemo(() => {
     if (doc === null) return null;
     const solar = { ...doc.solar, time: minutesToClock(minutes) };
-    return {
-      position: sunPosition(doc.site, solar),
-      bounds: dayBounds(doc.site, solar),
-      clock: solar.time,
-    };
+    return { position: sunPosition(doc.site, solar), clock: solar.time };
   }, [doc, minutes]);
 
-  if (doc === null || solarState === null) return null;
-  const { position, bounds } = solarState;
+  if (doc === null || solarState === null || bounds === null) return null;
+  const { position } = solarState;
   const pct = (minutes / (HOURS * 60)) * 100;
   const bandStart =
     bounds.sunrise === null
