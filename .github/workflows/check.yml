@@ -1,0 +1,45 @@
+# The gate that already exists, run by something other than a person
+# remembering to.
+#
+# `npm run check` is typecheck × 3, 454 tests, the scene build, the lint and the
+# corpus lint — 9 s warm. Two things it covers are only checked here and
+# nowhere else: `asset-resolves`, which is the only thing standing between an
+# invented Poly Haven slug and a committed scene (eight of them shipped once
+# before that rule was armed), and `corpus/lint.sh`, which is the machinery the
+# whole brief workflow rests on.
+name: check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# A second push supersedes the first; there is nothing to learn from a run
+# against a commit that has already been replaced.
+concurrency:
+  group: check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          # Matches `engines.node` in the root package.json. Node's
+          # type-stripping runs `scenes/build.ts` and `assets/download-list.ts`
+          # directly, so the version is load-bearing rather than incidental.
+          node-version: "22.12"
+          cache: npm
+
+      - run: npm ci
+
+      # `check` does not build the packages first, and the workspaces import
+      # each other's `dist`. Locally that is already there; on a clean checkout
+      # it is not.
+      - run: npm run build
+
+      - run: npm run check
