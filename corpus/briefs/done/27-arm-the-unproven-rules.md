@@ -128,3 +128,14 @@ wins; the change is one comparison and it came with the decision that defines
 it. Nothing else in the linter was altered.
 
 `npm run check` clean, **350 tests** (was 324). All three scenes build clean.
+
+### Verification pass — 2026-09-13
+
+**One acceptance criterion was met only incidentally.** *"A duplicate `run` id
+is an error."* What the first pass tested was a run colliding with a **wall**
+id — which passes on the old rule too, because the wall's id was already
+claimed. Two runs sharing an id, the case that was actually broken, had no test.
+
+Three added: two runs sharing an id is an error at `subject.runs[1]`, two
+differently-named runs are left alone, and two `animation.tracks` sharing an id
+is an error — the other tier the doc comment claimed and the rule did not walk.

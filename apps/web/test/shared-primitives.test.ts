@@ -102,11 +102,47 @@ describe("scatter instance count", () => {
     expect(scatterInstances(f)).toHaveLength(estimateScatterInstances(f).instances);
   });
 
-  it("places exactly what the estimate promised, in rows", () => {
-    const f = field({ arrangement: "rows", rowSpacing: [3, 4] });
-    // A rectangle with no exclusions is the case where the estimate is exact
-    // rather than proportional, so equality is the right assertion here.
+  // Every arrangement, and every *shape* — the brief's acceptance criterion is
+  // "the same number for every arrangement", and the first version of this
+  // tested only a rectangle. On a rectangle the old estimate happened to be
+  // exact; on an L it quoted 130 against 100 placed, 30 % over.
+  const L = [
+    [0, 0],
+    [0, 40],
+    [20, 40],
+    [20, 20],
+    [40, 20],
+    [40, 0],
+  ];
+  const hole = [
+    [0, 0],
+    [0, 10],
+    [10, 10],
+    [10, 0],
+  ];
+  const straddling = [
+    [30, 10],
+    [30, 30],
+    [60, 30],
+    [60, 10],
+  ];
+
+  it.each([
+    ["rows, rectangle", { arrangement: "rows", rowSpacing: [3, 4] }],
+    ["rows, with an exclusion", { arrangement: "rows", rowSpacing: [3, 4], exclude: [hole] }],
+    ["rows, concave field", { arrangement: "rows", rowSpacing: [3, 4], area: L }],
+    ["scattered, with an exclusion", { exclude: [hole] }],
+    ["scattered, straddling exclusion", { exclude: [straddling] }],
+    ["scattered, concave field", { area: L }],
+  ])("agrees with the estimate — %s", (_name, over) => {
+    const f = field(over);
     expect(scatterInstances(f)).toHaveLength(estimateScatterInstances(f).instances);
+  });
+
+  it("quotes the concave row field at what it actually plants", () => {
+    // Pinned, so "they agree" cannot be satisfied by both being wrong.
+    const f = field({ arrangement: "rows", rowSpacing: [3, 4], area: L });
+    expect(estimateScatterInstances(f).instances).toBe(100);
   });
 
   it("counts the row lattice the generator actually walks", () => {

@@ -166,3 +166,34 @@ neighbours standing clear of the trees. Not a path-traced render; this machine
 cannot (brief 40's outcome).
 
 `npm run check` clean, **306 tests** (was 294).
+
+### Verification pass — 2026-09-13
+
+**One acceptance criterion was not met and is now met.** *"The estimate and the
+generator return the same number for every arrangement."* The first pass tested
+a rectangle, where the estimate happened to be exact, and the outcome note above
+says so — but "exact for a rectangle, the right approximation for anything else"
+is not what the brief asked for. On an L-shaped row field the estimate quoted
+**130 against 100 placed — 30 % over**.
+
+It cannot be fixed analytically: the generator jitters each point *before*
+testing containment, so which lattice cells survive depends on the RNG. The only
+number that agrees with the generator is the generator's own. So the placement
+half of `context/scatter.ts` — pure arithmetic over the document, no `three` —
+moved to `schema/src/derive/scatter.ts` along with `mulberry32`, and the row
+estimate now walks the same lattice the generator walks.
+
+Affordable because a lattice is bounded: `rowSpacing` has a floor, coordinates
+have a ceiling, and past `MAX_INSTANCES` cells the estimate returns the cell
+count — an over-estimate that correctly trips the error band without walking
+anything and without throwing inside the linter.
+
+Seven cases now agree, and the concave count is **pinned at 100** so "they
+agree" cannot be satisfied by both being wrong:
+
+| case | before | after |
+|---|---|---|
+| rows, rectangle | 130 / 130 | 130 / 130 |
+| rows, with an exclusion | 122 / 122 | 122 / 122 |
+| **rows, concave field** | **130 / 100** | **100 / 100** |
+| scattered, all four shapes | agreed | agreed |

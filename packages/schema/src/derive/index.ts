@@ -19,5 +19,6 @@
  */
 export * from "./constants.js";
 export * from "./scatter.js";
+export * from "./random.js";
 export * from "./walls.js";
 export * from "./counts.js";

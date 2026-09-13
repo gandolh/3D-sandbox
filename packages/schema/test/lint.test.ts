@@ -36,6 +36,74 @@ describe("unique-ids", () => {
   });
 });
 
+describe("unique-ids covers the tiers its comment claims", () => {
+  // The brief's acceptance was "a duplicate run id is an error", and what the
+  // first pass actually tested was a run colliding with a *wall*. That is a
+  // different assertion: it passes on the old rule too, because the wall's id
+  // was already claimed. Two runs sharing an id is the case that was broken.
+  const twoRuns = (secondId: string): SceneDocumentInput => {
+    const doc = baseScene();
+    const run = (id: string) => ({
+      id,
+      kind: "pergola" as const,
+      path: [
+        [0, 0],
+        [8, 0],
+      ] as [number, number][],
+      width: 2.4,
+      height: 2.4,
+      spacing: 3,
+      material: "wall",
+    });
+    doc.subject = { ...doc.subject, runs: [run("r-01"), run(secondId)] };
+    return doc;
+  };
+
+  it("makes two runs sharing an id an error", () => {
+    const found = lint(twoRuns("r-01")).filter((f) => f.rule === "unique-ids");
+    expect(found).toHaveLength(1);
+    expect(found[0]!.severity).toBe("error");
+    expect(found[0]!.path).toBe("subject.runs[1]");
+    // `runs.ts` seeds each pergola's canopy from `run.id`, so two same-id
+    // pergolas grew byte-identical foliage — the exact thing that seeding
+    // exists to prevent.
+    expect(found[0]!.message).toMatch(/already used at subject\.runs\[0\]/);
+  });
+
+  it("leaves two differently-named runs alone", () => {
+    expect(lint(twoRuns("r-02")).filter((f) => f.rule === "unique-ids")).toEqual([]);
+  });
+
+  it("makes two animation tracks sharing an id an error", () => {
+    // The other tier the doc comment claimed and the rule did not walk.
+    const doc = baseScene();
+    doc.animation = {
+      duration: 12,
+      tracks: [
+        {
+          id: "t-01",
+          target: "solar.minutes",
+          keyframes: [
+            { at: 0, value: 300 },
+            { at: 12, value: 900 },
+          ],
+        },
+        {
+          id: "t-01",
+          target: "solar.minutes",
+          keyframes: [
+            { at: 0, value: 900 },
+            { at: 12, value: 300 },
+          ],
+        },
+      ],
+    } as never;
+    const found = lint(doc).filter((f) => f.rule === "unique-ids");
+    expect(found).toHaveLength(1);
+    expect(found[0]!.path).toBe("animation.tracks[1]");
+  });
+});
+
 describe("wall-not-degenerate", () => {
   it("rejects a wall with coincident endpoints", () => {
     const doc = baseScene();
