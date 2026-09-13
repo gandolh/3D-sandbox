@@ -70,3 +70,35 @@ user's input.
 - Dragging a placement in the viewport moves it, and it stays where it is put.
 - A drag that resolves to nothing says so rather than silently reverting.
 - `npm run check` exits 0.
+
+---
+
+## Outcome — 2026-09-13
+
+**`translateEntity(doc, id, dx, dz)` dispatches on the resolved entity** rather
+than searching one collection, and returns whether it moved anything.
+`findEntity` already existed and already knew about placements; the drag
+handler simply never asked it.
+
+`translatePlacement` moves X and Z and **leaves Y alone** — a lateral drag that
+also changed height would put the one control that knows about collisions
+(`drop to floor`) in a fight with the one that does not.
+
+**Roofs and slabs are refused, deliberately.** They are positioned by their own
+footprint polygons rather than by a point, so dragging one is a different
+gesture and not one the gizmo currently offers. Refusing is the point: the
+whole bug was that "moved nothing" and "moved successfully" were the same
+return value.
+
+**Two guards, because the revision bump is the expensive half.** The handler
+checks `findEntity` against the *current* document before calling
+`editDocument` at all — so a drag that resolves to nothing never triggers the
+clone, re-parse, re-lint and 98 ms scene rebuild that used to put the object
+back where it already was. If the edit runs and still moves nothing, an alert
+says so.
+
+Five tests: a placement moves in XZ with Y untouched, a wall moves by both
+endpoints, an unknown id returns `false`, a roof returns `false` **and its
+footprint is unchanged**, and no other placement is touched.
+
+`npm run check` clean, **435 tests**.

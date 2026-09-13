@@ -143,7 +143,7 @@ nothing"* when it settled on a slab.
 | 47 | [The ground between the buildings](../briefs/done/47-the-ground-between-the-buildings.md) | done |
 | 48 | [Rooms are implied and nothing can name them](../briefs/done/48-rooms-are-implied-and-nothing-can-name-them.md) | done |
 | 49 | [A drawing, not a screenshot](../briefs/done/49-a-drawing-not-a-screenshot.md) | done |
-| 50 | [A dragged placement springs back](../briefs/todo/50-a-dragged-placement-springs-back.md) | todo |
+| 50 | [A dragged placement springs back](../briefs/done/50-a-dragged-placement-springs-back.md) | done |
 | 51 | [Every keystroke rebuilds the scene](../briefs/todo/51-every-keystroke-rebuilds-the-scene.md) | todo |
 | 52 | [The vine allocates four thousand geometries](../briefs/todo/52-the-vine-allocates-four-thousand-geometries.md) | todo |
 | 53 | [No linter, no formatter](../briefs/todo/53-no-linter-no-formatter.md) | todo |

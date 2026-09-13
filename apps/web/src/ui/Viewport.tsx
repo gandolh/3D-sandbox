@@ -14,7 +14,7 @@ import {
   setStatus,
   useStore,
 } from "../state/store.js";
-import { translateWall } from "../lib/entities.js";
+import { findEntity, translateEntity } from "../lib/entities.js";
 import { collidersFor, disposePhysics, sizesFromMap } from "../lib/physics.js";
 import { loadAssets } from "../engine/AssetLoader.js";
 import { Player } from "../engine/Player.js";
@@ -47,13 +47,22 @@ export function Viewport() {
 
     const engine = new SandboxEngine(canvas, {
       onSelect: select,
-      onTranslate: (id, dx, dz) =>
+      onTranslate: (id, dx, dz) => {
+        // Checked against the *current* document before editing, so a drag that
+        // resolves to nothing never reaches `editDocument` — which bumps the
+        // revision unconditionally and would rebuild the whole scene to put the
+        // object back where it already was.
+        const current = getState().document;
+        if (current !== null && findEntity(current, id) === null) {
+          setAlert(`Nothing named "${id}" to move`);
+          return;
+        }
+        let moved = false;
         editDocument((draft) => {
-          for (const level of draft.subject.levels) {
-            const wall = level.walls.find((w) => w.id === id);
-            if (wall !== undefined) translateWall(wall, dx, dz);
-          }
-        }),
+          moved = translateEntity(draft, id, dx, dz);
+        });
+        if (!moved) setAlert(`${id} cannot be moved by dragging`);
+      },
       onStats: setStats,
       onRenderProgress: setRender,
       // Both heavy halves of the app now arrive on a click that used to feel

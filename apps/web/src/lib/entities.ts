@@ -79,3 +79,52 @@ export function translateWall(wall: Wall, dx: number, dz: number): void {
   wall.start = [wall.start[0] + dx, wall.start[1] + dz];
   wall.end = [wall.end[0] + dx, wall.end[1] + dz];
 }
+
+/**
+ * Slide a placement across the ground plane.
+ *
+ * **Y is left alone.** The gizmo drags in XZ and a placement's height is what
+ * `drop to floor` is for; folding a height change into a lateral drag would
+ * make the one control that knows about collisions fight the one that does
+ * not.
+ */
+export function translatePlacement(placement: Placement, dx: number, dz: number): void {
+  placement.position = [
+    placement.position[0] + dx,
+    placement.position[1],
+    placement.position[2] + dz,
+  ];
+}
+
+/**
+ * Move whatever the id names, and say so if it names nothing movable.
+ *
+ * The gizmo attaches to **any** selected mesh — `findMesh` matches on
+ * `name.endsWith(":" + id)`, which is as true of `placement:table-garden` as of
+ * `wall:W-01`. The handler that received the drag only ever searched
+ * `level.walls`, so dragging furniture matched nothing, mutated nothing, and
+ * still bumped the revision — and the scene rebuilt from the unchanged
+ * document, snapping the chair back with no error anywhere. The app spent
+ * 98 ms undoing the user's drag.
+ *
+ * Dispatching on the resolved entity rather than searching one collection is
+ * what makes that impossible: a kind nobody handles returns `false` instead of
+ * silently succeeding.
+ */
+export function translateEntity(doc: SceneDocument, id: string, dx: number, dz: number): boolean {
+  const entity = findEntity(doc, id);
+  if (entity === null) return false;
+  switch (entity.kind) {
+    case "wall":
+      translateWall(entity.wall, dx, dz);
+      return true;
+    case "placement":
+      translatePlacement(entity.placement, dx, dz);
+      return true;
+    // Roofs, slabs and everything else are positioned by their own footprint
+    // polygons rather than by a point, so dragging one is a different gesture
+    // and not one the gizmo currently offers. Refused, loudly.
+    default:
+      return false;
+  }
+}
