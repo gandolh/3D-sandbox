@@ -1066,3 +1066,58 @@ Ranked Now → Next rather than by severity: 50, 51, 52 are live and cheap;
 53–57 are gates that do not exist; 58 is small waste; 59 — regenerating the
 whole scene for a one-entity edit — is the structural one, and is deliberately
 last because 51 and 52 remove most of its pain without touching the design.
+
+## 2026-09-13 — Briefs 50–60: the audit, executed
+
+All eleven closed, including one filed mid-run. Two themes are worth carrying.
+
+**Measuring before building changed the work twice.** Brief 59 was specced
+against a 98 ms rebuild; by the time it came up, 51 and 52 had made it 32 ms
+without touching the design, so I re-measured — and found the remaining cost
+was *concentrated*, not spread: 23 of 28 ms is wall CSG, 82 %, across the 11
+walls carrying openings. That turned "cache derived geometry" into "cache
+walls", which is a far smaller and safer change. Prototyping the key before
+designing it settled the rest: `JSON.stringify` of a whole wall costs 0.02 ms
+against 20 ms of CSG, so the generic whole-value key that brief 24's lesson
+demands is also simply the cheap one.
+
+**And measuring badly nearly put a wrong number in the record.** Timing an edit
+through the automation channel gave 585–744 ms. With `PerformanceObserver` the
+synchronous commit is **5 ms** and the longest task **61 ms**. The first figure
+was the tooling; I nearly wrote it down as the app.
+
+**The clean-clone test caught a defect that all the local checks missed.**
+Brief 56's CI verification was done by actually cloning and running `npm ci`,
+and it failed: `biome: not found`. Biome had been installed into
+`node_modules` during brief 53 but never reached `package.json` — a
+`git checkout -- .` while I was comparing formatter widths reverted it, and
+`npx` kept working off the surviving `node_modules`. **A clean checkout had no
+linter at all.** Same lesson as brief 33's README: verify by running.
+
+**The linter found three pieces of dead code, two of which I had written that
+same day** — `CANOPY` orphaned by 52's instancing, `gross` orphaned by the
+verification pass. Tooling earns its place fastest on the author's own fresh
+mistakes.
+
+**`erasableSyntaxOnly` was not a guard; it found seven live parameter
+properties**, one of them in `apps/api`, which is run straight from source by
+`node --watch src/server.ts`. That thread then led to brief 60: `npm run api`
+did not start **at all** — Node's type-stripping does not remap a `.js`
+specifier onto a `.ts` file, and `--watch` kept the dead process alive so it
+looked healthy. The README had documented the command throughout.
+
+**Two user-facing bugs, both invisible from outside.** Dragging furniture did
+nothing and snapped back, because the gizmo attached to anything selected while
+`onTranslate` searched only `level.walls` — and `editDocument` bumped the
+revision regardless, so the app spent 98 ms undoing the drag. And `Field`, the
+input behind every editable property, had a prop named `onCommit` wired to
+`onChange`: every character cost a clone, a re-parse, a re-lint and a full
+rebuild, and typing `150` briefly committed a wall of length 1.
+
+**The interface has tests now.** Two vitest projects split by what a test
+needs, with the file extension as the convention. Escape-cancels-a-render is
+asserted at last — brief 36 had to record it as unverified because this machine
+path-traces at 77 s per sample.
+
+**430 → 459 tests.** Greenhollow's edit path: 98 ms per *keystroke* → 5.8 ms
+per *committed edit*.

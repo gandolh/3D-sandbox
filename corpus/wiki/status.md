@@ -18,7 +18,7 @@ semantic linter), `@solstice/geometry` (document → three.js), `@solstice/solar
 drop-to-rest) and `@solstice/animation` (headless track evaluation).
 `apps/api` persists scenes over seven routes with files as truth and a
 rebuildable `node:sqlite` index, and `@solstice/drawing` renders a measured
-floor plan as SVG with no GPU. **426 tests pass.**
+floor plan as SVG with no GPU. **459 tests pass.**
 
 **The scenes.** `greenhollow` is a smallholding — porch, vine pergola, garage,
 hedges, walled front, kitchen garden, greenhouse, pond, orchard in rows.
@@ -42,10 +42,13 @@ are in [log.md](../log.md). **All 28 are done** and `corpus/briefs/todo/` is
 empty.
 
 An engineering audit on 2026-09-13 (performance, practices, structure) filed
-**briefs 50–59**: 18 raw findings, 10 vetted. The headline is that dragging a
-placement silently does nothing, and that an Inspector field named `onCommit`
-fires on every keystroke — each one costing a full clone, re-parse, re-lint and
-98 ms scene rebuild. Measurements and the drop list are in [log.md](../log.md).
+**briefs 50–59**: 18 raw findings, 10 vetted, plus **60** filed mid-run when
+`npm run api` turned out not to start at all. **All eleven are done.**
+
+The repo gained a lint and format gate (Biome), CI, a React testing
+environment, `erasableSyntaxOnly`, and a wall-geometry cache. Greenhollow's
+edit path went from **98 ms per keystroke** to **5.8 ms per committed edit**.
+Measurements and the drop list are in [log.md](../log.md).
 
 A verification pass on 2026-09-13 re-read every acceptance criterion against the
 code rather than against the outcome notes, and found **two that were not
