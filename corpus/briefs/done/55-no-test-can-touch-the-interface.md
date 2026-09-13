@@ -71,3 +71,50 @@ interface is the one tier with nothing.
 - At least the keyboard and live-region behaviour from briefs 35 and 36 is
   asserted.
 - `npm run check` exits 0 and stays under 20 s.
+
+---
+
+## Outcome — 2026-09-13
+
+**Two vitest projects, split by what a test needs rather than by where it
+lives.** `happy-dom` for the app's chrome, Node for everything else — the
+generator, the linter, the solar maths, the drawing and the API are headless by
+design and giving them a DOM is paying for a browser they never touch.
+
+**The convention is the file extension**, and it is self-describing: a test
+that renders components writes JSX, so `.test.tsx` gets a DOM and `.test.ts`
+gets Node. That left all 27 existing test files exactly where they were.
+
+It also survives a real trap found while setting it up: `contrast.test.ts`
+reads `styles.css` off disk, and under a DOM environment `import.meta.url` is
+an `http:` URL that `fileURLToPath` refuses outright. Routing by extension puts
+it in Node where it belongs; routing by directory did not.
+
+**What is now asserted that was previously "verified by reading":**
+
+| from | behaviour |
+|---|---|
+| brief 36 | focus lands on Cancel when the render overlay appears |
+| brief 36 | **Escape cancels a render** — the assertion that brief explicitly could not make, because this machine path-traces at 77 s per sample and its own end-to-end attempts were drowned out |
+| brief 36 | the scene tree exposes `role="tree"`/`treeitem` with `aria-level`, offers exactly one tab stop, and walks with Arrow/Home/End |
+| brief 35 | the render overlay announces **milestones and never the sample counter** |
+| brief 35 | a failed scene renders `role="alert"` and *not* the ordinary empty-selection message |
+| brief 51 | `Field` commits once per value, on blur and Enter, never mid-typing |
+
+**One gap left open deliberately, and named rather than assumed.** The footer's
+own live region lives in `App`, and mounting `App` mounts `Viewport`, which
+constructs a `WebGLRenderer` — there is no GL in happy-dom, so it throws before
+any assertion runs. Testing the engine through React is the boundary this setup
+does not cross. The store logic behind both channels is covered in
+`store.test.ts`; reaching the footer itself would mean extracting a `StatusBar`
+out of `App`, which is a change to a component rather than a test of one, so it
+is recorded as a follow-up instead of smuggled in here.
+
+**No `jest-dom`.** Plain DOM assertions (`input.value`, `input.disabled`) do
+the same job with one fewer dependency and read more clearly.
+
+Four dev dependencies, pinned exactly: `@testing-library/react` 16.3.3,
+`@testing-library/dom` 10.4.1, `@testing-library/user-event` 14.6.7,
+`happy-dom` 20.14.5. `npm audit` still reports 0 vulnerabilities.
+
+**452 tests** (was 435), `npm run check` clean and still under 20 s.

@@ -80,3 +80,34 @@ findings that flash in the panel.
 - Typing a multi-character value produces exactly one revision bump.
 - The field still reflects an external document change (undo, a scene switch).
 - `npm run check` exits 0.
+
+---
+
+## Outcome — 2026-09-13
+
+**`onCommit` now means what it says.** The input keeps its own text while
+focused and commits on **blur** and on **Enter**; **Escape** abandons the edit
+and the field falls back to the document's value. Arrow keys and the spinner
+commit immediately — those produce a complete value in one gesture, and a user
+pressing Up expects the model to move.
+
+**Three things that had to be got right beyond "debounce it":**
+
+1. **A half-typed number is not an edit.** `-`, `0.` and an empty field are all
+   states a number input legitimately passes through. They are held in the
+   draft and never committed — which is what stops typing `150` from
+   committing a wall of length 1, then 15, each fully linted, each able to
+   flash findings for a plan nobody asked for.
+2. **An unchanged value is not an edit either.** Tabbing through a field used
+   to cost a revision bump and a 98 ms rebuild for an edit nobody made. `commit`
+   returns early when the parsed value equals what is already shown.
+3. **The field still follows the document.** While it is not focused it mirrors
+   `value`, so an undo, a scene switch or a gizmo drag shows up here rather than
+   being masked by a stale draft. While it *is* focused the draft wins, or every
+   keystroke would be overwritten by the value being replaced.
+
+**Seven tests, in the environment brief 55 stood up**, asserting behaviour
+rather than implementation — the headline one being that typing `150` calls
+`onCommit` **once**, with `150`, and not at all before blur.
+
+`npm run check` clean, **452 tests**.

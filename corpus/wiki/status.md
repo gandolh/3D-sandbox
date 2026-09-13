@@ -144,11 +144,11 @@ nothing"* when it settled on a slab.
 | 48 | [Rooms are implied and nothing can name them](../briefs/done/48-rooms-are-implied-and-nothing-can-name-them.md) | done |
 | 49 | [A drawing, not a screenshot](../briefs/done/49-a-drawing-not-a-screenshot.md) | done |
 | 50 | [A dragged placement springs back](../briefs/done/50-a-dragged-placement-springs-back.md) | done |
-| 51 | [Every keystroke rebuilds the scene](../briefs/todo/51-every-keystroke-rebuilds-the-scene.md) | todo |
+| 51 | [Every keystroke rebuilds the scene](../briefs/done/51-every-keystroke-rebuilds-the-scene.md) | done |
 | 52 | [The vine allocates four thousand geometries](../briefs/todo/52-the-vine-allocates-four-thousand-geometries.md) | todo |
 | 53 | [No linter, no formatter](../briefs/todo/53-no-linter-no-formatter.md) | todo |
 | 54 | [Scenes typecheck green and crash](../briefs/todo/54-scenes-typecheck-green-and-crash.md) | todo |
-| 55 | [No test can touch the interface](../briefs/todo/55-no-test-can-touch-the-interface.md) | todo |
+| 55 | [No test can touch the interface](../briefs/done/55-no-test-can-touch-the-interface.md) | done |
 | 56 | [Nothing runs the gate](../briefs/todo/56-nothing-runs-the-gate.md) | todo |
 | 57 | [The largest workspace opted out of the base config](../briefs/todo/57-the-largest-workspace-opted-out-of-the-base-config.md) | todo |
 | 58 | [Work repeated every frame that cannot change](../briefs/todo/58-work-repeated-every-frame-that-cannot-change.md) | todo |
