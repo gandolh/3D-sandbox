@@ -1006,3 +1006,63 @@ it stopped dead at y = 1.051 with velocity 0. Those two facts could not both be
 true of an axis-aligned world, which is what pointed at the rotation.
 
 430 tests.
+
+## 2026-09-13 — Audit: performance, practices, structure
+
+An `improve` survey across five lenses. **18 raw findings, 10 vetted** —
+briefs 50–59. The drop rate is the interesting number: this codebase is in good
+shape, and most of what was dropped was dropped because it was *already
+deliberate*.
+
+**Dropped, and worth recording so nobody re-finds them:** dependency hygiene is
+clean (no version drift between workspaces, every pin exact, `npm audit` 0
+vulnerabilities); `tsconfig.base.json` is already stricter than most repos carry
+(`noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `noImplicitOverride`,
+`verbatimModuleSyntax` all on); the build is 3.2 s cold and 0.2 s warm, 430
+tests in 1.6 s; `SandboxEngine`'s 676 lines are the cost of a locked decision
+and the debt finder declined to report them for want of a concrete failure;
+`corpus/lint.sh` correctly propagates failure; `SceneTree`'s per-row
+subscription is right.
+
+**The two that matter most were both invisible from the outside.**
+
+`Field` — the numeric input behind *every* editable property — has a prop named
+`onCommit` wired to React's `onChange`. It fires on every character. Each
+character runs `structuredClone` of the whole document, a full Zod re-parse, a
+full re-lint, and a **full scene regeneration**. Measured on Greenhollow: parse
+1.1 ms, lint 1.6 ms, generate **98 ms**. Typing a four-digit value is ~0.4 s of
+blocked main thread, and the intermediate values are committed as real
+documents — typing `150` briefly commits a wall of length 1.
+
+And dragging a placement does nothing at all. The gizmo attaches to anything
+selected — `findMesh` matches `endsWith(":" + id)` and placements are named
+`placement:<id>` — but `onTranslate` searches only `level.walls`, and
+`translatePlacement` does not exist anywhere in the repo. `editDocument` bumps
+the revision regardless, so the scene rebuilds from the unchanged document and
+the furniture snaps back. The app spends 98 ms precisely undoing the user's
+drag.
+
+**The measurement that surprised me** was where scene-generation time actually
+goes. Not the CSG, which is the expensive-looking part: all 23 walls with 25
+opening cuts come to 25 ms. `pergola-vine` alone is **39 ms** — 40 % of the
+whole build, one entity, more than every wall in every building combined.
+Removing just its climber takes it to 0.6 ms. `canopy()` allocates two
+`PlaneGeometry` per leaf cluster, merges them, translates, and disposes them —
+4 260 allocations for 2 130 clusters.
+
+A prototype settled the fix rather than guessing at it: one shared crossed-quad
+geometry plus an `InstancedMesh` of 2 130 matrices is **0.5 ms against 49 ms**,
+a 98× reduction, for the same 8 520 triangles and the same single draw call.
+Strictly better, and it is the pattern `buildScatterMesh` already uses.
+
+**The practices gap is narrow but sharp.** No linter, no formatter, no CI, and
+no React testing setup at all — so all eight `.tsx` files have zero tests,
+including everything briefs 35 and 36 built for keyboard and screen-reader
+access. Brief 24's outcome already said it out loud: *"verified by reading;
+there is no React renderer in this project's test setup."* That sentence was
+the finding.
+
+Ranked Now → Next rather than by severity: 50, 51, 52 are live and cheap;
+53–57 are gates that do not exist; 58 is small waste; 59 — regenerating the
+whole scene for a one-entity edit — is the structural one, and is deliberately
+last because 51 and 52 remove most of its pain without touching the design.

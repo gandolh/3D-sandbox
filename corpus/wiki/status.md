@@ -41,6 +41,12 @@ Four audit rounds on 2026-09-12 — twelve lenses in all — produced **24 brief
 are in [log.md](../log.md). **All 28 are done** and `corpus/briefs/todo/` is
 empty.
 
+An engineering audit on 2026-09-13 (performance, practices, structure) filed
+**briefs 50–59**: 18 raw findings, 10 vetted. The headline is that dragging a
+placement silently does nothing, and that an Inspector field named `onCommit`
+fires on every keystroke — each one costing a full clone, re-parse, re-lint and
+98 ms scene rebuild. Measurements and the drop list are in [log.md](../log.md).
+
 A verification pass on 2026-09-13 re-read every acceptance criterion against the
 code rather than against the outcome notes, and found **two that were not
 actually met** — 45's estimate agreed with the generator only for rectangles,
@@ -137,6 +143,16 @@ nothing"* when it settled on a slab.
 | 47 | [The ground between the buildings](../briefs/done/47-the-ground-between-the-buildings.md) | done |
 | 48 | [Rooms are implied and nothing can name them](../briefs/done/48-rooms-are-implied-and-nothing-can-name-them.md) | done |
 | 49 | [A drawing, not a screenshot](../briefs/done/49-a-drawing-not-a-screenshot.md) | done |
+| 50 | [A dragged placement springs back](../briefs/todo/50-a-dragged-placement-springs-back.md) | todo |
+| 51 | [Every keystroke rebuilds the scene](../briefs/todo/51-every-keystroke-rebuilds-the-scene.md) | todo |
+| 52 | [The vine allocates four thousand geometries](../briefs/todo/52-the-vine-allocates-four-thousand-geometries.md) | todo |
+| 53 | [No linter, no formatter](../briefs/todo/53-no-linter-no-formatter.md) | todo |
+| 54 | [Scenes typecheck green and crash](../briefs/todo/54-scenes-typecheck-green-and-crash.md) | todo |
+| 55 | [No test can touch the interface](../briefs/todo/55-no-test-can-touch-the-interface.md) | todo |
+| 56 | [Nothing runs the gate](../briefs/todo/56-nothing-runs-the-gate.md) | todo |
+| 57 | [The largest workspace opted out of the base config](../briefs/todo/57-the-largest-workspace-opted-out-of-the-base-config.md) | todo |
+| 58 | [Work repeated every frame that cannot change](../briefs/todo/58-work-repeated-every-frame-that-cannot-change.md) | todo |
+| 59 | [One wall moves and the whole scene is rebuilt](../briefs/todo/59-one-wall-moves-and-the-whole-scene-is-rebuilt.md) | todo |
 | 43 | [Impostor quads are the wrong shape](../briefs/done/43-impostor-quads-are-the-wrong-shape.md) | done |
 | 44 | [The dome and the render disagree after sunset](../briefs/done/44-the-dome-and-the-render-disagree-after-sunset.md) | done |
 | 45 | [Scatter counts and seeds](../briefs/done/45-scatter-counts-and-seeds.md) | done |
