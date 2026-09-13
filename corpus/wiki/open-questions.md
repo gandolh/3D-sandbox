@@ -1,6 +1,6 @@
 ---
 summary: Genuinely unresolved questions — deleted the moment they are answered.
-updated: 2026-09-11
+updated: 2026-09-13
 ---
 
 # Open questions
@@ -24,13 +24,17 @@ updated: 2026-09-11
   east **−X**: for a physical ENU frame `e × n = u`, but `X × Y = e × u = −n`.
   Seen from above the scene's sun therefore sweeps **counter-clockwise** where the
   real one sweeps clockwise. Everything downstream is internally consistent —
-  `wallBearing` uses the same `atan2(x, z)` — so shadows still land on the façade
-  the document names, and no scene is *wrong on its own terms*. The cost is that
+  `wallBearing` (now `packages/schema/src/derive/walls.ts`) uses the same
+  `atan2(x, z)` — so shadows still land on the façade the document names, and no
+  scene is *wrong on its own terms*. The cost is that
   a site plan transcribed from paper with x = east, z = north is built as its
   **mirror image**, and a render will not match a photograph taken from the same
   real-world spot. The fix is one sign, in `directionFrom` or in the north
   convention, **not both** — but it silently changes what every existing scene
   means, so it is a decision and not a bug fix. Raised by the 2026-09-12 audit.
+  Brief 37 made the eventual change cheaper without making it: `wallBearing` had
+  three copies and now has one, beside `wallAngle`, with the difference between
+  the two conventions written down where both are visible.
 
 _Vine density was brief 18. The denoiser closed on 2026-09-11: brief 16 measured
 the bundled pass as actively harmful, and the remaining thread — whether a

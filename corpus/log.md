@@ -786,3 +786,125 @@ breast, because a masonry mass with nothing addressing it reads as a pier.
 270 tests. The chimney test is the one that matters: there is no chimney
 primitive, so its height is a literal that has to agree with a roof height
 nothing computes for it.
+
+## 2026-09-12 — Closing the audit: the last eleven briefs
+
+`corpus/briefs/todo/` is empty. All 24 audit briefs (22–45) plus 46 are done.
+Eleven closed in this stretch, in dependency order — 37 first because five
+other briefs referenced its shape, then 45, 30, 43, 44, 27, 38, 24, 25, 35, 34.
+
+**37 was the one that mattered most, and it found a ninth copy the audit
+missed.** The dependency direction (`geometry → schema`, `physics → schema`,
+nothing depends on `geometry`) is right and stays — but it left every
+computation the generator and its checker both need with nowhere to live, so
+each was copied into its checker. A checker holding its own copy of the
+generator's constant is not checking the generator; it is checking itself.
+`packages/schema/src/derive/` is the home, under two rules that keep it from
+becoming a junk drawer: no `three` import, two callers in different packages.
+
+Two of the nine had already diverged. The row-field estimate divided net area
+by cell area while the generator walked a lattice over the bounds — 133 against
+130 for a 40 m square. `run-is-well-formed` compared against a literal
+`2 * 0.08` rather than the post the generator draws. The ninth, unlisted:
+`apps/web/src/lib/entities.ts` held its own `wallLength` and `wallBearing` and
+the Inspector imported *those*, so the panel and the viewport could describe one
+wall two ways.
+
+**The guards are the point, not the moves.** They live in `apps/web/test/` —
+the only workspace that can import both `geometry` and `physics`, and therefore
+the only place a test could ever have seen both copies. That no shared observer
+existed is the entire mechanism by which these drifted, and it is why the audit
+found them by reading rather than by a red build.
+
+**45 needed a real primitive, not a patch.** Exclusions were subtracted whole:
+a hole half outside its field removed the half that was never there, and two
+overlapping holes removed their overlap twice. `polygonNetArea` is exact rather
+than sampled — slab the plane at every vertex *and every edge crossing*, and
+inside a slab the covered length is linear, so its midpoint value times the
+width is the integral. Sutherland–Hodgman was the cheap candidate and was
+rejected for requiring a convex clip polygon; an L-shaped field is in the tests
+for exactly that reason. Seven hand-computed cases, all exact.
+
+The other half of 45: `seed` defaulted to 0 and nothing else reached the RNG, so
+two fields over one polygon that both omitted it placed every instance at
+identical coordinates. `runs.ts` has hashed a run's id into its seed since it
+was written, precisely so two pergolas could not collide; the scatter tier had
+skipped it. Every instance in every scene has moved. Only the orchard's *count*
+changed, 16 → 15, and it changed to what the generator was always placing.
+
+**30 found a fourth unbounded input the brief did not list, and it was the one
+that mattered.** Bounding `density` and bounding coordinates does not bound the
+row lattice, because the lattice is built from their *ratio*: 1 000 m of field
+at the minimum 0.1 m spacing is 10⁸ cells with every individual number in the
+document looking entirely reasonable. `±100 km` is not a plausibility judgement
+either — it is the float64 one: `1e15 + 0.001 === 1e15`, so a lattice stepping
+by less than an ULP of its own start point never advances and never terminates.
+
+**43 is the clearest case of the audit's central theme.** The baker renders a
+square cell of `max(sx, sy, sz)`; the consumer built its quad from the
+subject's own aspect, and those agree only when the subject is as wide as it is
+tall. Every tree was 5.8 % too narrow, and a `[6, 2, 6]` shrub would have drawn
+two thirds of a metre hovering 0.67 m up. **A bounding-box assertion cannot
+catch it** — the old geometry's box was also 2 m tall — so the test reads the
+**UVs** beside the positions. `v ∈ [⅓, ⅔]` is the assertion no position-only
+check could have made.
+
+**44 could not be fixed by handing the dome the truth alone.** Below the horizon
+three's `Sky` drives its whole result from `sunIntensity(dot(sun, up))`, which
+is 0 there, so the dome would have gone black while the environment painted dim
+blue — two disagreements instead of one. `skyGradient` came out of
+`skyRadianceMap` so both sides read one function; the viewport cannot afford to
+build a 256 × 128 map once a frame while someone scrubs.
+
+**27's deliverable is the `FIRES` map, not the thirteen tests.** One document
+per rule, walked by `it.each(RULES)`; removing a key fails with *"no firing
+document for X — add one to FIRES"*, and a key for a deleted rule fails too, so
+the list cannot stop describing itself in either direction. Verified by removing
+one. This project has been burned by exactly this once: `asset-resolves` was
+registered and never armed, and eight invented Poly Haven slugs shipped.
+
+Turning `roof-covers-walls`' tolerance round — brief 42's handover — immediately
+failed two of Greenhollow's roofs, and **neither was a real finding**: a
+footprint authored as `rect(7 - 0.4, …)` is `14.399999999999999` and missed an
+exact `>=` by 2 × 10⁻¹⁵ m. The rule allows a millimetre now, with a test for the
+float-noise case so nobody tightens it back.
+
+**38 was measured by mutation.** Swapping `AssetLoader`'s key formula to
+`${slug}/${source}` — the brief's own example — now turns three tests red.
+Before, it turned none. 24 and 43 were checked the same way: revert the fix,
+confirm the test goes red, put the fix back.
+
+**25 halved the download twice over.** First paint went **4 264 KB → 1 247 KB**
+raw and **1 474 KB → 349 KB** gzipped. Rapier needed a second entry point, not
+just a dynamic import: the package index re-exports `world.js`, which imports
+Rapier at module scope, and Rapier's module has side effects — so reaching
+`deriveColliders` through the root drags the engine in regardless.
+
+**35's brief had a conditional that turned out to be load-bearing.** A tone
+quiet enough to read as ornament cannot also be legible body text, so
+`--color-subtle` became a text tone (3.20/3.06 → 4.99/4.76 dark, 2.73/2.99 →
+4.71/5.15 light) and `--color-faint` kept the old values for the one non-text
+use. Guarded by a test that parses `styles.css` and computes the ratios, rather
+than by the comment recording them.
+
+**34's fix is a shell helper, so the test is shell.** It lifts the real
+`fetch_one` out of the *generated* `download.sh` and runs it against `file://`
+URLs, so it exercises the shipped text rather than a copy. Two of its eight
+tests read the generated artefacts, because a single direct `curl -o "$target"`
+slipping back in would restore the bug quietly for one asset.
+
+ambientCG's sizes were in the API all along — `size` on every zip entry — and
+`resolveAmbientCg` hardcoded `bytes: 0`. `totalBytes` was therefore 0, always
+`<= HEAVY_BYTES`, so **the heavy-asset split was not running for one entire
+source**. And `DOWNLOADS.md` printed "—" for those rows, which reads as *small*
+rather than as *unknown* — which is exactly how it went unnoticed.
+
+**255 → 389 tests.** The second theme of the week, now at four instances: a
+comment disagreeing with the thing it describes — `overhang` meaning three
+things in three scenes, the colonnade's missing south leg, `roof-house`'s
+`ridgeBearing: 90`, and the physics cache's claim that keying on the revision
+"makes both impossible". Each survived because a confident comment invites
+checking against your memory of the design rather than against the code.
+
+One finding captured rather than fixed: a drop reports *"settled on nothing"*
+when it settled on a slab (`corpus/todos/drop-reports-settled-on-nothing.md`).
