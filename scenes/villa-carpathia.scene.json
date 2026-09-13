@@ -201,7 +201,8 @@
             "thickness": 0.25,
             "material": "slab-concrete"
           }
-        ]
+        ],
+        "rooms": []
       }
     ],
     "roofs": [

@@ -16,6 +16,7 @@ import {
   formatFinding,
   loadScene,
   sceneCounts,
+  scheduleOfAreas,
   serializeScene,
 } from "@solstice/schema";
 import { knownAssets } from "../assets/manifest.ts";
@@ -78,6 +79,19 @@ for (const entry of entries) {
     console.log(
       `✓ ${document.id}  ${counts.walls} walls, ${counts.openings} openings, ${counts.shots} shots  →  ${document.id}.scene.json`,
     );
+    // The schedule is printed by the thing that computes it. Brief 46's areas
+    // lived in a comment, worked out by hand and checked by nobody.
+    const schedule = scheduleOfAreas(document);
+    if (schedule.length > 0) {
+      const total = schedule.reduce((n, r) => n + r.area, 0);
+      const widest = Math.max(...schedule.map((r) => r.room.name.length));
+      for (const { room, area } of schedule) {
+        console.log(
+          `    ${room.name.padEnd(widest)}  ${room.use.padEnd(7)} ${area.toFixed(1).padStart(6)} m²`,
+        );
+      }
+      console.log(`    ${"".padEnd(widest)}  ${"total".padEnd(7)} ${total.toFixed(1).padStart(6)} m²`);
+    }
     for (const f of findings) console.log(`    ${formatFinding(f)}`);
   } catch (error) {
     failed++;

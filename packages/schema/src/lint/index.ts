@@ -3,6 +3,7 @@ import { resolveEntities } from "./entities.js";
 import { polygonsHaveArea, scatterDensityIsSane, shotCameraIsValid } from "./rules/context.js";
 import { uniqueIds } from "./rules/identity.js";
 import { assetResolves, materialResolves, materialsAreUsed } from "./rules/references.js";
+import { roomsAreHabitable } from "./rules/rooms.js";
 import { roofCoversWalls } from "./rules/roofs.js";
 import { runIsWellFormed } from "./rules/runs.js";
 import {
@@ -24,6 +25,7 @@ export const RULES: readonly Rule[] = [
   openingFitsHeight,
   openingsDoNotOverlap,
   roofCoversWalls,
+  roomsAreHabitable,
   runIsWellFormed,
   polygonsHaveArea,
   materialResolves,

@@ -128,7 +128,7 @@ nothing"* when it settled on a slab.
 | 42 | [Bring the fixture forward](../briefs/done/42-bring-the-fixture-forward.md) | done |
 | 46 | [A house a real architect would draw](../briefs/done/46-a-house-a-real-architect-would-draw.md) | done |
 | 47 | [The ground between the buildings](../briefs/done/47-the-ground-between-the-buildings.md) | done |
-| 48 | [Rooms are implied and nothing can name them](../briefs/todo/48-rooms-are-implied-and-nothing-can-name-them.md) | todo |
+| 48 | [Rooms are implied and nothing can name them](../briefs/done/48-rooms-are-implied-and-nothing-can-name-them.md) | done |
 | 49 | [A drawing, not a screenshot](../briefs/todo/49-a-drawing-not-a-screenshot.md) | todo |
 | 43 | [Impostor quads are the wrong shape](../briefs/done/43-impostor-quads-are-the-wrong-shape.md) | done |
 | 44 | [The dome and the render disagree after sunset](../briefs/done/44-the-dome-and-the-render-disagree-after-sunset.md) | done |

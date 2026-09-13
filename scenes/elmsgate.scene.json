@@ -325,7 +325,8 @@
             "thickness": 0.15,
             "material": "paving-yard"
           }
-        ]
+        ],
+        "rooms": []
       },
       {
         "id": "first",
@@ -452,7 +453,8 @@
             "thickness": 0.25,
             "material": "render-stucco"
           }
-        ]
+        ],
+        "rooms": []
       }
     ],
     "roofs": [

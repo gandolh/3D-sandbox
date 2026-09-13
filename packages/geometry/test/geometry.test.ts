@@ -757,8 +757,9 @@ describe("the house at Greenhollow", () => {
 
   it("gives every room its own door off the hall", () => {
     // The plan's whole claim is that no room is reached through another. The
-    // hall's two walls carry four doors; the day line carries the living room's;
-    // the living room carries bedroom 3's.
+    // hall's two walls carry five doors — the larder joined them when the
+    // oversized 12.2 m² bathroom was split into a bathroom and a *cămară*; the
+    // day line carries the living room's; the living room carries bedroom 3's.
     const doors = ground.walls
       .filter((w) => w.id.startsWith("P-"))
       .flatMap((w) => w.openings.filter((o) => o.kind === "door").map((o) => o.id));
@@ -768,6 +769,7 @@ describe("the house at Greenhollow", () => {
       "d-bed2",
       "d-bed3",
       "d-kitchen",
+      "d-larder",
       "d-living",
     ]);
   });

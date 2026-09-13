@@ -25,6 +25,7 @@ const level: Level = {
   elevation: 0,
   height: 2.7,
   walls: [],
+  rooms: [],
   slabs: [],
 };
 

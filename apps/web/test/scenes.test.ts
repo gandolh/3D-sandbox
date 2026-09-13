@@ -31,3 +31,52 @@ describe("the bundled scene catalogue", () => {
     }
   });
 });
+
+describe("Greenhollow's programme", () => {
+  // Brief 46 asked for a big living room with a fireplace, a bathroom, a
+  // kitchen and three bedrooms, and until rooms existed the only record that
+  // the house still had them was a comment. This is that claim, checked.
+  const doc = SceneDocument.parse(sceneById("greenhollow")!.json);
+  const rooms = doc.subject.levels.flatMap((l) => l.rooms);
+  const areaOf = (id: string) => {
+    const room = rooms.find((r) => r.id === id)!;
+    return Math.abs(
+      room.polygon.reduce(
+        (sum, p, i) =>
+          sum +
+          p[0] * room.polygon[(i + 1) % room.polygon.length]![1] -
+          room.polygon[(i + 1) % room.polygon.length]![0] * p[1],
+        0,
+      ) / 2,
+    );
+  };
+
+  it("has three bedrooms", () => {
+    expect(rooms.filter((r) => r.use === "bed")).toHaveLength(3);
+  });
+
+  it("has a kitchen, a bathroom and a hall", () => {
+    for (const use of ["kitchen", "bath", "hall"] as const) {
+      expect(rooms.filter((r) => r.use === use), use).toHaveLength(1);
+    }
+  });
+
+  it("has a living room big enough to be called big", () => {
+    const living = rooms.filter((r) => r.use === "living");
+    expect(living).toHaveLength(1);
+    // Bigger than any bedroom, and bigger than the two of them together — which
+    // is what "big" has to mean if it is to mean anything checkable.
+    const beds = rooms.filter((r) => r.use === "bed").map((r) => areaOf(r.id));
+    expect(areaOf(living[0]!.id)).toBeGreaterThan(Math.max(...beds) * 1.5);
+  });
+
+  it("closes to the floor the envelope encloses", () => {
+    // External walls are 0.3 on an 11 × 12 footprint, so 10.7 × 11.7 = 125.2 m²
+    // gross internal. The rooms account for that less the partitions standing
+    // in it — about 5 m² of 0.12 walls. A schedule that does not close means a
+    // room outline has drifted from the wall that makes it.
+    const total = rooms.reduce((n, r) => n + areaOf(r.id), 0);
+    expect(total).toBeGreaterThan(115);
+    expect(total).toBeLessThan(125.2);
+  });
+});

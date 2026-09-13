@@ -535,6 +535,118 @@ describe("roof-covers-walls, the overhang direction", () => {
   });
 });
 
+
+describe("rooms-are-habitable", () => {
+  /**
+   * The fixture's envelope is x 0…6, z 0…8, walls 0.24 thick on those lines.
+   *
+   * It ships with **no openings at all**, so a window has to be added for the
+   * daylight check to have anything to find. Putting it on W-01 — the z = 0
+   * wall — means a room in the southern half of the plan is lit and one in the
+   * northern half is not, which is what the two tests below turn on.
+   */
+  const withRooms = (...rooms: unknown[]): SceneDocumentInput => {
+    const doc = baseScene();
+    doc.subject!.levels![0]!.walls![0]!.openings = [
+      { id: "w-1", kind: "window", offset: 2, width: 1.4, height: 1.2, sill: 0.9 },
+    ];
+    doc.subject!.levels![0]!.rooms = rooms as never;
+    return doc;
+  };
+
+  const box = (id: string, use: string, x1: number, z1: number, x2: number, z2: number) => ({
+    id,
+    name: id,
+    use,
+    polygon: [
+      [x1, z1],
+      [x1, z2],
+      [x2, z2],
+      [x2, z1],
+    ],
+  });
+
+  const found = (doc: SceneDocumentInput) =>
+    lint(doc).filter((f) => f.rule === "rooms-are-habitable");
+
+  it("accepts a room inside the walls, with its window", () => {
+    expect(found(withRooms(box("r-1", "living", 0.2, 0.2, 5.8, 7.8)))).toEqual([]);
+  });
+
+  it("rejects a room that extends outside the walls", () => {
+    // A room is a claim about space the walls enclose. One that runs past them
+    // is claiming floor that is outdoors.
+    const f = found(withRooms(box("r-1", "living", 0.2, 0.2, 9, 7.8)));
+    expect(f.map((x) => x.message)).toEqual([
+      expect.stringMatching(/extends outside the walls/) as unknown as string,
+    ]);
+    expect(f[0]!.severity).toBe("error");
+  });
+
+  it("rejects two rooms that overlap", () => {
+    const f = found(
+      withRooms(box("r-1", "living", 0.2, 0.2, 4, 7.8), box("r-2", "bed", 3, 0.2, 5.8, 7.8)),
+    );
+    const overlap = f.filter((x) => x.message.includes("overlap"));
+    expect(overlap).toHaveLength(1);
+    expect(overlap[0]!.severity).toBe("error");
+  });
+
+  it("does not call two interlocking L-shapes an overlap", () => {
+    // Bounding boxes would. These two share a corner of bounds and no floor,
+    // which is why the check is on net area rather than on `boundsContain`.
+    // Both `store`, so the daylight check stays out of the way of the one
+    // thing this test is about.
+    const L = (id: string, use: string, flip: boolean) => ({
+      id,
+      name: id,
+      use,
+      polygon: flip
+        ? [
+            [3, 0.2],
+            [3, 7.8],
+            [5.8, 7.8],
+            [5.8, 4],
+            [4, 4],
+            [4, 0.2],
+          ]
+        : [
+            [0.2, 0.2],
+            [0.2, 4],
+            [4, 4],
+            [4, 7.8],
+            [2.9, 7.8],
+            [2.9, 0.2],
+          ],
+    });
+    expect(found(withRooms(L("r-1", "store", false), L("r-2", "store", true)))).toEqual([]);
+  });
+
+  it("warns about a habitable room with no window", () => {
+    // The only window is on W-01 at z = 0, so a room in the northern half of
+    // the plan has no wall with one in it.
+    const f = found(withRooms(box("r-1", "bed", 0.2, 5, 5.8, 7.8)));
+    expect(f).toHaveLength(1);
+    expect(f[0]!.severity).toBe("warning");
+    expect(f[0]!.message).toMatch(/no window/);
+  });
+
+  it("does not ask a bathroom or a store for daylight", () => {
+    expect(found(withRooms(box("r-1", "bath", 0.2, 5, 3, 7.8)))).toEqual([]);
+    expect(found(withRooms(box("r-2", "store", 0.2, 5, 3, 7.8)))).toEqual([]);
+  });
+
+  it("warns about a room too small to be what it is called", () => {
+    // 1.4 × 1.4 = 1.96 m², under the 6.5 a bedroom needs to be one. Placed
+    // under the window at x 2.7 on purpose, so the size warning is the only
+    // thing this can be reporting.
+    const f = found(withRooms(box("r-1", "bed", 2.0, 0.2, 3.4, 1.6)));
+    expect(f.map((x) => x.message)).toEqual([
+      expect.stringMatching(/below the 6.5 m² a bed needs to be one/) as unknown as string,
+    ]);
+  });
+});
+
 /* ── the rules that were registered but never proved to fire ──────── */
 
 const withRun = (over: Record<string, unknown>): SceneDocumentInput => {
@@ -704,6 +816,23 @@ const FIRES: Record<string, () => LintFinding[]> = {
     return lint(doc);
   },
   "run-is-well-formed": () => lint(withRun({ height: 1.6 })),
+  "rooms-are-habitable": () => {
+    const doc = baseScene();
+    doc.subject!.levels![0]!.rooms = [
+      {
+        id: "r-1",
+        name: "Outside",
+        use: "living",
+        polygon: [
+          [0.2, 0.2],
+          [0.2, 7.8],
+          [9, 7.8],
+          [9, 0.2],
+        ],
+      },
+    ] as never;
+    return lint(doc);
+  },
   "polygons-have-area": () => {
     const doc = baseScene();
     doc.subject!.levels![0]!.slabs = [

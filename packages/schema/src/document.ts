@@ -95,6 +95,35 @@ export const Slab = z.strictObject({
   material: MaterialId,
 });
 
+/**
+ * A named space inside a level.
+ *
+ * A room is a **claim about** the space the walls make, not a replacement for
+ * the walls — nothing is generated from it and no partition is derived. It
+ * exists because the plan was previously only the negative space between
+ * partitions: nothing named it, nothing knew its area, and so nothing could
+ * check that a house asked to have three bedrooms still had three bedrooms.
+ *
+ * `use` is an enum and not free text, and that is what makes the rules
+ * possible. "Dormitor 2" tells a linter nothing; `use: "bed"` tells it the
+ * space needs a window and a door and a plausible floor area. The name is for
+ * the drawing; the use is for the checks.
+ */
+export const Room = z.strictObject({
+  id: Id,
+  /** What a person calls it, and what a plan labels it. */
+  name: z.string().min(1),
+  use: z.enum(["living", "bed", "kitchen", "bath", "hall", "store", "utility"]),
+  /**
+   * The clear internal outline, to the faces of the walls around it.
+   *
+   * Not the centrelines: a schedule of areas quotes usable floor, which is what
+   * a person stands on. Area is **derived** from this and never stored — a
+   * stored area is a second copy of the polygon, and the two drift.
+   */
+  polygon: PolygonSchema,
+});
+
 export const Level = z.strictObject({
   id: Id,
   name: z.string().min(1),
@@ -104,6 +133,7 @@ export const Level = z.strictObject({
   height: PositiveMeters,
   walls: Wall.array().default([]),
   slabs: Slab.array().default([]),
+  rooms: Room.array().default([]),
 });
 
 export const Roof = z.strictObject({
@@ -435,6 +465,7 @@ export type Shot = z.infer<typeof Shot>;
 export type Run = z.infer<typeof Run>;
 export type Keyframe = z.infer<typeof Keyframe>;
 export type Paving = z.infer<typeof Paving>;
+export type Room = z.infer<typeof Room>;
 export type Track = z.infer<typeof Track>;
 export type Animation = z.infer<typeof Animation>;
 export type Easing = z.infer<typeof Easing>;

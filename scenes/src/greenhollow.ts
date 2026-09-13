@@ -71,6 +71,7 @@ const BED_1_2 = 23.9; // between the two west bedrooms
 const WET = 24.3; // kitchen | bathroom, the one plumbing wall
 const DAY = 27.4; // the sleeping/serving half | the living room
 const BED_3_W = 2.0; // living room | north-east bedroom
+const LARDER = 26.2; // bathroom | larder, on the servant side
 const PORCH = rect(-9.5, 23, 4, 8);
 const GARAGE = rect(7, 20, 7, 7);
 const GREENHOUSE = rect(-10, 36, 5, 6);
@@ -184,7 +185,8 @@ const houseInternals: WallSpec[] = [
   // The spine's east wall, with the kitchen and bathroom doors.
   partition("P-hall-e", [SPINE_E, 20.3], [SPINE_E, DAY], [
     doorOpening("d-kitchen", 1.3, 0.9, 2.1),
-    doorOpening("d-bath", 5.0, 0.8, 2.1),
+    doorOpening("d-bath", 4.3, 0.8, 2.1),
+    doorOpening("d-larder", 6.1, 0.7, 2.1),
   ]),
   // Between the two west bedrooms. No door: a bedroom reached through another
   // bedroom is the thing a central hall exists to avoid.
@@ -192,6 +194,19 @@ const houseInternals: WallSpec[] = [
   // Kitchen | bathroom — the plumbing wall, so both wet rooms share one stack
   // of pipes instead of running two.
   partition("P-wet", [SPINE_E, WET], [5.2, WET]),
+  /**
+   * Bathroom | larder.
+   *
+   * The servant side was one 12.2 m² room called a bathroom, which is roughly
+   * twice what a bathroom is and left the house with nowhere to keep food. A
+   * *cămară* is not a nicety in a farmhouse with a kitchen garden and an
+   * orchard — it is where the year's produce lives.
+   *
+   * Split north–south rather than east–west so **both** halves keep the east
+   * external wall: a bathroom with no window and a larder with no ventilation
+   * are each worse than the oversized room they came from.
+   */
+  partition("P-larder", [SPINE_E, LARDER], [5.2, LARDER]),
   // The day/night line. West of the hall it closes the bedrooms off; east of it
   // the bathroom. The living-room door is the wide one, on the spine.
   partition("P-day-w", [-5.2, DAY], [SPINE_W, DAY]),
@@ -199,14 +214,30 @@ const houseInternals: WallSpec[] = [
     doorOpening("d-living", 0.3, 1.2, 2.3),
   ]),
   partition("P-day-e", [SPINE_E, DAY], [5.2, DAY]),
-  // Living room | bedroom 3.
-  partition("P-bed3", [BED_3_W, DAY], [BED_3_W, 31.7], [doorOpening("d-bed3", 0.6, 0.9, 2.1)]),
-  // The chimney: 1.4 × 0.7 of masonry, carried to 8.4 m — clear of a ridge that
-  // stands at 7.69.
+  // Living room | bedroom 3. Runs the full depth to the north wall's inner
+  // face: stopping at 31.7 left a 150 mm slot joining the two rooms.
+  partition("P-bed3", [BED_3_W, DAY], [BED_3_W, 31.85], [doorOpening("d-bed3", 0.6, 0.9, 2.1)]),
+  /**
+   * The chimney: 1.4 × 0.7 of masonry, carried to 8.4 m — clear of a ridge
+   * that stands at 7.69.
+   *
+   * **West of the hall, not on it.** It first stood from x −0.4 to 1.0 on this
+   * same line, which is exactly where `d-living` is: a 1.4 m masonry mass built
+   * across the whole 1.2 m of the only door into the living room. The plan had
+   * no way in. Nothing caught it because nothing in the document knew there was
+   * a room on either side — which is what `Room` is for, and this is the bug
+   * that found it.
+   *
+   * Moving it here keeps the point brief 46 made about flue placement: it still
+   * sits on an **internal** wall (`P-day-w`), so the mass stays inside the
+   * envelope where it gives its heat back, and it still penetrates near the
+   * ridge. It is now centred on the living room's western half, which is where
+   * the seating goes.
+   */
   {
     id: "P-chimney",
-    start: [-0.4, DAY],
-    end: [1.0, DAY],
+    start: [-3.6, DAY],
+    end: [-2.2, DAY],
     material: "plaster-lime",
     thickness: 0.7,
     height: 8.4,
@@ -284,6 +315,88 @@ const boundaryWall: WallSpec = {
   ],
 };
 
+
+/* ── the rooms ─────────────────────────────────────────────────── */
+
+/**
+ * The seven spaces the partitions make, named.
+ *
+ * Every number here is **derived from the same constants the walls are built
+ * from** — `SPINE_W`, `WET`, `DAY` and the rest — rather than transcribed from
+ * them. A room outline typed out by hand is a second copy of the plan, and this
+ * repo has watched two copies of one number drift apart often enough to stop
+ * doing it. Move `WET` and the kitchen and the bathroom follow.
+ *
+ * Outlines run to the **inner faces**, because a schedule of areas quotes the
+ * floor a person stands on: external walls are 300 mm centred on the footprint,
+ * so 150 mm in; partitions are 120 mm, so 60 mm each side.
+ */
+const EXT = 0.15; // half the external wall
+const PART = 0.06; // half a partition
+
+/** Inner faces of the external envelope. */
+const IN_W = -5.5 + EXT;
+const IN_E = 5.5 - EXT;
+const IN_S = 20 + EXT;
+const IN_N = 32 - EXT;
+
+const room = (
+  id: string,
+  name: string,
+  use: "living" | "bed" | "kitchen" | "bath" | "hall" | "store" | "utility",
+  x1: number,
+  z1: number,
+  x2: number,
+  z2: number,
+) => ({ id, name, use, polygon: rect(x1, z1, x2 - x1, z2 - z1) as [number, number][] });
+
+const houseRooms = [
+  /**
+   * The hall — the Banat *tindă*.
+   *
+   * Narrow and deep on purpose: it is circulation, and every square metre it
+   * takes is one a room does not get. It reaches all six other spaces, so no
+   * room is entered through another.
+   */
+  room("r-hall", "Hall", "hall", SPINE_W + PART, IN_S, SPINE_E - PART, DAY - PART),
+
+  // The quiet west side, both bedrooms off the hall.
+  room("r-bed-1", "Bedroom 1", "bed", IN_W, IN_S, SPINE_W - PART, BED_1_2 - PART),
+  room("r-bed-2", "Bedroom 2", "bed", IN_W, BED_1_2 + PART, SPINE_W - PART, DAY - PART),
+
+  // The servant side: kitchen and bathroom back to back across the one
+  // plumbing wall, so a single stack of pipes serves both.
+  room("r-kitchen", "Kitchen", "kitchen", SPINE_E + PART, IN_S, IN_E, WET - PART),
+  room("r-bath", "Bathroom", "bath", SPINE_E + PART, WET + PART, IN_E, LARDER - PART),
+  room("r-larder", "Larder", "store", SPINE_E + PART, LARDER + PART, IN_E, DAY - PART),
+
+  /**
+   * The living room, with the chimney breast cut out of its south wall.
+   *
+   * Notched rather than left as a rectangle: the breast projects 290 mm into
+   * the room, and a schedule that counts floor the fireplace stands on is
+   * quoting a number nobody can use. This is the only room here that is not a
+   * rectangle, and it is not one for a reason the drawing will show.
+   */
+  {
+    id: "r-living",
+    name: "Living Room",
+    use: "living" as const,
+    polygon: [
+      [IN_W, DAY + PART],
+      [-3.6 - 0.05, DAY + PART],
+      [-3.6 - 0.05, DAY + 0.35],
+      [-2.2 + 0.05, DAY + 0.35],
+      [-2.2 + 0.05, DAY + PART],
+      [BED_3_W - PART, DAY + PART],
+      [BED_3_W - PART, IN_N],
+      [IN_W, IN_N],
+    ] as [number, number][],
+  },
+
+  // The third bedroom takes the north-east corner, off the living room.
+  room("r-bed-3", "Bedroom 3", "bed", BED_3_W + PART, DAY + PART, IN_E, IN_N),
+];
 
 /* ── the ground between the buildings ──────────────────────────── */
 
@@ -599,6 +712,7 @@ const greenhollow: SceneDocumentInput = {
         elevation: 0,
         height: HOUSE_EAVE,
         walls: [...houseWalls, ...garageWalls, ...greenhouseWalls, boundaryWall],
+        rooms: houseRooms,
         slabs: [
           { id: "slab-house", polygon: HOUSE, thickness: 0.3, material: "slab-concrete" },
           { id: "slab-porch", polygon: PORCH, thickness: 0.2, material: "slab-concrete" },
@@ -756,9 +870,12 @@ const greenhollow: SceneDocumentInput = {
        * where a hearth should be reads worse than an empty room, which is the
        * same call the pond's absent fountain got.
        */
-      { id: "chair-hearth-w", asset: "polyhaven/ArmChair_01", position: [-0.75, 0, 29.5], rotationY: 152 },
-      { id: "chair-hearth-e", asset: "polyhaven/ArmChair_01", position: [1.35, 0, 29.5], rotationY: 208 },
-      { id: "table-hearth", asset: "polyhaven/CoffeeTable_01", position: [0.3, 0, 29.1], rotationY: 0 },
+      // Moved west with the chimney. The grouping is the same — two chairs and
+      // a table addressing the breast — because a masonry mass with nothing
+      // facing it reads as a pier rather than as a fireplace.
+      { id: "chair-hearth-w", asset: "polyhaven/ArmChair_01", position: [-3.95, 0, 29.5], rotationY: 152 },
+      { id: "chair-hearth-e", asset: "polyhaven/ArmChair_01", position: [-1.85, 0, 29.5], rotationY: 208 },
+      { id: "table-hearth", asset: "polyhaven/CoffeeTable_01", position: [-2.9, 0, 29.1], rotationY: 0 },
       // A bench under the vine and a table out on the grass. Deliberately a
       // little above the ground — drop-to-floor is what settles them.
       //
