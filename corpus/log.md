@@ -977,3 +977,32 @@ picked by enclosed area now, then every wall inside it adopted.
 package — and two of them found real bugs in the existing plan within minutes
 of existing. That is the argument for making implicit things explicit: not that
 the model is tidier, but that a thing with a name can be checked.
+
+## 2026-09-13 — A box does not rest on its middle
+
+The one open todo, closed. `dropToRest` reported *"settled on nothing"* for a
+placement that had plainly come to rest, and the cause was one line of intent:
+`surfaceBelow` cast a **single ray from the box's centre**. It could only find
+what was under the middle, so anything supporting a corner was invisible.
+
+It probes the footprint now — centre plus four corners, inset 20 mm so an edge
+ray does not skim past. All five share one origin height, which makes the
+smallest time-of-impact the highest surface, which is the thing the box is
+resting on.
+
+**Why this was a real bug and not a theoretical one** is worth keeping: a
+placement collider carries a `rotationY`, and a rotated box occupies more
+ground than its own sides. Greenhollow's armchairs are 0.78 × 0.83 turned 152°,
+so their footprint is about **1.08 m** — 38 % wider. Sitting them 1.05 m from
+the coffee table looked like clearance and was not.
+
+Which is how the fix earned its keep twice. With the probe working,
+`table-hearth` came back as *"settled on chair-hearth-e"* — true, and a layout
+fault introduced by brief 48's chimney move. The chairs are 1.45 m apart now.
+
+The diagnosis was worth the detour: the numbers said nothing was under the
+table (three colliders, tops at 0.00, 0.45 and one muted), and the trace said
+it stopped dead at y = 1.051 with velocity 0. Those two facts could not both be
+true of an axis-aligned world, which is what pointed at the rotation.
+
+430 tests.

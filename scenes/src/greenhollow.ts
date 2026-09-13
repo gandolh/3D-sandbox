@@ -873,8 +873,13 @@ const greenhollow: SceneDocumentInput = {
       // Moved west with the chimney. The grouping is the same — two chairs and
       // a table addressing the breast — because a masonry mass with nothing
       // facing it reads as a pier rather than as a fireplace.
-      { id: "chair-hearth-w", asset: "polyhaven/ArmChair_01", position: [-3.95, 0, 29.5], rotationY: 152 },
-      { id: "chair-hearth-e", asset: "polyhaven/ArmChair_01", position: [-1.85, 0, 29.5], rotationY: 208 },
+      // 1.45 m either side of the table, not 1.05. An armchair is 0.78 × 0.83
+      // but it is turned 152°, and a rotated box has a wider footprint than
+      // its own sides — about 1.08 m across here. At 1.05 the chairs reached
+      // *under* the table, which drop-to-floor duly reported by settling the
+      // table on one of them.
+      { id: "chair-hearth-w", asset: "polyhaven/ArmChair_01", position: [-4.35, 0, 29.5], rotationY: 152 },
+      { id: "chair-hearth-e", asset: "polyhaven/ArmChair_01", position: [-1.45, 0, 29.5], rotationY: 208 },
       { id: "table-hearth", asset: "polyhaven/CoffeeTable_01", position: [-2.9, 0, 29.1], rotationY: 0 },
       // A bench under the vine and a table out on the grass. Deliberately a
       // little above the ground — drop-to-floor is what settles them.

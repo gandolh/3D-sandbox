@@ -165,6 +165,18 @@ export class PhysicsWorld {
   /**
    * What is directly beneath a resting box, in the document's own language.
    *
+   * **Five rays, not one.** A single ray from the box's centre only finds what
+   * is under its *middle*, and a box does not have to rest on its middle —
+   * anything holding up a corner is invisible to it. That is not a corner case
+   * here, it is the common one: placement colliders carry a `rotationY`, so a
+   * 0.78 × 0.83 armchair turned 152° has a **1.08 m** footprint, and the
+   * coffee table beside it comes to rest on a chair arm its centre ray sails
+   * straight past. The drop worked and reported "settled on nothing", because
+   * nothing was under the middle.
+   *
+   * All five share one origin height, so the smallest time-of-impact is the
+   * highest surface — which is what the box is actually resting on.
+   *
    * Every hit is gathered rather than just the first, because a building's floor
    * slab and the ground it sits on are coplanar by construction — both top out
    * at the level's finished floor. The nearest hit is then whichever the broad
@@ -179,26 +191,40 @@ export class PhysicsWorld {
     // Start above the box's underside so a body that sank into the surface is
     // still measured against the surface, not from inside it.
     const originY = position[1] - halfExtents[1] + 0.25;
-    const ray = new RAPIER.Ray({ x: position[0], y: originY, z: position[2] }, { x: 0, y: -1, z: 0 });
+    // Corners pulled in by a hair: a ray exactly on the edge of the box is as
+    // likely to miss the thing under it as to hit it.
+    const inset = 0.02;
+    const dx = Math.max(0, halfExtents[0] - inset);
+    const dz = Math.max(0, halfExtents[2] - inset);
+    const origins: [number, number][] = [
+      [position[0], position[2]],
+      [position[0] - dx, position[2] - dz],
+      [position[0] + dx, position[2] - dz],
+      [position[0] + dx, position[2] + dz],
+      [position[0] - dx, position[2] + dz],
+    ];
 
     let best: { entity: string; toi: number; specific: boolean } | null = null;
-    this.world.intersectionsWithRay(ray, 0.6, true, (hit) => {
-      const collider = this.byHandle.get(hit.collider.handle);
-      if (collider === undefined) return true;
-      const candidate = {
-        entity: collider.entity,
-        toi: hit.timeOfImpact,
-        specific: collider.source !== "terrain",
-      };
-      if (
-        best === null ||
-        (candidate.specific && !best.specific) ||
-        (candidate.specific === best.specific && candidate.toi < best.toi)
-      ) {
-        best = candidate;
-      }
-      return true; // keep looking; coplanar surfaces are the whole problem
-    });
+    for (const [ox, oz] of origins) {
+      const ray = new RAPIER.Ray({ x: ox, y: originY, z: oz }, { x: 0, y: -1, z: 0 });
+      this.world.intersectionsWithRay(ray, 0.6, true, (hit) => {
+        const collider = this.byHandle.get(hit.collider.handle);
+        if (collider === undefined) return true;
+        const candidate = {
+          entity: collider.entity,
+          toi: hit.timeOfImpact,
+          specific: collider.source !== "terrain",
+        };
+        if (
+          best === null ||
+          (candidate.specific && !best.specific) ||
+          (candidate.specific === best.specific && candidate.toi < best.toi)
+        ) {
+          best = candidate;
+        }
+        return true; // keep looking; coplanar surfaces are the whole problem
+      });
+    }
 
     if (best === null) return null;
     const found = best as { entity: string; toi: number };

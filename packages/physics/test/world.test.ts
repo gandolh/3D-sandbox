@@ -239,3 +239,87 @@ describe("ignoreEntity", () => {
     world.dispose();
   });
 });
+
+describe("what a box is resting on, when it is not resting on its middle", () => {
+  const sizes = {
+    get: (id: string) =>
+      id === "a/chair" ? ([0.78, 0.86, 0.83] as const) : id === "a/post" ? ([0.3, 0.6, 0.3] as const) : undefined,
+  };
+
+  const withChair = (rotationY: number): SceneDocument => {
+    const doc = baseScene();
+    return {
+      ...doc,
+      subject: {
+        ...doc.subject,
+        placements: [{ id: "chair-01", asset: "a/chair", position: [2, 0, 2], rotationY, scale: 1 }],
+      },
+    };
+  };
+
+  it("names the thing holding up a corner, not the empty space under the middle", async () => {
+    // The bug this is for: `surfaceBelow` cast **one** ray, from the box's
+    // centre. A box does not have to rest on its middle, so anything holding
+    // up a corner was invisible and the drop reported "settled on nothing".
+    //
+    // Chair at x = 2 spans 1.61…2.39. The box spans 2.30…3.50 and overlaps it
+    // by 90 mm, while its **centre at x = 2.9 is half a metre clear** — which
+    // is precisely what one centre ray cannot see.
+    const world = await PhysicsWorld.create(withChair(0), sizes);
+    const result = world.dropToRest([2.9, 3, 2], { halfExtents: [0.6, 0.225, 0.3] });
+    expect(result.settled).toBe(true);
+    expect(result.restingOn).toBe("chair-01");
+    // And, having found the surface, it snaps to it — the old code could not,
+    // because it had nothing to snap to.
+    expect(result.position[1]).toBeCloseTo(0.86 + 0.225, 2);
+    world.dispose();
+  });
+
+  it("still reports the floor for a box that clears the chair entirely", async () => {
+    const world = await PhysicsWorld.create(withChair(0), sizes);
+    const result = world.dropToRest([5, 3, 2], { halfExtents: [0.6, 0.225, 0.3] });
+    expect(result.restingOn).toBe("slab-1");
+    expect(result.position[1]).toBeCloseTo(0.225, 2);
+    world.dispose();
+  });
+
+  it("sees a rotated neighbour, whose footprint is wider than its own sides", async () => {
+    // Why this bit in a real scene rather than in a contrived one: placement
+    // colliders carry a `rotationY`, and a 0.78 × 0.83 armchair turned 152°
+    // occupies about **1.08 m** across — 38 % wider than the box it is made
+    // of. Greenhollow's chairs sat 1.05 m from the coffee table, which looked
+    // like clearance and was not.
+    const world = await PhysicsWorld.create(withChair(152), sizes);
+    const straight = await PhysicsWorld.create(withChair(0), sizes);
+    const at = (w: PhysicsWorld) =>
+      w.dropToRest([2.52, 3, 2], { halfExtents: [0.1, 0.1, 0.1] }).restingOn;
+    // x = 2.52 is outside the chair's own 0.78 m width and inside the footprint
+    // it has once turned.
+    expect(at(straight)).toBe("slab-1");
+    expect(at(world)).toBe("chair-01");
+    world.dispose();
+    straight.dispose();
+  });
+
+  it("takes the highest support under the footprint, not the first one found", async () => {
+    // Two things underneath at different heights. A box bridging both rests on
+    // the taller one, and that is what it must report — all five rays share an
+    // origin height, so the smallest time-of-impact is the highest surface.
+    const doc = baseScene();
+    const bridged: SceneDocument = {
+      ...doc,
+      subject: {
+        ...doc.subject,
+        placements: [
+          { id: "tall", asset: "a/chair", position: [2, 0, 2], rotationY: 0, scale: 1 },
+          { id: "short", asset: "a/post", position: [3.4, 0, 2], rotationY: 0, scale: 1 },
+        ],
+      },
+    };
+    const world = await PhysicsWorld.create(bridged, sizes);
+    const result = world.dropToRest([2.7, 3, 2], { halfExtents: [0.75, 0.1, 0.3] });
+    expect(result.restingOn).toBe("tall");
+    expect(result.position[1]).toBeCloseTo(0.86 + 0.1, 2);
+    world.dispose();
+  });
+});
