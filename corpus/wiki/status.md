@@ -145,7 +145,7 @@ nothing"* when it settled on a slab.
 | 49 | [A drawing, not a screenshot](../briefs/done/49-a-drawing-not-a-screenshot.md) | done |
 | 50 | [A dragged placement springs back](../briefs/done/50-a-dragged-placement-springs-back.md) | done |
 | 51 | [Every keystroke rebuilds the scene](../briefs/done/51-every-keystroke-rebuilds-the-scene.md) | done |
-| 52 | [The vine allocates four thousand geometries](../briefs/todo/52-the-vine-allocates-four-thousand-geometries.md) | todo |
+| 52 | [The vine allocates four thousand geometries](../briefs/done/52-the-vine-allocates-four-thousand-geometries.md) | done |
 | 53 | [No linter, no formatter](../briefs/todo/53-no-linter-no-formatter.md) | todo |
 | 54 | [Scenes typecheck green and crash](../briefs/todo/54-scenes-typecheck-green-and-crash.md) | todo |
 | 55 | [No test can touch the interface](../briefs/done/55-no-test-can-touch-the-interface.md) | done |

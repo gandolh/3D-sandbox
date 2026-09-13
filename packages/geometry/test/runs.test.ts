@@ -1,6 +1,7 @@
+import * as THREE from "three";
 import { describe, expect, it } from "vitest";
 import type { Run } from "@solstice/schema";
-import { buildRun, runLength } from "../src/subject/runs.js";
+import { buildRun, runLength, type Canopy } from "../src/subject/runs.js";
 
 const run = (over: Partial<Run> = {}): Run => ({
   id: "r",
@@ -33,6 +34,29 @@ const boxOf = (geometries: { getAttribute(n: string): { array: ArrayLike<number>
   return { minX, maxX, minY, maxY };
 };
 
+/**
+ * The canopy's bounding box **in the world**, which means applying each
+ * instance's matrix.
+ *
+ * The canopy is one shared geometry plus a transform per cluster now, so its
+ * own vertices sit around the origin and say nothing about where the vine is.
+ * The spatial assertions below are about where the leaves end up, so they have
+ * to go through the transforms — which is also the only way they would notice
+ * if the transforms stopped being applied at all.
+ */
+const canopyBox = (canopy: Canopy) => {
+  const box = new THREE.Box3();
+  const point = new THREE.Vector3();
+  const position = canopy.geometry.getAttribute("position");
+  for (const matrix of canopy.transforms) {
+    for (let i = 0; i < position.count; i++) {
+      point.fromBufferAttribute(position as THREE.BufferAttribute, i).applyMatrix4(matrix);
+      box.expandByPoint(point);
+    }
+  }
+  return { minX: box.min.x, maxX: box.max.x, minY: box.min.y, maxY: box.max.y };
+};
+
 describe("runLength", () => {
   it("sums the segments of a polyline", () => {
     expect(runLength(run({ path: [[0, 0], [0, 3], [4, 3]] }))).toBeCloseTo(7, 6);
@@ -47,7 +71,7 @@ describe("buildRun", () => {
   it("builds a hedge as one solid per segment, with no climber", () => {
     const { structure, climber } = buildRun(run({ kind: "hedge", path: [[0, 0], [0, 10]] }));
     expect(structure).toHaveLength(1);
-    expect(climber).toHaveLength(0);
+    expect(climber).toBeNull();
   });
 
   it("stands a hedge on the ground at its declared height", () => {
@@ -99,9 +123,9 @@ describe("buildRun", () => {
   });
 
   it("only grows a climber on a pergola that declares one", () => {
-    expect(buildRun(run()).climber).toHaveLength(0);
-    expect(buildRun(run({ climber: "vine" })).climber.length).toBeGreaterThan(0);
-    expect(buildRun(run({ kind: "fence", climber: "vine" })).climber).toHaveLength(0);
+    expect(buildRun(run()).climber).toBeNull();
+    expect(buildRun(run({ climber: "vine" })).climber!.transforms.length).toBeGreaterThan(0);
+    expect(buildRun(run({ kind: "fence", climber: "vine" })).climber).toBeNull();
   });
 
   it("sits the climber on the beams, hanging a little through them", () => {
@@ -109,41 +133,75 @@ describe("buildRun", () => {
     // clusters tilted to catch the light necessarily dip below their centres.
     // What matters is that the mass is on top and the droop is a hand's width,
     // not that the canopy floats clear of the structure.
+    //
+    // The bound is 0.40 rather than 0.25 since the canopy became instanced.
+    // The old version tilted each quad about the world X axis and *then* spun
+    // the pair by angles 90° apart, which does not compose to a right angle —
+    // so the two quads were never actually perpendicular and their combined
+    // extent was smaller by accident. Building the pair crossed once and
+    // transforming it rigidly makes the crossing real, and a genuinely
+    // perpendicular pair reaches about 80 mm further down. Measured 0.333.
     const { structure, climber } = buildRun(run({ climber: "vine" }));
     const top = boxOf(structure).maxY;
-    const canopy = boxOf(climber);
+    const canopy = canopyBox(climber!);
     expect(canopy.maxY).toBeGreaterThan(top);
-    expect(top - canopy.minY).toBeLessThan(0.25);
+    expect(top - canopy.minY).toBeLessThan(0.4);
   });
 
   it("crosses each cluster, so it reads from below as well as from the side", () => {
     // A single flat quad is a sliver at a grazing angle, and the approach shot
     // views the canopy from directly underneath.
     const { climber } = buildRun(run({ climber: "vine" }));
-    const first = climber[0]!;
-    const p = first.getAttribute("position");
-    const count = first.index === null ? p.count : first.index.count;
+    const geometry = climber!.geometry;
+    const p = geometry.getAttribute("position");
+    const count = geometry.index === null ? p.count : geometry.index.count;
+    // Two quads, four triangles — one shared geometry now, instanced per
+    // cluster rather than rebuilt for each one.
     expect(count / 3).toBe(4);
+
+    // And the two quads are genuinely perpendicular. Building the pair once and
+    // transforming it rigidly is what guarantees that; the previous version
+    // tilted each quad about the world X axis and *then* spun them by angles
+    // 90° apart, which does not compose to a right angle.
+    const normals: THREE.Vector3[] = [];
+    const a = new THREE.Vector3();
+    const b = new THREE.Vector3();
+    const c = new THREE.Vector3();
+    for (let i = 0; i < p.count; i += 3) {
+      a.fromBufferAttribute(p as THREE.BufferAttribute, i);
+      b.fromBufferAttribute(p as THREE.BufferAttribute, i + 1);
+      c.fromBufferAttribute(p as THREE.BufferAttribute, i + 2);
+      normals.push(b.clone().sub(a).cross(c.clone().sub(a)).normalize());
+    }
+    const across = normals.find((n) => Math.abs(n.dot(normals[0]!)) < 0.01);
+    expect(across, "the two quads are not at right angles").toBeDefined();
   });
 
   it("builds the climber from many small clusters, not one slab", () => {
     // A slab reads as a black soffit from underneath. What makes a vine a vine
     // is that light comes through it in patches, so the gaps are the feature.
     const { climber } = buildRun(run({ climber: "vine" }));
-    expect(climber.length).toBeGreaterThan(200);
-    const box = boxOf(climber);
+    expect(climber!.transforms.length).toBeGreaterThan(200);
+    const box = canopyBox(climber!);
     // Each cluster is a fraction of a metre; the canopy as a whole is metres.
     expect(box.maxX - box.minX).toBeGreaterThan(3);
     expect(box.maxY - box.minY).toBeLessThan(1);
   });
 
   it("is deterministic in the run's id", () => {
-    const a = buildRun(run({ id: "p1", climber: "vine" })).climber.length;
-    const b = buildRun(run({ id: "p1", climber: "vine" })).climber.length;
-    const c = buildRun(run({ id: "p2", climber: "vine" })).climber;
-    expect(a).toBe(b);
+    const first = buildRun(run({ id: "p1", climber: "vine" })).climber!;
+    const again = buildRun(run({ id: "p1", climber: "vine" })).climber!;
+    // Element-by-element, not just the count: the same id must place the same
+    // leaves, or every render of the pergola changes between reloads.
+    expect(again.transforms.map((m) => m.elements.join(","))).toEqual(
+      first.transforms.map((m) => m.elements.join(",")),
+    );
+
     // A different pergola gets different foliage, not a copy of the first.
-    expect(boxOf(c).minY).not.toBe(boxOf(buildRun(run({ id: "p1", climber: "vine" })).climber).minY);
+    const other = buildRun(run({ id: "p2", climber: "vine" })).climber!;
+    expect(other.transforms[0]!.elements.join(",")).not.toBe(
+      first.transforms[0]!.elements.join(","),
+    );
   });
 
   it("forces the last bay onto the path's end", () => {

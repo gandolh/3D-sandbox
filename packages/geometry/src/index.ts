@@ -209,19 +209,37 @@ export function generateScene(
       attach(subject, stats.subject, mergeSimple(structure), run.material, `run:${run.id}`);
       for (const part of structure) part.dispose();
     }
-    if (climber.length > 0 && run.climber !== undefined) {
-      // Two-sided, because a leaf is a plane and a plane has a back.
+    if (climber !== null && run.climber !== undefined && climber.transforms.length > 0) {
+      // One `InstancedMesh` for the whole canopy: same triangles, same single
+      // draw call, but built from one geometry and a matrix per cluster
+      // instead of thousands of geometries. See `canopy` for the measurement.
       //
-      // The cluster is two quads crossed precisely so foliage reads from any
-      // direction — and with the default `FrontSide` every triangle facing away
-      // from the viewer was culled, so from underneath the canopy the approach
-      // shot showed sky through it. Same class as the inverted roads and
-      // roofs, different mechanism: nothing here is wound backwards, the
+      // Two-sided, because a leaf is a plane and a plane has a back. The
+      // cluster is two quads crossed precisely so foliage reads from any
+      // direction — and with the default `FrontSide` every triangle facing
+      // away from the viewer was culled, so from underneath the canopy the
+      // approach shot showed sky through it. Same class as the inverted roads
+      // and roofs, different mechanism: nothing here is wound backwards, the
       // surface simply only had one side and needed two.
-      attach(subject, stats.subject, mergeSimple(climber), run.climber, `run:${run.id}:climber`, {
-        twoSided: true,
+      const shared = resolveMaterial(materials, run.climber);
+      const leafMaterial = Object.assign(shared.clone(), {
+        side: THREE.DoubleSide,
+        name: shared.name,
       });
-      for (const part of climber) part.dispose();
+      const mesh = new THREE.InstancedMesh(
+        climber.geometry,
+        leafMaterial,
+        climber.transforms.length,
+      );
+      mesh.name = `run:${run.id}:climber`;
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      climber.transforms.forEach((matrix, i) => mesh.setMatrixAt(i, matrix));
+      mesh.instanceMatrix.needsUpdate = true;
+      owned.push(climber.geometry);
+      subject.add(mesh);
+      stats.subject.meshes++;
+      stats.subject.triangles += triangleCount(climber.geometry) * climber.transforms.length;
     }
   }
 
