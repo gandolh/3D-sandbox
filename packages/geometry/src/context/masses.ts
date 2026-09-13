@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { bounds, degToRad, type BuildingMass, type RoadNetwork } from "@solstice/schema";
+import { bounds, degToRad, type BuildingMass, type Paving, type RoadNetwork } from "@solstice/schema";
 import { extrudePolygon } from "../polygon.js";
 import { mergeSimple } from "./scatter.js";
 import { ensureStandardAttributes } from "../attributes.js";
@@ -101,4 +101,27 @@ export function buildRoad(road: RoadNetwork): THREE.BufferGeometry {
   geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
   geometry.computeVertexNormals();
   return ensureStandardAttributes(geometry);
+}
+
+/**
+ * A paved area: a flat polygon lying just proud of the terrain.
+ *
+ * Extruded rather than drawn as a flat face, so it has an edge. That edge is
+ * the whole reason `Paving.thickness` exists — a courtyard coplanar with the
+ * lawn z-fights with it, and a laid surface really does stand a few centimetres
+ * above the earth beside it. At 40 mm the edge reads as a kerb line at render
+ * scale and as nothing at all from across the plot, which is correct for both.
+ *
+ * `extrudePolygon` handles the winding, and `geometry.test.ts`'s facing guard
+ * is pointed at the result: a paving slab whose top faces the earth is
+ * invisible, and a bounding-box assertion cannot tell the difference.
+ */
+export function buildPaving(paving: Paving): THREE.BufferGeometry {
+  // `extrudePolygon(polygon, base, height)` puts the solid at
+  // y ∈ [base, base + height], so base 0 stands the paving *on* the ground with
+  // its walking surface at `thickness`. Passing `-thickness` — which is the
+  // reading that feels right, because the surface is the thing you are
+  // positioning — buries it instead, with its top exactly coplanar with the
+  // lawn and z-fighting against it. The facing guard caught that.
+  return extrudePolygon(paving.polygon, 0, paving.thickness);
 }

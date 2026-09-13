@@ -570,6 +570,7 @@
     ]
   },
   "context": {
+    "paving": [],
     "scatter": [
       {
         "id": "yard-planting",

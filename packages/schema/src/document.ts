@@ -267,7 +267,40 @@ export const RoadNetwork = z.strictObject({
   material: MaterialId,
 });
 
+/**
+ * A paved area on the ground: a courtyard, a drive, a footpath, an apron.
+ *
+ * Not a `Slab` and not a `RoadNetwork`, and the difference is not pedantry.
+ * A slab is a **building's floor** — it belongs to a level and
+ * `roof-covers-walls` reads it to decide whether a roof shelters something. A
+ * road is a **ribbon** swept from a centreline, which is the right model for a
+ * carriageway and the wrong one for a courtyard with a corner cut off it.
+ * Paving is a polygon lying on the ground, in the context tier, because it is
+ * site rather than building.
+ *
+ * It exists because everything a person walks on at Greenhollow was lawn. In a
+ * Banat yard that is not merely unfinished, it is wrong: those courtyards are
+ * traditionally *paved with brick and stone, for letting the earth breathe, and
+ * not by cement, which brings dampness to the houses* — a permeable-paving
+ * argument made a couple of centuries before the phrase existed, and the reason
+ * the courtyard here is brick and only the car track is gravel.
+ */
+export const Paving = z.strictObject({
+  id: Id,
+  polygon: PolygonSchema,
+  material: MaterialId,
+  /**
+   * How proud of the terrain it sits, in metres.
+   *
+   * Small and non-zero on purpose: coplanar with the ground is z-fighting, and
+   * a kerb you can trip over is not a courtyard. 20–60 mm is the range a laid
+   * surface actually stands above the earth beside it.
+   */
+  thickness: PositiveMeters.max(0.5).default(0.04),
+});
+
 export const Context = z.strictObject({
+  paving: Paving.array().default([]),
   scatter: ScatterField.array().default([]),
   masses: BuildingMass.array().default([]),
   roads: RoadNetwork.array().default([]),
@@ -401,6 +434,7 @@ export type SolarTime = z.infer<typeof SolarTime>;
 export type Shot = z.infer<typeof Shot>;
 export type Run = z.infer<typeof Run>;
 export type Keyframe = z.infer<typeof Keyframe>;
+export type Paving = z.infer<typeof Paving>;
 export type Track = z.infer<typeof Track>;
 export type Animation = z.infer<typeof Animation>;
 export type Easing = z.infer<typeof Easing>;

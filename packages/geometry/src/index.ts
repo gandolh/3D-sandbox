@@ -17,7 +17,7 @@ import {
 } from "./context/scatter.js";
 import { buildImpostorGeometry, impostorMaterial } from "./context/impostor.js";
 import { boxProjectUv } from "./uv.js";
-import { buildMass, buildRoad } from "./context/masses.js";
+import { buildMass, buildPaving, buildRoad } from "./context/masses.js";
 
 export * from "./random.js";
 export * from "./attributes.js";
@@ -307,6 +307,11 @@ export function generateScene(
     }
     for (const road of doc.context.roads) {
       attach(context, stats.context, buildRoad(road), road.material, `road:${road.id}`);
+    }
+    // After the roads, so where a courtyard meets the drive the laid surface
+    // wins the depth test rather than the two flickering against each other.
+    for (const paving of doc.context.paving) {
+      attach(context, stats.context, buildPaving(paving), paving.material, `paving:${paving.id}`);
     }
   }
 

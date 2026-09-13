@@ -1,3 +1,4 @@
+import { materialReferences } from "../../derive/materials.js";
 import type { RawFinding, Rule } from "../types.js";
 
 /**
@@ -8,48 +9,17 @@ import type { RawFinding, Rule } from "../types.js";
 export const materialResolves: Rule = {
   name: "material-resolves",
   run(doc) {
-    const out: RawFinding[] = [];
     const known = new Set(Object.keys(doc.materials));
-
-    const check = (id: string | undefined, path: string, owner: string): void => {
-      if (id === undefined) return;
-      if (known.has(id)) return;
+    const out: RawFinding[] = [];
+    for (const { id, path, owner } of materialReferences(doc)) {
+      if (known.has(id)) continue;
       out.push({
         rule: "material-resolves",
         severity: "error",
         path,
         message: `${owner} references material "${id}", which is not in the document's materials table`,
       });
-    };
-
-    check(doc.site.terrain.material, "site.terrain", "terrain");
-    doc.subject.levels.forEach((level, li) => {
-      level.walls.forEach((w, wi) => {
-        const p = `subject.levels[${li}].walls[${wi}]`;
-        check(w.material, p, `wall "${w.id}"`);
-        w.openings.forEach((o, oi) =>
-          check(o.material, `${p}.openings[${oi}]`, `opening "${o.id}"`),
-        );
-      });
-      level.slabs.forEach((s, si) =>
-        check(s.material, `subject.levels[${li}].slabs[${si}]`, `slab "${s.id}"`),
-      );
-    });
-    doc.subject.roofs.forEach((r, i) => check(r.material, `subject.roofs[${i}]`, `roof "${r.id}"`));
-    doc.subject.runs.forEach((r, i) => {
-      check(r.material, `subject.runs[${i}]`, `${r.kind} "${r.id}"`);
-      if (r.climber !== undefined) {
-        check(r.climber, `subject.runs[${i}].climber`, `climber on ${r.kind} "${r.id}"`);
-      }
-    });
-    doc.context.masses.forEach((m, i) =>
-      check(m.material, `context.masses[${i}]`, `mass "${m.id}"`),
-    );
-    doc.context.roads.forEach((r, i) => check(r.material, `context.roads[${i}]`, `road "${r.id}"`));
-    doc.context.scatter.forEach((f, i) => {
-      if (f.material !== undefined) check(f.material, `context.scatter[${i}]`, `scatter "${f.id}"`);
-    });
-
+    }
     return out;
   },
 };
@@ -61,22 +31,8 @@ export const materialResolves: Rule = {
 export const materialsAreUsed: Rule = {
   name: "materials-are-used",
   run(doc) {
-    const used = new Set<string>([doc.site.terrain.material]);
-    for (const level of doc.subject.levels) {
-      for (const w of level.walls) {
-        used.add(w.material);
-        for (const o of w.openings) if (o.material !== undefined) used.add(o.material);
-      }
-      for (const s of level.slabs) used.add(s.material);
-    }
-    for (const r of doc.subject.roofs) used.add(r.material);
-    for (const r of doc.subject.runs) {
-      used.add(r.material);
-      if (r.climber !== undefined) used.add(r.climber);
-    }
-    for (const m of doc.context.masses) used.add(m.material);
-    for (const r of doc.context.roads) used.add(r.material);
-    for (const f of doc.context.scatter) if (f.material !== undefined) used.add(f.material);
+    const used = new Set<string>();
+    for (const { id } of materialReferences(doc)) used.add(id);
 
     return Object.keys(doc.materials)
       .filter((id) => !used.has(id))

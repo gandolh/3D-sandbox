@@ -233,12 +233,28 @@ let greenhouseWalls = wallsFromFootprint(GREENHOUSE, {
 greenhouseWalls = withOpenings(greenhouseWalls, "H-01", [doorOpening("d-glass", 1.9, 1.1, 2.0)]);
 
 /**
- * The road boundary: one wall with the gate cut out of it.
+ * The road boundary: one wall, with **two** gates cut out of it.
  *
  * A gate *is* an aperture in a wall, so it is an `Opening` and not a thing of
- * its own. The opening is 4 m wide and centred, which on a 32 m wall puts its
- * near edge at 14 m.
+ * its own. Offsets run from x = −16.
+ *
+ * **Two, not one, and that is the move the whole yard turns on.** A single
+ * 4 m gate makes the car and the person share one opening, and everything
+ * inside it then fights for the same ground: the drive has to swing around the
+ * vine walk, or the vine walk has to cross the drive. The Banat answer — and
+ * the central-European one generally — is the *poartă mare* and the *portiță*:
+ * a carriage gate for the cart, and a pedestrian wicket beside it.
+ *
+ * So the wicket lands on the house's own axis at x = 1.2, which is the front
+ * door's centreline and the vine's, and the carriage gate sits east at x = 5.5,
+ * on the line the drive wants in order to reach a garage at x 7…14. Neither
+ * route crosses the other at any point between the road and its destination.
+ * That is the segregation the layout was missing, and it costs one extra
+ * opening in a wall that already existed.
  */
+const WICKET_X = 1.2; // the front door's axis, and the vine's
+const CARRIAGE_X = 6.0; // the drive's axis, aimed at the garage door
+
 const boundaryWall: WallSpec = {
   id: "B-01",
   start: [-PLOT_HALF_WIDTH, 0],
@@ -246,8 +262,168 @@ const boundaryWall: WallSpec = {
   material: "concrete-wall",
   thickness: 0.3,
   height: 1.8,
-  openings: [{ id: "gate", kind: "door", offset: 14, width: 4, height: 1.8, sill: 0, material: "steel-dark" }],
+  openings: [
+    {
+      id: "wicket",
+      kind: "door",
+      offset: PLOT_HALF_WIDTH + WICKET_X - 0.65,
+      width: 1.3,
+      height: 1.8,
+      sill: 0,
+      material: "steel-dark",
+    },
+    {
+      id: "gate",
+      kind: "door",
+      offset: PLOT_HALF_WIDTH + CARRIAGE_X - 1.9,
+      width: 3.8,
+      height: 1.8,
+      sill: 0,
+      material: "steel-dark",
+    },
+  ],
 };
+
+
+/* ── the ground between the buildings ──────────────────────────── */
+
+/**
+ * How the plot is zoned, south to north, and why that order.
+ *
+ * A long, narrow plot off a village street organises itself as a **gradient
+ * from public to private to productive**, and every traditional courtyard
+ * layout in this region is some version of it:
+ *
+ * | z | zone | what it is for |
+ * |---|---|---|
+ * | −5 … 0 | street | the road and the boundary wall; nothing of ours |
+ * | 0 … 20 | **service yard** | arriving, parking, unloading, the vine walk |
+ * | 20 … 32 | **the house** and its porch | living, and the one private outdoor room |
+ * | 32 … 44 | **productive garden** | kitchen beds, greenhouse, pond |
+ * | 44 … 62 | **orchard** | the long crop, furthest from the gate |
+ *
+ * The ordering is not arbitrary. The noisy, dirty, wheeled half sits between
+ * the street and the house, because that is where it arrives and because it
+ * keeps traffic out of the garden. The house sits across the middle of the
+ * plot, so it *separates* the public yard from the private garden — you cannot
+ * see one from the other, which is the whole point of putting a building
+ * across a plot rather than along its edge. The garden gets the north end,
+ * where it is screened from the road and reached from the kitchen door, and
+ * the orchard takes the far end because it is visited least.
+ *
+ * The paving below serves that structure: brick where people go, gravel where
+ * cars go, and nothing at all in the two zones that are meant to be worked.
+ */
+
+/**
+ * What people and cars actually stand on.
+ *
+ * Everything here was lawn, including the route from the gate to the front
+ * door and the whole length of the vine walk — so in any weather worth having
+ * a pergola for, you crossed mud to reach the house.
+ *
+ * **Two materials, and the split is by use rather than by taste.** The
+ * courtyard, the paths and the aprons are **brick on sand**: Banat yards are
+ * traditionally paved with brick and stone *for letting the earth breathe, and
+ * not by cement, which brings dampness to the houses* — a permeable-paving
+ * argument made long before the phrase existed, and a real constraint for a
+ * house with no damp course. The **car track is gravel**, which is cheap,
+ * drains, and stays put on a plot this flat (loose stone starts migrating at
+ * about 1 in 20; this is 1 in nothing).
+ *
+ * Widths are the ones the use dictates. A single-car drive is 2.7–3.7 m and
+ * this is 3.0; a footpath people pass on is 0.9–1.2 and the garden path is
+ * 1.1. A path drawn at road width reads as a road, which is how a garden ends
+ * up looking like a car park.
+ */
+const COURT_W = -0.8; // the vine walk's west edge
+const COURT_E = 3.2; // its east edge — the vine is 3.6 m across at x 1.2
+const DRIVE_W = 3.0;
+
+/** A rectangle by its two corners, which is how these were measured. */
+const between = (x1: number, z1: number, x2: number, z2: number): [number, number][] =>
+  rect(Math.min(x1, x2), Math.min(z1, z2), Math.abs(x2 - x1), Math.abs(z2 - z1));
+
+const paving: { id: string; polygon: [number, number][]; material: string }[] = [
+  /**
+   * The courtyard: the full width of the vine, from the wicket to the door.
+   *
+   * This is the *curte* — the swept, paved working yard a Banat house is built
+   * around, not a garden feature. It runs the whole 18 m of the pergola so
+   * there is nowhere under the vine where you step off paving, which was the
+   * entire complaint: a covered walk over grass is a covered mud strip.
+   */
+  { id: "pave-court", polygon: between(COURT_W, 0.6, COURT_E, 20), material: "brick-paving" },
+
+  /**
+   * The threshold outside the wicket, through the wall's own thickness.
+   *
+   * Small, and it earns its place: the boundary wall is 300 mm thick and the
+   * ground either side of a gate is where the wear is. Stopping the paving at
+   * the wall line leaves a mud step in the one place everyone treads.
+   */
+  { id: "pave-wicket", polygon: between(WICKET_X - 0.9, -1.2, WICKET_X + 0.9, 0.6), material: "brick-paving" },
+
+  /**
+   * The apron at the garage door: 7 m across the door, 5 m deep.
+   *
+   * Where you stand to open the door, where you unload, and where the car
+   * drips. Gravel does none of those well — it migrates under a turning wheel
+   * and it comes indoors on your shoes — so the apron is brick where the track
+   * that reaches it is not.
+   */
+  { id: "pave-garage-apron", polygon: between(7.4, 15.0, 14.0, 20.0), material: "brick-paving" },
+
+  /**
+   * The footpath linking the two halves of the yard.
+   *
+   * The car and the person arrive through different gates and never cross, but
+   * they do both end up at the house, and someone getting out of the car
+   * should not walk back down the drive. 1.1 m: two people cannot pass, and
+   * two people do not need to.
+   */
+  { id: "pave-link", polygon: between(COURT_E, 16.4, 7.4, 17.5), material: "brick-paving" },
+
+  /**
+   * Round the west of the house to the porch, and on to the greenhouse.
+   *
+   * The porch is the house's outdoor room and its door is on the west wall;
+   * reaching it meant crossing the lawn. Narrower than the courtyard because
+   * this is a garden path — one person, carrying something, in the rain.
+   */
+  { id: "pave-porch", polygon: between(-10.2, 22.6, -5.5, 31.4), material: "brick-paving" },
+  {
+    id: "pave-garden-path",
+    polygon: between(-8.3, 31.4, -7.2, 36.0),
+    material: "brick-paving",
+  },
+  /** The step out of the greenhouse door, which is at x −7.55 on z = 36. */
+  { id: "pave-glass-apron", polygon: between(-8.6, 35.2, -6.5, 36.2), material: "brick-paving" },
+
+  /**
+   * The kitchen garden's working path.
+   *
+   * A bed you cannot reach without standing in it is a bed you do not weed.
+   * This is the one surface here that exists for a tool rather than a shoe.
+   */
+  { id: "pave-kitchen-path", polygon: between(-5.4, 33.6, -4.3, 41.0), material: "brick-paving" },
+];
+
+/**
+ * Every paved area, so a planting can be told to keep off all of them.
+ *
+ * Handed to **every** scatter field rather than to the ones that currently
+ * overlap, which is the difference between a fix and a rule. `roses-east` runs
+ * to x = 4.2 and the courtyard to x = 3.2, so today exactly one field needs it;
+ * move a bed or widen a path and the next one would grow through the brick with
+ * nothing to say so. Clipping makes this free to over-apply — an exclusion
+ * outside the field contributes nothing to the count, and one that straddles
+ * the edge is counted only where it overlaps.
+ */
+const PAVED: [number, number][][] = paving.map((p) => p.polygon);
+
+/** A field's own exclusions, plus every paved surface. */
+const keepOff = (...own: [number, number][][]): [number, number][][] => [...PAVED, ...own];
 
 /* ── the document ──────────────────────────────────────────────── */
 
@@ -334,6 +510,25 @@ const greenhollow: SceneDocumentInput = {
       baseColor: "#5C7B43",
       textureScale: 4.0,
       roughness: 1,
+    },
+    /**
+     * Red clay pavers, herringbone.
+     *
+     * Herringbone is not a decorative choice: interlocking courses set at 45°
+     * to the direction of travel distribute a wheel load across their
+     * neighbours instead of letting a single paver rock, which is why it is the
+     * historic bond for a yard a cart uses and for the apron a car turns on.
+     * Red clay because that is what a Banat yard is laid in, and because the
+     * house is plastered lime and the roof is clay tile — a grey concrete paver
+     * would be the only industrial thing on the plot.
+     */
+    "brick-paving": {
+      label: "Clay Paver, Herringbone",
+      source: "ambientcg",
+      slug: "PavingStones137",
+      baseColor: "#9E6A55",
+      textureScale: 2.2,
+      roughness: 0.9,
     },
     "gravel-alley": {
       label: "Gravel",
@@ -589,16 +784,23 @@ const greenhollow: SceneDocumentInput = {
         height: 0.9,
         scaleRange: [0.85, 1.2],
         material: "rose-green",
+        exclude: keepOff(),
       },
       {
         id: "roses-east",
         assets: ["polyhaven/shrub_02", "polyhaven/shrub_03", "polyhaven/shrub_04"],
-        area: rect(2.4, 2, 1.8, 19),
+        // Narrower than its western twin, and stopping short of the link path.
+        // It is the buffer between the vine walk and the drive rather than a
+        // border against open lawn: 1 m of planting is what fits between
+        // COURT_E at 3.2 and the drive's western edge at 4.5, and a bed squeezed
+        // thinner than that reads as a weed strip.
+        area: rect(3.4, 2, 1.0, 14),
         density: 26,
         seed: 12,
         height: 0.9,
         scaleRange: [0.85, 1.2],
         material: "rose-green",
+        exclude: keepOff(),
       },
       // The kitchen garden: beds between the house and the greenhouse.
       {
@@ -610,7 +812,7 @@ const greenhollow: SceneDocumentInput = {
         height: 0.5,
         scaleRange: [0.95, 1.05],
         material: "vegetable-green",
-        exclude: [rect(-10.5, 35.4, 6, 7.2)],
+        exclude: keepOff(rect(-10.5, 35.4, 6, 7.2) as [number, number][]),
       },
       // The orchard, planted in rows — which is the whole reason rows exist.
       {
@@ -626,8 +828,11 @@ const greenhollow: SceneDocumentInput = {
         material: "orchard-green",
         arrangement: "rows",
         rowSpacing: [5.5, 4.5],
+        exclude: keepOff(),
       },
     ],
+
+    paving,
 
     masses: [
       // Neighbours across the road, to give the front elevation something to
@@ -650,25 +855,29 @@ const greenhollow: SceneDocumentInput = {
         width: 6,
         material: "asphalt-road",
       },
-      // The alley: through the gate, up to the front of the house, with a spur
-      // east to the garage door.
+      /**
+       * The drive: carriage gate to garage apron, and nothing else.
+       *
+       * It used to run up the middle of the plot to the front of the house and
+       * throw a spur east — so it crossed the vine walk, and the car's ground
+       * and the walker's ground were the same ground. Now it enters through its
+       * own gate at x 5.5, holds east of the courtyard the whole way, and ends
+       * on the brick apron at the garage door. A person walking from the wicket
+       * to the front door never sets foot on it.
+       *
+       * It stops at z 15 because the apron takes over there: gravel under a
+       * turning wheel migrates, and gravel where you stand to unload comes
+       * indoors on your shoes.
+       */
       {
-        id: "alley",
+        id: "drive",
         path: [
-          [0, -1.5],
-          [0, 21.2],
+          [CARRIAGE_X, -1.5],
+          [CARRIAGE_X, 6],
+          [7.4, 11],
+          [10.5, 15.2],
         ],
-        width: 3.2,
-        material: "gravel-alley",
-      },
-      {
-        id: "alley-garage",
-        path: [
-          [0, 16.5],
-          [5.5, 17.6],
-          [9.5, 19.4],
-        ],
-        width: 3.0,
+        width: DRIVE_W,
         material: "gravel-alley",
       },
     ],

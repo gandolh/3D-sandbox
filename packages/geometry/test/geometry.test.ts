@@ -2,11 +2,12 @@ import { readFileSync } from "node:fs";
 import * as THREE from "three";
 import { Evaluator } from "three-bvh-csg";
 import { describe, expect, it } from "vitest";
-import { downwardFaces, faces, inwardFaces, slopes } from "./normals.js";
+import { downwardFaces, faces, inwardFaces, normalsAgainstWinding, slopes } from "./normals.js";
 import { BuildingMass, Roof, Run, ScatterField, bounds, loadScene, type Level, type Wall } from "@solstice/schema";
 import {
   UnsupportedRoofError,
   buildMass,
+  buildPaving,
   buildRoad,
   buildRoof,
   buildRun,
@@ -582,6 +583,65 @@ describe("hand-wound surfaces face outward", () => {
       expect(faces(geometry).length).toBe((path.length - 1) * 2);
       expect(downwardFaces(geometry)).toEqual([]);
     }
+  });
+
+  it("lays paving face-up, whatever shape it is", () => {
+    // Same class as the roads, and the same reason it would never be noticed:
+    // a paving slab whose top faces the earth is simply invisible, and its
+    // bounding box is identical either way. The scene would read as "we forgot
+    // to pave the yard" rather than as a winding bug.
+    const paved = (polygon: [number, number][]) =>
+      buildPaving({ id: "p", polygon, material: "brick", thickness: 0.04 } as never);
+
+    const shapes: [string, [number, number][]][] = [
+      ["a rectangle", rect],
+      // Wound the other way round: the builder must not depend on the author
+      // having listed the corners in a particular direction.
+      ["the same rectangle reversed", [...rect].reverse()],
+      [
+        "an L",
+        [
+          [0, 0],
+          [0, 10],
+          [5, 10],
+          [5, 5],
+          [10, 5],
+          [10, 0],
+        ],
+      ],
+    ];
+
+    for (const [name, polygon] of shapes) {
+      const geometry = paved(polygon);
+      // Paving is a thin *solid*, not a ribbon, so it has a bottom and
+      // `downwardFaces` is meant to find it. The assertion that matters is
+      // about the surface you walk on: every face at the top of the box must
+      // point at the sky.
+      const top = faces(geometry).filter((f) => f.centroid.y > 0.04 - 1e-6);
+      expect(top.length, `${name}: no top surface at all`).toBeGreaterThan(0);
+      for (const face of top) {
+        expect(face.normal.y, `${name}: a top face points at the earth`).toBeGreaterThan(0.9);
+      }
+      expect(normalsAgainstWinding(geometry), `${name}: normals fight the winding`).toEqual([]);
+      geometry.dispose();
+    }
+  });
+
+  it("puts the paving's walking surface above the ground, not below it", () => {
+    // `thickness` positions the *surface*, because the surface is what you see
+    // and what you stand on. Getting this upside down buries the courtyard.
+    const geometry = buildPaving({
+      id: "p",
+      polygon: rect,
+      material: "brick",
+      thickness: 0.04,
+    } as never);
+    const box = new THREE.Box3().setFromBufferAttribute(
+      geometry.getAttribute("position") as THREE.BufferAttribute,
+    );
+    expect(box.max.y).toBeCloseTo(0.04, 6);
+    expect(box.min.y).toBeCloseTo(0, 6);
+    geometry.dispose();
   });
 
   it("winds every closed solid outward", () => {
