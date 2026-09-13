@@ -50,7 +50,13 @@ export class PhysicsWorld {
   private readonly world: RAPIER.World;
   private readonly byHandle = new Map<number, CuboidCollider>();
 
-  private constructor(readonly colliders: readonly CuboidCollider[]) {
+  // Written out rather than as a parameter property: a parameter property
+  // needs code generated for the assignment, which Node's type-stripping
+  // cannot do — see `erasableSyntaxOnly` in `tsconfig.base.json`.
+  readonly colliders: readonly CuboidCollider[];
+
+  private constructor(colliders: readonly CuboidCollider[]) {
+    this.colliders = colliders;
     this.world = new RAPIER.World({ x: 0, y: -9.81, z: 0 });
     for (const collider of colliders) {
       const body = this.world.createRigidBody(

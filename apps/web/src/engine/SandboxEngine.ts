@@ -97,10 +97,12 @@ export class SandboxEngine {
   private library: AssetLibrary | null = null;
   private readonly colliderOverlay = new THREE.Group();
 
-  constructor(
-    private readonly canvas: HTMLCanvasElement,
-    private readonly events: EngineEvents,
-  ) {
+  private readonly canvas: HTMLCanvasElement;
+  private readonly events: EngineEvents;
+
+  constructor(canvas: HTMLCanvasElement, events: EngineEvents) {
+    this.canvas = canvas;
+    this.events = events;
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
     this.renderer.setPixelRatio(Math.min(2, window.devicePixelRatio));
     this.renderer.shadowMap.enabled = true;

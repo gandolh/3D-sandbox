@@ -147,12 +147,13 @@ nothing"* when it settled on a slab.
 | 51 | [Every keystroke rebuilds the scene](../briefs/done/51-every-keystroke-rebuilds-the-scene.md) | done |
 | 52 | [The vine allocates four thousand geometries](../briefs/done/52-the-vine-allocates-four-thousand-geometries.md) | done |
 | 53 | [No linter, no formatter](../briefs/todo/53-no-linter-no-formatter.md) | todo |
-| 54 | [Scenes typecheck green and crash](../briefs/todo/54-scenes-typecheck-green-and-crash.md) | todo |
+| 54 | [Scenes typecheck green and crash](../briefs/done/54-scenes-typecheck-green-and-crash.md) | done |
 | 55 | [No test can touch the interface](../briefs/done/55-no-test-can-touch-the-interface.md) | done |
 | 56 | [Nothing runs the gate](../briefs/todo/56-nothing-runs-the-gate.md) | todo |
-| 57 | [The largest workspace opted out of the base config](../briefs/todo/57-the-largest-workspace-opted-out-of-the-base-config.md) | todo |
+| 57 | [The largest workspace opted out of the base config](../briefs/done/57-the-largest-workspace-opted-out-of-the-base-config.md) | done |
 | 58 | [Work repeated every frame that cannot change](../briefs/todo/58-work-repeated-every-frame-that-cannot-change.md) | todo |
 | 59 | [One wall moves and the whole scene is rebuilt](../briefs/todo/59-one-wall-moves-and-the-whole-scene-is-rebuilt.md) | todo |
+| 60 | [npm run api does not start](../briefs/todo/60-npm-run-api-does-not-start.md) | todo |
 | 43 | [Impostor quads are the wrong shape](../briefs/done/43-impostor-quads-are-the-wrong-shape.md) | done |
 | 44 | [The dome and the render disagree after sunset](../briefs/done/44-the-dome-and-the-render-disagree-after-sunset.md) | done |
 | 45 | [Scatter counts and seeds](../briefs/done/45-scatter-counts-and-seeds.md) | done |

@@ -64,26 +64,38 @@ export class PathTraceSession {
   private denoise: DenoiseMaterial | null = null;
   private denoiseQuad: FullScreenQuad | null = null;
 
+  private readonly renderer: THREE.WebGLRenderer;
+  /**
+   * A scene built for rendering, not the viewport's.
+   *
+   * The path tracer samples geometry, materials and lights it understands. The
+   * viewport also holds a `Sky` shader mesh, a hemisphere light, a transform
+   * gizmo and a selection box — none of which it can sample, and one of which
+   * fails deep inside a colour lookup rather than politely skipping.
+   */
+  private readonly scene: THREE.Scene;
+  /**
+   * The camera to render from — purpose-built for this shot, never the
+   * viewport's. A render must not move where the user left the viewport, and
+   * the two have different aspect ratios by definition: the shot's is fixed
+   * by its declared output size, the viewport's by the browser window.
+   */
+  private readonly camera: THREE.PerspectiveCamera;
+  private readonly settings: RenderSettings;
+
+  // Fields and assignments rather than parameter properties: those need code
+  // generated for the assignment, which `erasableSyntaxOnly` forbids repo-wide
+  // so that any file here can be run straight from source by Node.
   constructor(
-    private readonly renderer: THREE.WebGLRenderer,
-    /**
-     * A scene built for rendering, not the viewport's.
-     *
-     * The path tracer samples geometry, materials and lights it understands. The
-     * viewport also holds a `Sky` shader mesh, a hemisphere light, a transform
-     * gizmo and a selection box — none of which it can sample, and one of which
-     * fails deep inside a colour lookup rather than politely skipping.
-     */
-    private readonly scene: THREE.Scene,
-    /**
-     * The camera to render from — purpose-built for this shot, never the
-     * viewport's. A render must not move where the user left the viewport, and
-     * the two have different aspect ratios by definition: the shot's is fixed
-     * by its declared output size, the viewport's by the browser window.
-     */
-    private readonly camera: THREE.PerspectiveCamera,
-    private readonly settings: RenderSettings,
+    renderer: THREE.WebGLRenderer,
+    scene: THREE.Scene,
+    camera: THREE.PerspectiveCamera,
+    settings: RenderSettings,
   ) {
+    this.renderer = renderer;
+    this.scene = scene;
+    this.camera = camera;
+    this.settings = settings;
     this.tracer = new WebGLPathTracer(renderer);
     // `setSceneAsync` refuses to run without one, and the point of the async
     // path is that a large BVH build does not freeze the interface. The worker

@@ -13,12 +13,17 @@ export class UnsafeIdError extends Error {
 }
 
 export class StalePreconditionError extends Error {
-  constructor(
-    readonly id: string,
-    readonly current: number,
-  ) {
+  // Not parameter properties: they need code generated for the assignments,
+  // and this package is run straight from source by `npm run api`, where
+  // Node strips types rather than compiling them.
+  readonly id: string;
+  readonly current: number;
+
+  constructor(id: string, current: number) {
     super(`Scene "${id}" has changed on disk since you read it`);
     this.name = "StalePreconditionError";
+    this.id = id;
+    this.current = current;
   }
 }
 

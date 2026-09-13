@@ -1,32 +1,27 @@
 {
+  // Extends the base like every other workspace.
+  //
+  // It used to re-declare `strict`, `noUncheckedIndexedAccess`,
+  // `exactOptionalPropertyTypes`, `noImplicitOverride`,
+  // `noFallthroughCasesInSwitch`, `isolatedModules`, `verbatimModuleSyntax` and
+  // `skipLibCheck` by hand. They matched, so nothing was wrong — but any flag
+  // added to the base silently did not reach this workspace, which is the
+  // largest in the repo and the one most likely to be open.
+  //
+  // Everything kept below is a genuine override: a browser bundle needs a
+  // different module system, JSX, DOM libs and no emit, none of which suit a
+  // Node package. That is what `extends` is for.
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "target": "ES2023",
-    "lib": [
-      "ES2023",
-      "DOM",
-      "DOM.Iterable"
-    ],
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    // Vite resolves and bundles; `NodeNext` would demand extensions it does
+    // not want and refuse the ones it does.
     "module": "ESNext",
     "moduleResolution": "bundler",
     "jsx": "react-jsx",
-    "strict": true,
-    "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true,
-    "noImplicitOverride": true,
-    "noFallthroughCasesInSwitch": true,
-    "isolatedModules": true,
-    "verbatimModuleSyntax": true,
-    "skipLibCheck": true,
     "noEmit": true,
-    "types": [
-      "vite/client"
-    ],
+    "types": ["vite/client"],
     "allowImportingTsExtensions": true
   },
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.tsx",
-    "test/**/*.ts",
-    "vite.config.ts"
-  ]
+  "include": ["src/**/*.ts", "src/**/*.tsx", "test/**/*.ts", "test/**/*.tsx", "vite.config.ts"]
 }

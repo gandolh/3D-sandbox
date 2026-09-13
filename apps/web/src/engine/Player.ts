@@ -19,10 +19,13 @@ export class Player {
   private timer: Timer | null = null;
   private animation: Animation | null = null;
 
-  constructor(
-    private readonly onSample: (sample: Sample, seconds: number) => void,
-    private readonly onEnd: () => void,
-  ) {}
+  private readonly onSample: (sample: Sample, seconds: number) => void;
+  private readonly onEnd: () => void;
+
+  constructor(onSample: (sample: Sample, seconds: number) => void, onEnd: () => void) {
+    this.onSample = onSample;
+    this.onEnd = onEnd;
+  }
 
   setAnimation(animation: Animation | null): void {
     this.stop();

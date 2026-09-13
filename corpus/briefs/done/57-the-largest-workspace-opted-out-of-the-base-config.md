@@ -62,3 +62,38 @@ precisely so a config can inherit a policy and override the mechanics.
 - `apps/web/tsconfig.json` extends `tsconfig.base.json`.
 - The resolved config is unchanged except for anything deliberately recorded.
 - `npm run check` exits 0.
+
+---
+
+## Outcome — 2026-09-13
+
+`apps/web/tsconfig.json` extends `tsconfig.base.json` now and keeps only what
+genuinely differs: `lib` with the DOM, `module: ESNext` and
+`moduleResolution: bundler` (Vite resolves and bundles; `NodeNext` would demand
+extensions it does not want), `jsx`, `noEmit`, `types` and
+`allowImportingTsExtensions`.
+
+**The before/after `--showConfig` diff found four flags the app was quietly
+missing**, which is exactly what the brief expected to be there:
+
+```
++ "declaration": true
++ "declarationMap": true
++ "forceConsistentCasingInFileNames": true
++ "sourceMap": true
+```
+
+Three are emit options and inert under `noEmit`. The fourth is not:
+**`forceConsistentCasingInFileNames`** catches importing `./Toolbar` as
+`./toolbar` — which works on a case-insensitive filesystem and breaks the
+moment it is built anywhere else. The largest workspace in the repo had been
+running without it.
+
+**It paid for itself immediately.** Brief 54 added `erasableSyntaxOnly` to the
+base minutes later; before this change it would have silently skipped
+`apps/web`, and the four parameter properties in `PathTracer`, `Player` and
+`SandboxEngine` would still be there — in the one workspace where nobody would
+have thought to look.
+
+`npm run typecheck:web` reports exactly what it did before. `npm run check`
+clean, 452 tests.
