@@ -51,3 +51,45 @@ fast, which is the moment they are least likely to be run.
 - A pull request that breaks a test, a typecheck, a scene or the corpus lint
   goes red.
 - A clean checkout goes green.
+
+---
+
+## Outcome — 2026-09-13
+
+`.github/workflows/check.yml`: one job, on push and pull request to `main`,
+running `npm ci && npm run build && npm run check`. Nothing else, per the
+brief — if a future brief adds a tool it goes inside `check` and needs no
+second job.
+
+**`npm run build` is there for a reason worth stating.** `check` does not build
+the packages, and the workspaces import each other's `dist`. Locally that is
+always already there; on a clean checkout it is not, so CI would fail on the
+first typecheck with a module-not-found that looks like a code error.
+
+Node pinned to **22.12**, matching `engines`. That is load-bearing rather than
+incidental here: `scenes/build.ts` and `assets/download-list.ts` are run
+directly by Node's type-stripping, so the version decides whether they parse at
+all. Concurrency cancels superseded runs — there is nothing to learn from a run
+against a commit that has been replaced.
+
+**Verified by actually doing it, not by reading the YAML.** I cloned the repo
+into a temp directory and ran the three commands. The first attempt **failed**:
+
+```
+sh: 1: biome: not found
+```
+
+**And that was a real defect, not a test artefact.** Biome had been installed
+into `node_modules` during brief 53 but never reached `package.json` or the
+lockfile — the `git checkout -- .` I used while comparing formatter widths
+reverted both, and `npx biome` kept working locally off the surviving
+`node_modules`. **A clean checkout had no linter at all**, and `npm run check`
+would have died on its first step for anyone but me.
+
+Fixed in its own commit, then re-verified on a second fresh clone: `npm ci`,
+`npm run build`, `npm run check` — 454 tests, corpus clean, no missing binary.
+
+That is the same lesson as brief 33's README fix, which is why the brief asked
+for proof rather than plausibility: **verify by running, not by reasoning.**
+The CI file is the thing that will keep catching this class, and it caught one
+before it was even committed.

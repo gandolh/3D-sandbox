@@ -149,7 +149,7 @@ nothing"* when it settled on a slab.
 | 53 | [No linter, no formatter](../briefs/done/53-no-linter-no-formatter.md) | done |
 | 54 | [Scenes typecheck green and crash](../briefs/done/54-scenes-typecheck-green-and-crash.md) | done |
 | 55 | [No test can touch the interface](../briefs/done/55-no-test-can-touch-the-interface.md) | done |
-| 56 | [Nothing runs the gate](../briefs/todo/56-nothing-runs-the-gate.md) | todo |
+| 56 | [Nothing runs the gate](../briefs/done/56-nothing-runs-the-gate.md) | done |
 | 57 | [The largest workspace opted out of the base config](../briefs/done/57-the-largest-workspace-opted-out-of-the-base-config.md) | done |
 | 58 | [Work repeated every frame that cannot change](../briefs/done/58-work-repeated-every-frame-that-cannot-change.md) | done |
 | 59 | [One wall moves and the whole scene is rebuilt](../briefs/todo/59-one-wall-moves-and-the-whole-scene-is-rebuilt.md) | todo |
