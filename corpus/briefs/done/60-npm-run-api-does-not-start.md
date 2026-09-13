@@ -65,3 +65,43 @@ only the dev script that is broken, which is the one a person actually uses.
 - `npm run api` serves `/api/health` within a few seconds of starting.
 - Editing a source file restarts it.
 - `npm run check` exits 0.
+
+---
+
+## Outcome — 2026-09-13
+
+**`dev` builds and watches the output instead of running the source.**
+
+```
+tsc --build --watch --preserveWatchOutput & node --watch --enable-source-maps dist/server.js
+```
+
+**Why not the other two candidates.** Dropping the `.js` specifiers in this
+package would need `allowImportingTsExtensions`, which changes what `tsc`
+emits and would break `start`, the script that actually runs in production —
+paying for a dev convenience with the deployment path. And a single watcher
+that rebuilds and restarts means a new dependency for something two flags
+already do.
+
+This costs two processes and no dependency. `--preserveWatchOutput` stops
+`tsc` clearing the terminal on every rebuild, which would otherwise wipe the
+server's own log; `--enable-source-maps` puts stack traces back on the `.ts`
+line numbers, which is the one thing running compiled output would otherwise
+cost.
+
+**Verified by running it, and the acceptance was deliberately not "it
+starts".** `--watch` kept the broken version alive and looking healthy while it
+never listened, which is exactly how this survived. So:
+
+| check | result |
+|---|---|
+| `curl /api/health` | `{"ok":true,"scenesConfigured":true,"scenes":3}` |
+| edit `app.ts`, wait, curl again | the edit is live — `"restarted":true` |
+| revert, curl again | back to the original response |
+
+**`npm run dev` for the web app was checked at the same time**, since the
+README pairs them and nothing had verified either since brief 33: it serves
+HTTP 200 on :5173. No change needed.
+
+The README's description was already accurate about *what* the command is for,
+so it needed no edit — only the command had to start working.

@@ -153,7 +153,7 @@ nothing"* when it settled on a slab.
 | 57 | [The largest workspace opted out of the base config](../briefs/done/57-the-largest-workspace-opted-out-of-the-base-config.md) | done |
 | 58 | [Work repeated every frame that cannot change](../briefs/done/58-work-repeated-every-frame-that-cannot-change.md) | done |
 | 59 | [One wall moves and the whole scene is rebuilt](../briefs/todo/59-one-wall-moves-and-the-whole-scene-is-rebuilt.md) | todo |
-| 60 | [npm run api does not start](../briefs/todo/60-npm-run-api-does-not-start.md) | todo |
+| 60 | [npm run api does not start](../briefs/done/60-npm-run-api-does-not-start.md) | done |
 | 43 | [Impostor quads are the wrong shape](../briefs/done/43-impostor-quads-are-the-wrong-shape.md) | done |
 | 44 | [The dome and the render disagree after sunset](../briefs/done/44-the-dome-and-the-render-disagree-after-sunset.md) | done |
 | 45 | [Scatter counts and seeds](../briefs/done/45-scatter-counts-and-seeds.md) | done |

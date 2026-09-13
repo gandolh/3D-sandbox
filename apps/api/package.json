@@ -8,7 +8,7 @@
   },
   "scripts": {
     "build": "tsc --build",
-    "dev": "node --watch src/server.ts",
+    "dev": "tsc --build --watch --preserveWatchOutput & node --watch --enable-source-maps dist/server.js",
     "start": "node dist/server.js"
   },
   "dependencies": {
