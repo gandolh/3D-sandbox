@@ -129,7 +129,7 @@ nothing"* when it settled on a slab.
 | 46 | [A house a real architect would draw](../briefs/done/46-a-house-a-real-architect-would-draw.md) | done |
 | 47 | [The ground between the buildings](../briefs/done/47-the-ground-between-the-buildings.md) | done |
 | 48 | [Rooms are implied and nothing can name them](../briefs/done/48-rooms-are-implied-and-nothing-can-name-them.md) | done |
-| 49 | [A drawing, not a screenshot](../briefs/todo/49-a-drawing-not-a-screenshot.md) | todo |
+| 49 | [A drawing, not a screenshot](../briefs/done/49-a-drawing-not-a-screenshot.md) | done |
 | 43 | [Impostor quads are the wrong shape](../briefs/done/43-impostor-quads-are-the-wrong-shape.md) | done |
 | 44 | [The dome and the render disagree after sunset](../briefs/done/44-the-dome-and-the-render-disagree-after-sunset.md) | done |
 | 45 | [Scatter counts and seeds](../briefs/done/45-scatter-counts-and-seeds.md) | done |

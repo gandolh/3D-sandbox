@@ -63,6 +63,8 @@ export interface AppState {
    * channel with a sighted equivalent that says something different.
    */
   alert: string | null;
+  /** Is the floor plan showing instead of the viewport? */
+  showPlan: boolean;
   /**
    * Whether a path trace owns the GPU right now.
    *
@@ -91,6 +93,7 @@ let state: AppState = {
   status: "Loading…",
   loadError: null,
   alert: null,
+  showPlan: false,
   rendering: false,
 };
 
@@ -159,6 +162,8 @@ export const setShowColliders = (showColliders: boolean): void =>
 
 export const setShowContext = (showContext: boolean): void =>
   set({ showContext, revision: state.revision + 1 });
+
+export const setShowPlan = (showPlan: boolean): void => set({ showPlan });
 
 /** The ordinary channel: polite, and it clears any standing alert. */
 export const setStatus = (status: string): void => set({ status, alert: null });

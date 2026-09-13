@@ -13,7 +13,7 @@ import {
   pickRenderDirectory,
   renderQueue,
 } from "../engine/queue.js";
-import { setStatus } from "../state/store.js";
+import { setShowPlan, setStatus } from "../state/store.js";
 import { SCENES } from "../scenes.js";
 
 export function Toolbar({ onSave }: { onSave: () => void }) {
@@ -21,6 +21,7 @@ export function Toolbar({ onSave }: { onSave: () => void }) {
   const theme = useStore((s) => s.theme);
   const showContext = useStore((s) => s.showContext);
   const showColliders = useStore((s) => s.showColliders);
+  const showPlan = useStore((s) => s.showPlan);
   const shotId = useStore((s) => s.shotId);
   const sceneId = useStore((s) => s.sceneId);
   /**
@@ -98,6 +99,24 @@ export function Toolbar({ onSave }: { onSave: () => void }) {
         className="rounded-sm border border-line bg-panel px-2.5 py-1.5 font-mono text-[10px] tracking-wider text-muted uppercase hover:text-ink"
       >
         {theme === "dark" ? "Light" : "Dark"}
+      </button>
+
+      {/*
+        The plan is a different *drawing* of the same document, not a different
+        camera on it — a section at 1.2 m, with poché, swings and a schedule of
+        areas. So it replaces the viewport rather than moving it.
+      */}
+      <button
+        type="button"
+        aria-pressed={showPlan}
+        onClick={() => setShowPlan(!showPlan)}
+        className={`rounded-sm border px-2.5 py-1.5 font-mono text-[10px] tracking-wider uppercase ${
+          showPlan
+            ? "border-accent bg-accent text-accent-ink"
+            : "border-line bg-panel text-muted hover:text-ink"
+        }`}
+      >
+        Plan
       </button>
 
       <button

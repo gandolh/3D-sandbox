@@ -4,6 +4,7 @@ import { Inspector } from "./ui/Inspector.jsx";
 import { SceneTree } from "./ui/SceneTree.jsx";
 import { Timeline } from "./ui/Timeline.jsx";
 import { Toolbar } from "./ui/Toolbar.jsx";
+import { PlanView } from "./ui/PlanView.jsx";
 import { Viewport } from "./ui/Viewport.jsx";
 import { getState, loadDocument, setLoadError, setStatus, useStore } from "./state/store.js";
 import { DEFAULT_SCENE_ID, sceneById } from "./scenes.js";
@@ -11,6 +12,7 @@ import { DEFAULT_SCENE_ID, sceneById } from "./scenes.js";
 export function App() {
   const status = useStore((s) => s.status);
   const alert = useStore((s) => s.alert);
+  const showPlan = useStore((s) => s.showPlan);
   const findings = useStore((s) => s.findings);
   const errors = findings.filter((f) => f.severity === "error").length;
 
@@ -94,7 +96,16 @@ export function App() {
       <Toolbar onSave={() => void onSave()} />
       <div className="flex min-h-0 flex-1">
         <SceneTree />
-        <Viewport />
+        {/*
+          The viewport stays mounted under the plan rather than being swapped
+          out: unmounting it disposes the engine, the WebGL context and every
+          loaded asset, so toggling Plan twice would cost a full reload of the
+          scene. `hidden` keeps the canvas alive and out of the layout.
+        */}
+        <div className={showPlan ? "hidden" : "flex min-w-0 flex-1"}>
+          <Viewport />
+        </div>
+        {showPlan && <PlanView />}
         <Inspector />
       </div>
       <Timeline />

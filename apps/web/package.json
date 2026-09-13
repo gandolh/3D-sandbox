@@ -11,6 +11,7 @@
   "dependencies": {
     "@base-ui/react": "1.8.0",
     "@solstice/animation": "0.1.0",
+    "@solstice/drawing": "0.1.0",
     "@solstice/geometry": "0.1.0",
     "@solstice/physics": "0.1.0",
     "@solstice/schema": "0.1.0",
