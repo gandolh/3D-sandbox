@@ -12,9 +12,7 @@ import type { ReactNode } from "react";
 export function Scroll({ children }: { children: ReactNode }) {
   return (
     <ScrollArea.Root className="min-h-0 flex-1">
-      <ScrollArea.Viewport className="h-full w-full overscroll-contain">
-        {children}
-      </ScrollArea.Viewport>
+      <ScrollArea.Viewport className="h-full w-full overscroll-contain">{children}</ScrollArea.Viewport>
       <ScrollArea.Scrollbar
         orientation="vertical"
         className="m-0.5 flex w-1.5 justify-center rounded opacity-0 transition-opacity delay-150 data-[hovering]:opacity-100 data-[hovering]:delay-0 data-[scrolling]:opacity-100 data-[scrolling]:delay-0"

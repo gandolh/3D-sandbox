@@ -1,20 +1,16 @@
+import { estimateQueue, formatDuration, pickRenderDirectory, renderQueue } from "../engine/queue.js";
+import type { RenderRequest } from "../engine/SandboxEngine.js";
+import { SCENES } from "../scenes.js";
 import {
   setSceneId,
   setShotId,
   setShowColliders,
   setShowContext,
+  setShowPlan,
+  setStatus,
   setTheme,
   useStore,
 } from "../state/store.js";
-import type { RenderRequest } from "../engine/SandboxEngine.js";
-import {
-  estimateQueue,
-  formatDuration,
-  pickRenderDirectory,
-  renderQueue,
-} from "../engine/queue.js";
-import { setShowPlan, setStatus } from "../state/store.js";
-import { SCENES } from "../scenes.js";
 
 export function Toolbar({ onSave }: { onSave: () => void }) {
   const doc = useStore((s) => s.document);
@@ -162,12 +158,8 @@ export function Toolbar({ onSave }: { onSave: () => void }) {
           // size and its sample budget. Taking the size alone — which is what
           // this did before — reproduces nothing.
           const request: RenderRequest =
-            shot === undefined
-              ? { width: 1280, height: 720, samples: 256 }
-              : { ...shot.render, shot };
-          window.dispatchEvent(
-            new CustomEvent("solstice:render", { detail: { requests: request } }),
-          );
+            shot === undefined ? { width: 1280, height: 720, samples: 256 } : { ...shot.render, shot };
+          window.dispatchEvent(new CustomEvent("solstice:render", { detail: { requests: request } }));
         }}
         title={
           duringRender ??

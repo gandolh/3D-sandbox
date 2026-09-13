@@ -1,12 +1,12 @@
 import {
   bounds,
   degToRad,
+  type Level,
+  type SceneDocument,
+  type Wall,
   wallAngle,
   wallLength,
   wallMidpoint,
-  type SceneDocument,
-  type Level,
-  type Wall,
 } from "@solstice/schema";
 
 /** A box collider in world space, rotated only about Y. */
@@ -104,11 +104,7 @@ export function deriveColliders(doc: SceneDocument, sizes?: PlacementSizes): Cub
         // Bounds rather than the polygon: a floor slab is convex in practice,
         // and an L-shaped one over-covers by a corner nobody stands in.
         halfExtents: [(b.maxX - b.minX) / 2, slab.thickness / 2, (b.maxZ - b.minZ) / 2],
-        position: [
-          (b.minX + b.maxX) / 2,
-          level.elevation - slab.thickness / 2,
-          (b.minZ + b.maxZ) / 2,
-        ],
+        position: [(b.minX + b.maxX) / 2, level.elevation - slab.thickness / 2, (b.minZ + b.maxZ) / 2],
         rotationY: 0,
       });
     }

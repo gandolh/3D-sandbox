@@ -12,10 +12,7 @@ import { describe, expect, it } from "vitest";
  * values they claim to describe.
  */
 
-const css = readFileSync(
-  fileURLToPath(new URL("../src/styles.css", import.meta.url)),
-  "utf8",
-);
+const css = readFileSync(fileURLToPath(new URL("../src/styles.css", import.meta.url)), "utf8");
 
 /** Tokens from one block of the stylesheet. */
 const tokens = (block: string): Record<string, string> => {
@@ -37,11 +34,7 @@ const channel = (c: number): number => {
 
 const luminance = (hex: string): number => {
   const n = Number.parseInt(hex.slice(1), 16);
-  return (
-    0.2126 * channel((n >> 16) & 255) +
-    0.7152 * channel((n >> 8) & 255) +
-    0.0722 * channel(n & 255)
-  );
+  return 0.2126 * channel((n >> 16) & 255) + 0.7152 * channel((n >> 8) & 255) + 0.0722 * channel(n & 255);
 };
 
 const contrast = (a: string, b: string): number => {
@@ -65,27 +58,23 @@ describe.each([
   // every badge and axis label — the one place the app says what it just did.
   // It was the least legible text in the interface: 3.20 and 3.06 in dark,
   // 2.73 and 2.99 in light, against a 4.5 floor.
-  it.each(["ink", "muted", "subtle", "danger", "warn"])(
-    "%s clears AA on both grounds",
-    (token) => {
-      expect(contrast(theme[token]!, theme["chrome"]!)).toBeGreaterThanOrEqual(AA);
-      expect(contrast(theme[token]!, theme["panel"]!)).toBeGreaterThanOrEqual(AA);
-    },
-  );
+  it.each(["ink", "muted", "subtle", "danger", "warn"])("%s clears AA on both grounds", (token) => {
+    expect(contrast(theme[token]!, theme.chrome!)).toBeGreaterThanOrEqual(AA);
+    expect(contrast(theme[token]!, theme.panel!)).toBeGreaterThanOrEqual(AA);
+  });
 
   it("keeps a genuinely quiet tone available, and out of the text tokens", () => {
     // `faint` is deliberately below the floor — a tone quiet enough to read as
     // ornament cannot also be legible body text. It exists so `subtle` could be
     // raised without losing the quieter register entirely, and it must never be
     // used for text. Asserted here so the split stays deliberate.
-    expect(contrast(theme["faint"]!, theme["panel"]!)).toBeLessThan(AA);
+    expect(contrast(theme.faint!, theme.panel!)).toBeLessThan(AA);
   });
 
   it("keeps subtle quieter than muted", () => {
     // Otherwise the two tokens have collapsed into one and the hierarchy the
     // palette describes is not there.
-    const away = (token: string) =>
-      Math.abs(luminance(theme[token]!) - luminance(theme["chrome"]!));
+    const away = (token: string) => Math.abs(luminance(theme[token]!) - luminance(theme.chrome!));
     expect(away("subtle")).toBeLessThan(away("muted"));
   });
 });

@@ -43,16 +43,18 @@ export function faces(geometry: THREE.BufferGeometry): Face[] {
     b.fromBufferAttribute(position, i1);
     c.fromBufferAttribute(position, i2);
 
-    const normalOf = new THREE.Vector3()
-      .subVectors(b, a)
-      .cross(new THREE.Vector3().subVectors(c, a));
+    const normalOf = new THREE.Vector3().subVectors(b, a).cross(new THREE.Vector3().subVectors(c, a));
     // A degenerate triangle has no facing to assert. Skipped rather than
     // normalised into a NaN that quietly passes every comparison.
     if (normalOf.lengthSq() < 1e-18) continue;
 
     out.push({
       normal: normalOf.normalize(),
-      centroid: new THREE.Vector3().add(a).add(b).add(c).multiplyScalar(1 / 3),
+      centroid: new THREE.Vector3()
+        .add(a)
+        .add(b)
+        .add(c)
+        .multiplyScalar(1 / 3),
       declared:
         normal === undefined
           ? null

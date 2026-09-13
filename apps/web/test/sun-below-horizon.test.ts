@@ -1,6 +1,6 @@
+import { resolveSolar, skyGradient, skyRadianceMap, sunPosition } from "@solstice/solar";
 import * as THREE from "three";
 import { describe, expect, it } from "vitest";
-import { resolveSolar, skyGradient, skyRadianceMap, sunPosition } from "@solstice/solar";
 import { aimSun } from "../src/engine/SandboxEngine.js";
 
 /**

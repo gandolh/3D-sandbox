@@ -18,11 +18,11 @@
 import {
   doorOpening,
   rect,
+  type SceneDocumentInput,
+  type WallSpec,
   wallsFromFootprint,
   windowOpening,
   withOpenings,
-  type SceneDocumentInput,
-  type WallSpec,
 } from "@solstice/schema";
 
 /* ── the plot ──────────────────────────────────────────────────── */
@@ -178,16 +178,23 @@ const partition = (
 
 const houseInternals: WallSpec[] = [
   // The spine: hall's west wall, with the two bedroom doors off it.
-  partition("P-hall-w", [SPINE_W, 20.3], [SPINE_W, DAY], [
-    doorOpening("d-bed1", 1.6, 0.9, 2.1),
-    doorOpening("d-bed2", 5.2, 0.9, 2.1),
-  ]),
+  partition(
+    "P-hall-w",
+    [SPINE_W, 20.3],
+    [SPINE_W, DAY],
+    [doorOpening("d-bed1", 1.6, 0.9, 2.1), doorOpening("d-bed2", 5.2, 0.9, 2.1)],
+  ),
   // The spine's east wall, with the kitchen and bathroom doors.
-  partition("P-hall-e", [SPINE_E, 20.3], [SPINE_E, DAY], [
-    doorOpening("d-kitchen", 1.3, 0.9, 2.1),
-    doorOpening("d-bath", 4.3, 0.8, 2.1),
-    doorOpening("d-larder", 6.1, 0.7, 2.1),
-  ]),
+  partition(
+    "P-hall-e",
+    [SPINE_E, 20.3],
+    [SPINE_E, DAY],
+    [
+      doorOpening("d-kitchen", 1.3, 0.9, 2.1),
+      doorOpening("d-bath", 4.3, 0.8, 2.1),
+      doorOpening("d-larder", 6.1, 0.7, 2.1),
+    ],
+  ),
   // Between the two west bedrooms. No door: a bedroom reached through another
   // bedroom is the thing a central hall exists to avoid.
   partition("P-bed-1-2", [-5.2, BED_1_2], [SPINE_W, BED_1_2]),
@@ -210,9 +217,7 @@ const houseInternals: WallSpec[] = [
   // The day/night line. West of the hall it closes the bedrooms off; east of it
   // the bathroom. The living-room door is the wide one, on the spine.
   partition("P-day-w", [-5.2, DAY], [SPINE_W, DAY]),
-  partition("P-day-hall", [SPINE_W, DAY], [SPINE_E, DAY], [
-    doorOpening("d-living", 0.3, 1.2, 2.3),
-  ]),
+  partition("P-day-hall", [SPINE_W, DAY], [SPINE_E, DAY], [doorOpening("d-living", 0.3, 1.2, 2.3)]),
   partition("P-day-e", [SPINE_E, DAY], [5.2, DAY]),
   // Living room | bedroom 3. Runs the full depth to the north wall's inner
   // face: stopping at 31.7 left a 150 mm slot joining the two rooms.
@@ -314,7 +319,6 @@ const boundaryWall: WallSpec = {
     },
   ],
 };
-
 
 /* ── the rooms ─────────────────────────────────────────────────── */
 
@@ -475,7 +479,11 @@ const paving: { id: string; polygon: [number, number][]; material: string }[] = 
    * ground either side of a gate is where the wear is. Stopping the paving at
    * the wall line leaves a mud step in the one place everyone treads.
    */
-  { id: "pave-wicket", polygon: between(WICKET_X - 0.9, -1.2, WICKET_X + 0.9, 0.6), material: "brick-paving" },
+  {
+    id: "pave-wicket",
+    polygon: between(WICKET_X - 0.9, -1.2, WICKET_X + 0.9, 0.6),
+    material: "brick-paving",
+  },
 
   /**
    * The apron at the garage door: 7 m across the door, 5 m deep.
@@ -888,7 +896,12 @@ const greenhollow: SceneDocumentInput = {
       // well on its own. A proxy box in the middle of the water read worse than
       // nothing at all.
       { id: "bench-vine", asset: "polyhaven/painted_wooden_bench", position: [0, 0.5, 12.0], rotationY: 90 },
-      { id: "table-garden", asset: "polyhaven/outdoor_table_chair_set_01", position: [2.4, 0.7, 33.8], rotationY: 15 },
+      {
+        id: "table-garden",
+        asset: "polyhaven/outdoor_table_chair_set_01",
+        position: [2.4, 0.7, 33.8],
+        rotationY: 15,
+      },
     ],
   },
 

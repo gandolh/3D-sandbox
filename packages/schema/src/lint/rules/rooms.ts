@@ -1,6 +1,6 @@
-import { area, bounds, boundsContain, pointInPolygon, polygonNetArea } from "../../geometry.js";
 import { wallAngle, wallLength } from "../../derive/walls.js";
 import type { Level, Room, Wall } from "../../document.js";
+import { area, bounds, boundsContain, pointInPolygon, polygonNetArea } from "../../geometry.js";
 import type { RawFinding, Rule } from "../types.js";
 
 /**
@@ -127,9 +127,7 @@ function hasWindow(room: Room, level: Level): boolean {
   return level.walls.some((wall) =>
     wall.openings.some((opening) => {
       if (opening.kind !== "window") return false;
-      return sidesOf(wall, opening.offset + opening.width / 2).some((p) =>
-        pointInPolygon(p, room.polygon),
-      );
+      return sidesOf(wall, opening.offset + opening.width / 2).some((p) => pointInPolygon(p, room.polygon));
     }),
   );
 }

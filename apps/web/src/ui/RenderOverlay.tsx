@@ -8,13 +8,7 @@ const seconds = (ms: number): string => `${(ms / 1000).toFixed(1)}s`;
  * progress signal — a path trace has no percentage until it is finished, so the
  * bar tracks samples against the shot's target rather than inventing one.
  */
-export function RenderOverlay({
-  progress,
-  onCancel,
-}: {
-  progress: RenderProgress;
-  onCancel: () => void;
-}) {
+export function RenderOverlay({ progress, onCancel }: { progress: RenderProgress; onCancel: () => void }) {
   const cancel = useRef<HTMLButtonElement | null>(null);
 
   /**
@@ -52,9 +46,7 @@ export function RenderOverlay({
   */
   const phase = progress.phase;
   const announcement = [
-    progress.queue === undefined
-      ? null
-      : `Shot ${progress.queue.index} of ${progress.queue.total}`,
+    progress.queue === undefined ? null : `Shot ${progress.queue.index} of ${progress.queue.total}`,
     phase === "building"
       ? "building acceleration structure"
       : phase === "done"
@@ -95,9 +87,7 @@ export function RenderOverlay({
               : `${progress.samples.toLocaleString("en-GB")} / ${progress.targetSamples.toLocaleString("en-GB")} samples`}
           </span>
           <span className="text-subtle tabular-nums">{seconds(progress.elapsedMs)}</span>
-          {progress.label !== undefined && (
-            <span className="truncate text-subtle">{progress.label}</span>
-          )}
+          {progress.label !== undefined && <span className="truncate text-subtle">{progress.label}</span>}
         </div>
         <div className="h-1 overflow-hidden rounded-full bg-line">
           <div

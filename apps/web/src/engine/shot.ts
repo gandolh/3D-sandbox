@@ -1,5 +1,5 @@
-import * as THREE from "three";
 import type { Shot } from "@solstice/schema";
+import * as THREE from "three";
 
 /**
  * Full-frame film dimensions, in millimetres.
@@ -33,12 +33,7 @@ export function shotFov(focalLength: number, aspect: number): number {
  */
 export function shotCamera(shot: Shot): THREE.PerspectiveCamera {
   const aspect = shot.render.width / shot.render.height;
-  const camera = new THREE.PerspectiveCamera(
-    shotFov(shot.camera.focalLength, aspect),
-    aspect,
-    0.1,
-    2000,
-  );
+  const camera = new THREE.PerspectiveCamera(shotFov(shot.camera.focalLength, aspect), aspect, 0.1, 2000);
   camera.position.set(...shot.camera.position);
   camera.lookAt(new THREE.Vector3(...shot.camera.target));
   camera.updateProjectionMatrix();

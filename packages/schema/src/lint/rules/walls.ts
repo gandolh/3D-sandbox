@@ -1,5 +1,5 @@
-import { mToMm } from "../../units.js";
 import { intervalsOverlap, length } from "../../geometry.js";
+import { mToMm } from "../../units.js";
 import type { RawFinding, Rule } from "../types.js";
 
 /** A wall whose endpoints coincide generates no geometry and breaks openings. */
@@ -136,12 +136,7 @@ export const openingsDoNotOverlap: Rule = {
               ob.offset + ob.width,
             );
             if (!planOverlap) continue;
-            const vertOverlap = intervalsOverlap(
-              oa.sill,
-              oa.sill + oa.height,
-              ob.sill,
-              ob.sill + ob.height,
-            );
+            const vertOverlap = intervalsOverlap(oa.sill, oa.sill + oa.height, ob.sill, ob.sill + ob.height);
             if (!vertOverlap) continue;
             out.push({
               rule: "openings-do-not-overlap",

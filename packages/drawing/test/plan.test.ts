@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { describe, expect, it } from "vitest";
 import { SceneDocument, type SceneDocumentInput } from "@solstice/schema";
+import { describe, expect, it } from "vitest";
 import { planSvg } from "../src/plan.js";
 import { WEIGHT } from "../src/style.js";
 
@@ -139,9 +139,7 @@ describe("which building the plan is of", () => {
     // as four blank walls and lost six of its ten doors.
     const partitions = houseWalls.filter((w) => w.id.startsWith("P-"));
     expect(partitions.length).toBeGreaterThan(5);
-    const internalDoors = partitions.flatMap((w) =>
-      w.openings.filter((o) => o.kind === "door"),
-    );
+    const internalDoors = partitions.flatMap((w) => w.openings.filter((o) => o.kind === "door"));
     expect((svg.match(/ A\d/g) ?? []).length).toBeGreaterThan(internalDoors.length);
   });
 });

@@ -43,7 +43,7 @@ const server = await createServer({
       configureServer(vite) {
         vite.middlewares.use("/assets-src", (req, res, next) => {
           const rel = normalize(decodeURIComponent((req.url ?? "/").split("?")[0] ?? "/"));
-          const file = resolve(assetsRoot, "." + (rel.startsWith("/") ? rel : `/${rel}`));
+          const file = resolve(assetsRoot, `.${rel.startsWith("/") ? rel : `/${rel}`}`);
           if (!insideAssets(file)) {
             res.statusCode = 403;
             res.end();

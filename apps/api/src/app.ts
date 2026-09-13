@@ -1,17 +1,17 @@
-import Fastify, { type FastifyInstance } from "fastify";
 import cors from "@fastify/cors";
 import { SceneValidationError, serializeScene } from "@solstice/schema";
-import { loadConfig, type Config } from "./config.js";
-import { SceneIndex, summarize } from "./store/index-db.js";
+import Fastify, { type FastifyInstance } from "fastify";
+import { type Config, loadConfig } from "./config.js";
 import {
-  SceneNotFoundError,
-  StalePreconditionError,
-  UnsafeIdError,
-  sceneMtime,
   deleteSceneFile,
   readSceneFile,
+  SceneNotFoundError,
+  StalePreconditionError,
+  sceneMtime,
+  UnsafeIdError,
   writeSceneFile,
 } from "./store/files.js";
+import { SceneIndex, summarize } from "./store/index-db.js";
 
 export interface BuiltApp {
   app: FastifyInstance;
@@ -56,9 +56,7 @@ export async function buildApp(overrides: Partial<Config> = {}): Promise<BuiltAp
       return reply.code(400).send({ error: "invalid_id", message: error.message });
     }
     if (error instanceof StalePreconditionError) {
-      return reply
-        .code(409)
-        .send({ error: "stale", message: error.message, mtime: error.current });
+      return reply.code(409).send({ error: "stale", message: error.message, mtime: error.current });
     }
     if (error instanceof SceneNotFoundError) {
       return reply.code(404).send({ error: "not_found", message: error.message });

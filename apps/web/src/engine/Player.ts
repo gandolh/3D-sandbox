@@ -1,6 +1,6 @@
-import { createTimer, type Timer } from "animejs";
 import { evaluate, type Sample } from "@solstice/animation";
 import type { Animation } from "@solstice/schema";
+import { createTimer, type Timer } from "animejs";
 
 /**
  * The playhead.

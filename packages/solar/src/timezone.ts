@@ -26,12 +26,12 @@ export function zoneOffsetMs(instant: Date, timeZone: string): number {
   }
 
   const asIfUtc = Date.UTC(
-    Number(parts["year"]),
-    Number(parts["month"]) - 1,
-    Number(parts["day"]),
-    Number(parts["hour"]) % 24,
-    Number(parts["minute"]),
-    Number(parts["second"]),
+    Number(parts.year),
+    Number(parts.month) - 1,
+    Number(parts.day),
+    Number(parts.hour) % 24,
+    Number(parts.minute),
+    Number(parts.second),
   );
   return asIfUtc - instant.getTime();
 }

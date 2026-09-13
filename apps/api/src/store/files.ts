@@ -1,6 +1,6 @@
-import { open, readFile, readdir, rename, rm, stat, unlink } from "node:fs/promises";
+import { type FileHandle, open, readdir, readFile, rename, rm, stat, unlink } from "node:fs/promises";
 import { basename, join, resolve, sep } from "node:path";
-import { SceneValidationError, loadScene, serializeScene, type SceneDocument } from "@solstice/schema";
+import { loadScene, type SceneDocument, SceneValidationError, serializeScene } from "@solstice/schema";
 
 const SLUG = /^[A-Za-z][A-Za-z0-9_-]*$/;
 const SUFFIX = ".scene.json";
@@ -148,7 +148,7 @@ export async function writeSceneFile(
  */
 async function writeAtomically(path: string, contents: string): Promise<void> {
   const temp = `${path}.${process.pid.toString(36)}${Date.now().toString(36)}.tmp`;
-  let handle;
+  let handle: FileHandle | undefined;
   try {
     handle = await open(temp, "wx");
     await handle.writeFile(contents, "utf8");

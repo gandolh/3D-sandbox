@@ -61,7 +61,6 @@ export interface Rule {
   run(doc: SceneDocument, opts: ResolvedOptions): RawFinding[];
 }
 
-
 export const DEFAULTS = {
   minOpeningEdgeMargin: 0.25,
   maxScatterInstances: 4000,

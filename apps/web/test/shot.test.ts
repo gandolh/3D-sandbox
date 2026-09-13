@@ -1,7 +1,7 @@
+import type { Shot } from "@solstice/schema";
 import * as THREE from "three";
 import { describe, expect, it } from "vitest";
 import { FILM_WIDTH_MM, shotCamera, shotFov } from "../src/engine/shot.js";
-import type { Shot } from "@solstice/schema";
 
 const shot = (over: Partial<Shot["camera"]> = {}, render = {}): Shot => ({
   id: "s",

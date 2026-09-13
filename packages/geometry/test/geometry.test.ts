@@ -1,28 +1,37 @@
 import { readFileSync } from "node:fs";
+import {
+  BuildingMass,
+  bounds,
+  type Level,
+  loadScene,
+  Roof,
+  Run,
+  ScatterField,
+  type Wall,
+} from "@solstice/schema";
 import * as THREE from "three";
 import { Evaluator } from "three-bvh-csg";
 import { describe, expect, it } from "vitest";
-import { downwardFaces, faces, inwardFaces, normalsAgainstWinding, slopes } from "./normals.js";
-import { BuildingMass, Roof, Run, ScatterField, bounds, loadScene, type Level, type Wall } from "@solstice/schema";
 import {
-  UnsupportedRoofError,
   buildMass,
   buildPaving,
   buildRoad,
   buildRoof,
   buildRun,
   buildWall,
-  extrudePolygon,
   ensureStandardAttributes,
+  extrudePolygon,
+  generateScene,
   hasStandardAttributes,
   mergeSimple,
-  generateScene,
   mulberry32,
   pointInPolygon,
   roofRise,
   scatterInstances,
+  UnsupportedRoofError,
   wallSolid,
 } from "../src/index.js";
+import { downwardFaces, faces, inwardFaces, normalsAgainstWinding, slopes } from "./normals.js";
 
 const level = (): Level => ({
   id: "L1",
@@ -131,8 +140,10 @@ describe("openings are actually cut", () => {
     );
     mesh.updateMatrixWorld(true);
     const through = (x: number) =>
-      new THREE.Raycaster(new THREE.Vector3(x, 1.5, -1), new THREE.Vector3(0, 0, 1))
-        .intersectObject(mesh, false).length;
+      new THREE.Raycaster(new THREE.Vector3(x, 1.5, -1), new THREE.Vector3(0, 0, 1)).intersectObject(
+        mesh,
+        false,
+      ).length;
     expect(through(1.5)).toBe(0);
     expect(through(4.0)).toBe(0);
     expect(through(2.5)).toBeGreaterThan(0);
@@ -165,7 +176,12 @@ describe("roofs", () => {
 
   it("covers the whole footprint in plan", () => {
     const roof = Roof.parse({
-      id: "R-01", kind: "gable", footprint, baseElevation: 2.7, pitch: 32, material: "roof",
+      id: "R-01",
+      kind: "gable",
+      footprint,
+      baseElevation: 2.7,
+      pitch: 32,
+      material: "roof",
     });
     const box = boxOf(buildRoof(roof));
     expect(box.min.x).toBeCloseTo(-3.6);
@@ -176,7 +192,12 @@ describe("roofs", () => {
 
   it("refuses a hip roof rather than guessing", () => {
     const roof = Roof.parse({
-      id: "R-01", kind: "hip", footprint, baseElevation: 2.7, pitch: 32, material: "roof",
+      id: "R-01",
+      kind: "hip",
+      footprint,
+      baseElevation: 2.7,
+      pitch: 32,
+      material: "roof",
     });
     expect(() => buildRoof(roof)).toThrow(UnsupportedRoofError);
   });
@@ -187,7 +208,12 @@ describe("deterministic scatter", () => {
     ScatterField.parse({
       id: "forest",
       assets: ["a", "b"],
-      area: [[-50, -50], [50, -50], [50, 50], [-50, 50]],
+      area: [
+        [-50, -50],
+        [50, -50],
+        [50, 50],
+        [-50, 50],
+      ],
       density: 2,
       seed,
       exclude,
@@ -214,10 +240,22 @@ describe("deterministic scatter", () => {
     const big = ScatterField.parse({
       id: "meadow",
       assets: ["a"],
-      area: [[0, 0], [100, 0], [100, 100], [0, 100]],
+      area: [
+        [0, 0],
+        [100, 0],
+        [100, 100],
+        [0, 100],
+      ],
       density: 4,
       seed: 5,
-      exclude: [[[75, 25], [125, 25], [125, 75], [75, 75]]],
+      exclude: [
+        [
+          [75, 25],
+          [125, 25],
+          [125, 75],
+          [75, 75],
+        ],
+      ],
     });
     expect(scatterInstances(big)).toHaveLength(350);
   });
@@ -227,23 +265,41 @@ describe("deterministic scatter", () => {
     const twice = ScatterField.parse({
       id: "meadow",
       assets: ["a"],
-      area: [[0, 0], [100, 0], [100, 100], [0, 100]],
+      area: [
+        [0, 0],
+        [100, 0],
+        [100, 100],
+        [0, 100],
+      ],
       density: 4,
       seed: 5,
       exclude: [
-        [[0, 0], [20, 0], [20, 20], [0, 20]],
-        [[10, 10], [30, 10], [30, 30], [10, 30]],
+        [
+          [0, 0],
+          [20, 0],
+          [20, 20],
+          [0, 20],
+        ],
+        [
+          [10, 10],
+          [30, 10],
+          [30, 30],
+          [10, 30],
+        ],
       ],
     });
-    expect(scatterInstances(twice)).toHaveLength(Math.round((10000 - 700) / 100 * 4));
+    expect(scatterInstances(twice)).toHaveLength(Math.round(((10000 - 700) / 100) * 4));
   });
 
   it("places nothing inside an excluded region", () => {
-    const clearing = [[-20, -20], [20, -20], [20, 20], [-20, 20]];
+    const clearing = [
+      [-20, -20],
+      [20, -20],
+      [20, 20],
+      [-20, 20],
+    ];
     const instances = scatterInstances(field(3, [clearing]));
-    const inside = instances.filter((i) =>
-      pointInPolygon([i.position[0], i.position[2]], clearing as never),
-    );
+    const inside = instances.filter((i) => pointInPolygon([i.position[0], i.position[2]], clearing as never));
     expect(inside).toHaveLength(0);
     expect(instances.length).toBeGreaterThan(100);
   });
@@ -257,7 +313,12 @@ describe("deterministic scatter", () => {
       ScatterField.parse({
         id,
         assets: ["a"],
-        area: [[0, 0], [40, 0], [40, 40], [0, 40]],
+        area: [
+          [0, 0],
+          [40, 0],
+          [40, 40],
+          [0, 40],
+        ],
         density: 2,
       });
     const oaks = scatterInstances(named("oaks"));
@@ -343,9 +404,7 @@ describe("generating the reference scene", () => {
     const scene = generateScene(doc);
     expect(scene.stats.subject.triangles).toBeGreaterThan(0);
     expect(scene.stats.context.triangles).toBeGreaterThan(scene.stats.subject.triangles);
-    expect(scene.stats.triangles).toBe(
-      scene.stats.subject.triangles + scene.stats.context.triangles,
-    );
+    expect(scene.stats.triangles).toBe(scene.stats.subject.triangles + scene.stats.context.triangles);
     scene.dispose();
   });
 
@@ -469,7 +528,12 @@ describe("building masses sit on the ground", () => {
   it("places a pitched neighbour from 0 to height + rise", () => {
     const mass = BuildingMass.parse({
       id: "n-01",
-      footprint: [[-46, 22], [-35, 22], [-35, 31], [-46, 31]],
+      footprint: [
+        [-46, 22],
+        [-35, 22],
+        [-35, 31],
+        [-46, 31],
+      ],
       height: 6.2,
       roofKind: "gable",
       pitch: 30,
@@ -490,7 +554,12 @@ describe("building masses sit on the ground", () => {
     // runs along the row. A whole terrace could never line up.
     const terraced = {
       id: "nb",
-      footprint: [[0, 0], [6.5, 0], [6.5, 9.2], [0, 9.2]],
+      footprint: [
+        [0, 0],
+        [6.5, 0],
+        [6.5, 9.2],
+        [0, 9.2],
+      ],
       height: 5.8,
       roofKind: "gable" as const,
       pitch: 38,
@@ -572,12 +641,26 @@ describe("hand-wound surfaces face outward", () => {
     // in all three scenes rendered pure black against lit terrain. It read as
     // "asphalt is dark" in two briefs' screenshots.
     for (const path of [
-      [[0, 0], [20, 0]] as [number, number][],
-      [[0, 0], [20, 0], [20, 20]] as [number, number][],
+      [
+        [0, 0],
+        [20, 0],
+      ] as [number, number][],
+      [
+        [0, 0],
+        [20, 0],
+        [20, 20],
+      ] as [number, number][],
       // Backwards, and diagonally: the winding must not depend on which way
       // the centreline happens to run.
-      [[20, 20], [20, 0], [0, 0]] as [number, number][],
-      [[0, 0], [-14, 9]] as [number, number][],
+      [
+        [20, 20],
+        [20, 0],
+        [0, 0],
+      ] as [number, number][],
+      [
+        [0, 0],
+        [-14, 9],
+      ] as [number, number][],
     ]) {
       const geometry = road(path);
       expect(faces(geometry).length).toBe((path.length - 1) * 2);
@@ -646,8 +729,25 @@ describe("hand-wound surfaces face outward", () => {
 
   it("winds every closed solid outward", () => {
     const solids: [string, THREE.BufferGeometry][] = [
-      ["gabled mass", buildMass(BuildingMass.parse({ id: "m", footprint: rect, height: 5.8, roofKind: "gable", pitch: 38, material: "m" }))],
-      ["flat mass", buildMass(BuildingMass.parse({ id: "m", footprint: rect, height: 5.8, roofKind: "flat", material: "m" }))],
+      [
+        "gabled mass",
+        buildMass(
+          BuildingMass.parse({
+            id: "m",
+            footprint: rect,
+            height: 5.8,
+            roofKind: "gable",
+            pitch: 38,
+            material: "m",
+          }),
+        ),
+      ],
+      [
+        "flat mass",
+        buildMass(
+          BuildingMass.parse({ id: "m", footprint: rect, height: 5.8, roofKind: "flat", material: "m" }),
+        ),
+      ],
       ["extrusion", extrudePolygon(rect, 0, 3)],
       ["wall solid", wallSolid(wall(), level())],
     ];
@@ -661,7 +761,10 @@ describe("hand-wound surfaces face outward", () => {
       const run = Run.parse({
         id: "r",
         kind,
-        path: [[0, 0], [10, 0]],
+        path: [
+          [0, 0],
+          [10, 0],
+        ],
         width: 1.2,
         height: 2.2,
         spacing: 2,

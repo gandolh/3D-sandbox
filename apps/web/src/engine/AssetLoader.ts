@@ -1,14 +1,14 @@
-import * as THREE from "three";
-import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import {
-  prepareAsset,
   type AssetGeometry,
   type AssetSource,
   type ImpostorAsset,
   type MaterialMaps,
   type MaterialSource,
+  prepareAsset,
 } from "@solstice/geometry";
 import type { SceneDocument } from "@solstice/schema";
+import * as THREE from "three";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
 /**
  * Loads the glTF the manifest knows about, once, into an `AssetSource`.

@@ -1,5 +1,5 @@
+import { lintScene, SceneDocument } from "@solstice/schema";
 import { describe, expect, it } from "vitest";
-import { SceneDocument, lintScene } from "@solstice/schema";
 import { DEFAULT_SCENE_ID, SCENES, sceneById } from "../src/scenes.js";
 
 describe("the bundled scene catalogue", () => {
@@ -57,7 +57,10 @@ describe("Greenhollow's programme", () => {
 
   it("has a kitchen, a bathroom and a hall", () => {
     for (const use of ["kitchen", "bath", "hall"] as const) {
-      expect(rooms.filter((r) => r.use === use), use).toHaveLength(1);
+      expect(
+        rooms.filter((r) => r.use === use),
+        use,
+      ).toHaveLength(1);
     }
   });
 

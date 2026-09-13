@@ -1,26 +1,26 @@
+import { minutesToClock } from "@solstice/animation";
+import type { Shot } from "@solstice/schema";
 import { useEffect, useRef, useState } from "react";
-import { SandboxEngine, type RenderRequest } from "../engine/SandboxEngine.js";
+import { loadAssets } from "../engine/AssetLoader.js";
 import type { RenderProgress } from "../engine/PathTracer.js";
-import { RenderOverlay } from "./RenderOverlay.jsx";
+import { Player } from "../engine/Player.js";
+import type { RenderRequestEvent } from "../engine/queue.js";
+import { type RenderRequest, SandboxEngine } from "../engine/SandboxEngine.js";
+import { findEntity, translateEntity } from "../lib/entities.js";
+import { collidersFor, disposePhysics, sizesFromMap } from "../lib/physics.js";
 import {
   editDocument,
   getState,
   select,
+  setAlert,
   setAssetSizes,
   setPlayhead,
   setPlaying,
   setRendering,
-  setAlert,
   setStatus,
   useStore,
 } from "../state/store.js";
-import { findEntity, translateEntity } from "../lib/entities.js";
-import { collidersFor, disposePhysics, sizesFromMap } from "../lib/physics.js";
-import { loadAssets } from "../engine/AssetLoader.js";
-import { Player } from "../engine/Player.js";
-import type { RenderRequestEvent } from "../engine/queue.js";
-import { minutesToClock } from "@solstice/animation";
-import type { Shot } from "@solstice/schema";
+import { RenderOverlay } from "./RenderOverlay.jsx";
 
 export function Viewport() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -30,7 +30,6 @@ export function Viewport() {
   const [render, setRender] = useState<RenderProgress | null>(null);
 
   const doc = useStore((s) => s.document);
-  const revision = useStore((s) => s.revision);
   const selection = useStore((s) => s.selection);
   const showContext = useStore((s) => s.showContext);
   const showColliders = useStore((s) => s.showColliders);
@@ -156,9 +155,7 @@ export function Viewport() {
           let blob: Blob | null;
           try {
             blob = await engine.startRender(
-              queue.length === 1
-                ? request
-                : { ...request, queue: { index: index + 1, total: queue.length } },
+              queue.length === 1 ? request : { ...request, queue: { index: index + 1, total: queue.length } },
             );
           } catch (error) {
             // Outside the try/catch below until now, so a render that threw
@@ -182,9 +179,7 @@ export function Viewport() {
           }
           done += 1;
           setStatus(
-            queue.length === 1
-              ? "Render downloaded"
-              : `Rendered ${String(done)} of ${String(queue.length)}`,
+            queue.length === 1 ? "Render downloaded" : `Rendered ${String(done)} of ${String(queue.length)}`,
           );
         }
         if (queue.length > 1 && done < queue.length) {
@@ -297,7 +292,7 @@ export function Viewport() {
 
   useEffect(() => {
     if (doc !== null) engineRef.current?.setDocument(doc, { includeContext: showContext });
-  }, [doc, revision, showContext]);
+  }, [doc, showContext]);
 
   useEffect(() => {
     playerRef.current?.setAnimation(doc?.animation ?? null);
@@ -309,13 +304,11 @@ export function Viewport() {
 
   useEffect(() => {
     if (doc === null) return;
-    engineRef.current?.setColliderOverlay(
-      showColliders ? collidersFor(doc, sizesFromMap(assetSizes)) : null,
-    );
+    engineRef.current?.setColliderOverlay(showColliders ? collidersFor(doc, sizesFromMap(assetSizes)) : null);
     // `assetSizes` is in the deps because it arrives late: without it the
     // overlay drawn before the models loaded would keep its missing placement
     // boxes until the next edit.
-  }, [doc, revision, showColliders, assetSizes]);
+  }, [doc, showColliders, assetSizes]);
 
   return (
     <div className="relative min-w-0 flex-1 bg-viewport">
@@ -327,15 +320,11 @@ export function Viewport() {
       </Hud>
       {selection !== null && <Hud className="top-2.5 right-2.5">{selection}</Hud>}
       <Hud className="bottom-2.5 left-2.5">
-        {stats.triangles.toLocaleString("en-GB")} tris · {stats.instances.toLocaleString("en-GB")}{" "}
-        instances
+        {stats.triangles.toLocaleString("en-GB")} tris · {stats.instances.toLocaleString("en-GB")} instances
       </Hud>
 
       {render !== null && (
-        <RenderOverlay
-          progress={render}
-          onCancel={() => engineRef.current?.cancelRender()}
-        />
+        <RenderOverlay progress={render} onCancel={() => engineRef.current?.cancelRender()} />
       )}
     </div>
   );

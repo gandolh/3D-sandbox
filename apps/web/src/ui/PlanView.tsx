@@ -1,5 +1,5 @@
-import { useMemo } from "react";
 import { planSvg } from "@solstice/drawing";
+import { useMemo } from "react";
 import { useStore } from "../state/store.js";
 import { Scroll } from "./Scroll.jsx";
 
@@ -55,6 +55,7 @@ export function PlanView() {
             // The SVG is built by this repo from its own document — no user
             // HTML reaches it, and it is the only way to hand a browser a
             // vector drawing without re-implementing it as JSX.
+            // biome-ignore lint/security/noDangerouslySetInnerHtml: built by `planSvg` from this repo's own document; see above
             dangerouslySetInnerHTML={{ __html: svg }}
           />
         </div>

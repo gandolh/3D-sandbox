@@ -1,11 +1,11 @@
+import type { Shot } from "@solstice/schema";
 import { describe, expect, it } from "vitest";
 import {
-  MEASURED_SAMPLES_PER_SECOND,
   estimateQueue,
   formatDuration,
+  MEASURED_SAMPLES_PER_SECOND,
   renderQueue,
 } from "../src/engine/queue.js";
-import type { Shot } from "@solstice/schema";
 
 const shot = (id: string, render: Partial<Shot["render"]> = {}): Shot => ({
   id,
@@ -47,17 +47,13 @@ describe("estimateQueue", () => {
   it("scales with pixel count, not with sample count alone", () => {
     // Quarter the area, quarter the time — the rate is per-pixel work.
     const full = estimateQueue(renderQueue([shot("a", { samples: 100 })]));
-    const quarter = estimateQueue(
-      renderQueue([shot("a", { samples: 100, width: 960, height: 540 })]),
-    );
+    const quarter = estimateQueue(renderQueue([shot("a", { samples: 100, width: 960, height: 540 })]));
     expect(full.samples).toBe(quarter.samples);
     expect(quarter.seconds).toBeCloseTo(full.seconds / 4, 5);
   });
 
   it("sums the whole queue", () => {
-    const estimate = estimateQueue(
-      renderQueue([shot("a"), shot("b"), shot("c"), shot("d")]),
-    );
+    const estimate = estimateQueue(renderQueue([shot("a"), shot("b"), shot("c"), shot("d")]));
     expect(estimate.shots).toBe(4);
     expect(estimate.samples).toBe(2400);
     // The number this feature exists to put in front of someone: about an hour.

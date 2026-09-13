@@ -1,10 +1,10 @@
 import {
-  wallBearing,
-  wallLength,
   type Level,
   type Placement,
   type SceneDocument,
   type Wall,
+  wallBearing,
+  wallLength,
 } from "@solstice/schema";
 
 /** Where a mesh name like `wall:W-03` points in the document. */
@@ -89,11 +89,7 @@ export function translateWall(wall: Wall, dx: number, dz: number): void {
  * not.
  */
 export function translatePlacement(placement: Placement, dx: number, dz: number): void {
-  placement.position = [
-    placement.position[0] + dx,
-    placement.position[1],
-    placement.position[2] + dz,
-  ];
+  placement.position = [placement.position[0] + dx, placement.position[1], placement.position[2] + dz];
 }
 
 /**

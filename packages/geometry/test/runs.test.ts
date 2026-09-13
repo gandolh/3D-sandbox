@@ -1,7 +1,7 @@
+import type { Run } from "@solstice/schema";
 import * as THREE from "three";
 import { describe, expect, it } from "vitest";
-import type { Run } from "@solstice/schema";
-import { buildRun, runLength, type Canopy } from "../src/subject/runs.js";
+import { buildRun, type Canopy, runLength } from "../src/subject/runs.js";
 
 const run = (over: Partial<Run> = {}): Run => ({
   id: "r",
@@ -59,17 +59,45 @@ const canopyBox = (canopy: Canopy) => {
 
 describe("runLength", () => {
   it("sums the segments of a polyline", () => {
-    expect(runLength(run({ path: [[0, 0], [0, 3], [4, 3]] }))).toBeCloseTo(7, 6);
+    expect(
+      runLength(
+        run({
+          path: [
+            [0, 0],
+            [0, 3],
+            [4, 3],
+          ],
+        }),
+      ),
+    ).toBeCloseTo(7, 6);
   });
 
   it("ignores a repeated point", () => {
-    expect(runLength(run({ path: [[0, 0], [0, 0], [0, 5]] }))).toBeCloseTo(5, 6);
+    expect(
+      runLength(
+        run({
+          path: [
+            [0, 0],
+            [0, 0],
+            [0, 5],
+          ],
+        }),
+      ),
+    ).toBeCloseTo(5, 6);
   });
 });
 
 describe("buildRun", () => {
   it("builds a hedge as one solid per segment, with no climber", () => {
-    const { structure, climber } = buildRun(run({ kind: "hedge", path: [[0, 0], [0, 10]] }));
+    const { structure, climber } = buildRun(
+      run({
+        kind: "hedge",
+        path: [
+          [0, 0],
+          [0, 10],
+        ],
+      }),
+    );
     expect(structure).toHaveLength(1);
     expect(climber).toBeNull();
   });
@@ -199,15 +227,20 @@ describe("buildRun", () => {
 
     // A different pergola gets different foliage, not a copy of the first.
     const other = buildRun(run({ id: "p2", climber: "vine" })).climber!;
-    expect(other.transforms[0]!.elements.join(",")).not.toBe(
-      first.transforms[0]!.elements.join(","),
-    );
+    expect(other.transforms[0]!.elements.join(",")).not.toBe(first.transforms[0]!.elements.join(","));
   });
 
   it("forces the last bay onto the path's end", () => {
     // 10 m at 3 m spacing: naive stepping leaves a 1 m stub. Rounding to 3 bays
     // of 3.33 m keeps every bay the same.
-    const { structure } = buildRun(run({ path: [[0, 0], [0, 10]] }));
+    const { structure } = buildRun(
+      run({
+        path: [
+          [0, 0],
+          [0, 10],
+        ],
+      }),
+    );
     const zs = structure.flatMap((g) => {
       const p = g.getAttribute("position").array;
       const out: number[] = [];

@@ -36,8 +36,7 @@ export function pointInPolygon(point: Plan, polygon: Polygon): boolean {
   for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
     const a = polygon[i]!;
     const b = polygon[j]!;
-    const intersects =
-      a[1] > z !== b[1] > z && x < ((b[0] - a[0]) * (z - a[1])) / (b[1] - a[1]) + a[0];
+    const intersects = a[1] > z !== b[1] > z && x < ((b[0] - a[0]) * (z - a[1])) / (b[1] - a[1]) + a[0];
     if (intersects) inside = !inside;
   }
   return inside;
@@ -85,7 +84,6 @@ export function intervalsOverlap(
 ): boolean {
   return Math.min(aEnd, bEnd) - Math.max(aStart, bStart) > epsilon;
 }
-
 
 /**
  * Area of `outer` with `holes` removed — holes clipped to `outer`, and to each
@@ -140,8 +138,7 @@ export function polygonNetArea(outer: Polygon, holes: readonly Polygon[]): numbe
 
 type Edge = readonly [Plan, Plan];
 
-const edgesOf = (poly: Polygon): Edge[] =>
-  poly.map((p, i) => [p, poly[(i + 1) % poly.length]!] as Edge);
+const edgesOf = (poly: Polygon): Edge[] => poly.map((p, i) => [p, poly[(i + 1) % poly.length]!] as Edge);
 
 /** The z where two segments properly cross, or null. */
 function crossingZ(a: Edge, b: Edge): number | null {

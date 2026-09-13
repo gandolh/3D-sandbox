@@ -48,7 +48,10 @@ export const Material = z.strictObject({
    * untextured material resolves to the same neutral grey, and a scene of
    * grass, tile, gravel and zinc comes out one flat colour.
    */
-  baseColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+  baseColor: z
+    .string()
+    .regex(/^#[0-9A-Fa-f]{6}$/)
+    .optional(),
   roughness: z.number().min(0).max(1).optional(),
   metalness: z.number().min(0).max(1).optional(),
   /**

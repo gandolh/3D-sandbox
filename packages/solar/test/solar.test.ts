@@ -1,13 +1,13 @@
 import { readFileSync } from "node:fs";
-import { describe, expect, it } from "vitest";
 import { loadScene, type Site, type SolarTime } from "@solstice/schema";
+import { describe, expect, it } from "vitest";
 import {
   dayBounds,
   directionFrom,
   hexToRgb,
-  skyRadianceMap,
   localToUtc,
   resolveSolar,
+  skyRadianceMap,
   sunLighting,
   sunPosition,
   utcToLocalClock,
@@ -97,7 +97,11 @@ describe("direction vectors", () => {
   });
 
   it("always returns a unit vector", () => {
-    for (const [alt, az] of [[12, 40], [65, 210], [-8, 300]] as const) {
+    for (const [alt, az] of [
+      [12, 40],
+      [65, 210],
+      [-8, 300],
+    ] as const) {
       const d = directionFrom(alt, az);
       expect(Math.hypot(d.x, d.y, d.z)).toBeCloseTo(1, 6);
     }
@@ -247,8 +251,7 @@ describe("sky radiance map", () => {
       y: Math.sin(elevation),
       z: Math.sin(phi) * Math.cos(elevation),
     };
-    const dot =
-      dir.x * noon.direction.x + dir.y * noon.direction.y + dir.z * noon.direction.z;
+    const dot = dir.x * noon.direction.x + dir.y * noon.direction.y + dir.z * noon.direction.z;
     expect(dot).toBeGreaterThan(0.97);
     expect(best).toBeGreaterThan(5);
   });
@@ -271,7 +274,11 @@ describe("sky radiance map", () => {
 
   it("honours a requested size", () => {
     const map = skyRadianceMap({
-      sunDirection: noon.direction, sunColor: white, turbidity: 3, width: 64, height: 32,
+      sunDirection: noon.direction,
+      sunColor: white,
+      turbidity: 3,
+      width: 64,
+      height: 32,
     });
     expect(map.data.length).toBe(64 * 32 * 4);
   });

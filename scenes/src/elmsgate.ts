@@ -19,10 +19,10 @@
 import {
   doorOpening,
   rect,
+  type SceneDocumentInput,
   wallsFromFootprint,
   windowOpening,
   withOpenings,
-  type SceneDocumentInput,
 } from "@solstice/schema";
 
 /* ── the lot ───────────────────────────────────────────────────── */
@@ -302,7 +302,12 @@ const elmsgate: SceneDocumentInput = {
 
     placements: [
       { id: "bench-yard", asset: "polyhaven/painted_wooden_bench", position: [1.9, 0, 16.4], rotationY: 180 },
-      { id: "table-terrace", asset: "polyhaven/outdoor_table_chair_set_01", position: [-1.1, 0, 12.4], rotationY: 25 },
+      {
+        id: "table-terrace",
+        asset: "polyhaven/outdoor_table_chair_set_01",
+        position: [-1.1, 0, 12.4],
+        rotationY: 25,
+      },
       { id: "planter-door", asset: "polyhaven/planter_box_01", position: [-1.9, 0, 0.75], rotationY: 0 },
       { id: "planter-bay", asset: "polyhaven/planter_box_03", position: [1.9, 0, 0.75], rotationY: 0 },
     ],
@@ -345,30 +350,89 @@ const elmsgate: SceneDocumentInput = {
     masses: [
       // The row. Two each side, all at the same eave, all touching — which is
       // what makes this a terrace rather than a detached house on a thin plot.
-      { id: "nb-w1", footprint: rect(-HALF_WIDTH - 6.5, FRONT, 6.5, HOUSE_DEPTH), height: EAVE, roofKind: "gable", pitch: 38, ridgeBearing: 90, material: "neighbour-brick" },
-      { id: "nb-w2", footprint: rect(-HALF_WIDTH - 13, FRONT, 6.5, HOUSE_DEPTH), height: EAVE, roofKind: "gable", pitch: 38, ridgeBearing: 90, material: "neighbour-brick" },
-      { id: "nb-e1", footprint: rect(HALF_WIDTH, FRONT, 6.5, HOUSE_DEPTH), height: EAVE, roofKind: "gable", pitch: 38, ridgeBearing: 90, material: "neighbour-brick" },
-      { id: "nb-e2", footprint: rect(HALF_WIDTH + 6.5, FRONT, 6.5, HOUSE_DEPTH), height: EAVE, roofKind: "gable", pitch: 38, ridgeBearing: 90, material: "neighbour-brick" },
+      {
+        id: "nb-w1",
+        footprint: rect(-HALF_WIDTH - 6.5, FRONT, 6.5, HOUSE_DEPTH),
+        height: EAVE,
+        roofKind: "gable",
+        pitch: 38,
+        ridgeBearing: 90,
+        material: "neighbour-brick",
+      },
+      {
+        id: "nb-w2",
+        footprint: rect(-HALF_WIDTH - 13, FRONT, 6.5, HOUSE_DEPTH),
+        height: EAVE,
+        roofKind: "gable",
+        pitch: 38,
+        ridgeBearing: 90,
+        material: "neighbour-brick",
+      },
+      {
+        id: "nb-e1",
+        footprint: rect(HALF_WIDTH, FRONT, 6.5, HOUSE_DEPTH),
+        height: EAVE,
+        roofKind: "gable",
+        pitch: 38,
+        ridgeBearing: 90,
+        material: "neighbour-brick",
+      },
+      {
+        id: "nb-e2",
+        footprint: rect(HALF_WIDTH + 6.5, FRONT, 6.5, HOUSE_DEPTH),
+        height: EAVE,
+        roofKind: "gable",
+        pitch: 38,
+        ridgeBearing: 90,
+        material: "neighbour-brick",
+      },
       // The backs of the row behind, which is what a terrace yard actually
       // looks out at.
-      { id: "nb-rear", footprint: rect(-16, YARD_END + 6, 32, 9), height: EAVE, roofKind: "gable", pitch: 38, ridgeBearing: 90, material: "neighbour-brick" },
+      {
+        id: "nb-rear",
+        footprint: rect(-16, YARD_END + 6, 32, 9),
+        height: EAVE,
+        roofKind: "gable",
+        pitch: 38,
+        ridgeBearing: 90,
+        material: "neighbour-brick",
+      },
     ],
 
     roads: [
-      { id: "street", path: [[-45, -5.5], [45, -5.5]], width: 7, material: "asphalt-road" },
-      { id: "pavement", path: [[-45, -1.2], [45, -1.2]], width: 3.4, material: "pavement-stone" },
-      { id: "pavement-far", path: [[-45, -10.7], [45, -10.7]], width: 3.4, material: "pavement-stone" },
+      {
+        id: "street",
+        path: [
+          [-45, -5.5],
+          [45, -5.5],
+        ],
+        width: 7,
+        material: "asphalt-road",
+      },
+      {
+        id: "pavement",
+        path: [
+          [-45, -1.2],
+          [45, -1.2],
+        ],
+        width: 3.4,
+        material: "pavement-stone",
+      },
+      {
+        id: "pavement-far",
+        path: [
+          [-45, -10.7],
+          [45, -10.7],
+        ],
+        width: 3.4,
+        material: "pavement-stone",
+      },
     ],
 
     scatter: [
       {
         id: "yard-planting",
-        assets: [
-          "polyhaven/tree_small_02",
-          "polyhaven/shrub_01",
-          "polyhaven/shrub_02",
-          "polyhaven/shrub_04",
-        ],
+        assets: ["polyhaven/tree_small_02", "polyhaven/shrub_01", "polyhaven/shrub_02", "polyhaven/shrub_04"],
         area: rect(-2.9, 17, 5.8, 6.4),
         density: 12,
         seed: 7,

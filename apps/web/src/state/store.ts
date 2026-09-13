@@ -1,10 +1,5 @@
+import { type LintFinding, lintScene, SceneDocument, type SolarTime } from "@solstice/schema";
 import { useSyncExternalStore } from "react";
-import {
-  SceneDocument,
-  lintScene,
-  type LintFinding,
-  type SolarTime,
-} from "@solstice/schema";
 import { DEFAULT_SCENE_ID } from "../scenes.js";
 
 /**
@@ -153,12 +148,11 @@ export const setLoadError = (loadError: string): void =>
 export const select = (selection: string | null): void => set({ selection });
 
 export const setTheme = (theme: "dark" | "light"): void => {
-  document.documentElement.dataset["theme"] = theme;
+  document.documentElement.dataset.theme = theme;
   set({ theme });
 };
 
-export const setShowColliders = (showColliders: boolean): void =>
-  set({ showColliders });
+export const setShowColliders = (showColliders: boolean): void => set({ showColliders });
 
 export const setShowContext = (showContext: boolean): void =>
   set({ showContext, revision: state.revision + 1 });
@@ -195,9 +189,8 @@ export const setPlaying = (playing: boolean): void => set({ playing });
 
 export const setRendering = (rendering: boolean): void => set({ rendering });
 
-export const setAssetSizes = (
-  assetSizes: ReadonlyMap<string, readonly [number, number, number]>,
-): void => set({ assetSizes });
+export const setAssetSizes = (assetSizes: ReadonlyMap<string, readonly [number, number, number]>): void =>
+  set({ assetSizes });
 
 /**
  * Apply an edit to the document, then re-validate.

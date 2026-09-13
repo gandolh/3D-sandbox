@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 
 export const PanelTitle = ({ children }: { children: ReactNode }) => (
   <div className="px-3 pt-3 pb-2 font-mono text-[9.5px] tracking-[0.13em] text-subtle uppercase">
@@ -53,7 +53,7 @@ export function Field({
   // would be overwritten by the value the user is trying to replace.
   useEffect(() => {
     if (draft !== null && document.activeElement !== input.current) setDraft(null);
-  }, [value, draft]);
+  }, [draft]);
 
   const commit = (raw: string): void => {
     setDraft(null);

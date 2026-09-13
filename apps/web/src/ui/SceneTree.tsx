@@ -1,6 +1,6 @@
-import { Fragment, useRef } from "react";
-import type { Run } from "@solstice/schema";
 import { runLength } from "@solstice/geometry";
+import type { Run } from "@solstice/schema";
+import { Fragment, useRef } from "react";
 import { select, useStore } from "../state/store.js";
 import { PanelTitle } from "./primitives.jsx";
 import { Scroll } from "./Scroll.jsx";
@@ -31,9 +31,7 @@ function Node({
     <>
       <span className="w-3 shrink-0 text-[10px] opacity-70">{glyph}</span>
       <span className="truncate">{label}</span>
-      {badge !== undefined && (
-        <span className="ml-auto font-mono text-[9.5px] text-subtle">{badge}</span>
-      )}
+      {badge !== undefined && <span className="ml-auto font-mono text-[9.5px] text-subtle">{badge}</span>}
     </>
   );
 
@@ -106,6 +104,9 @@ export function SceneTree() {
     if (!keys.includes(event.key)) return;
     const items = [...(tree.current?.querySelectorAll<HTMLElement>("[data-node]") ?? [])];
     if (items.length === 0) return;
+    // `findIndex`, not `indexOf`: `document.activeElement` is `Element | null`
+    // and this is an `HTMLElement[]`. Biome's `useIndexOf` fix is right in
+    // general and wrong here, which is why it is an unsafe fix.
     const here = items.findIndex((el) => el === document.activeElement);
     const next =
       event.key === "Home"
@@ -178,14 +179,7 @@ export function SceneTree() {
           ))}
 
           {doc.subject.roofs.map((roof) => (
-            <Node
-              key={roof.id}
-              id={roof.id}
-              label={roof.id}
-              depth={1}
-              glyph="◹"
-              badge={`${roof.pitch}°`}
-            />
+            <Node key={roof.id} id={roof.id} label={roof.id} depth={1} glyph="◹" badge={`${roof.pitch}°`} />
           ))}
 
           <div className="mt-2 border-t border-line px-2 pt-2 pb-1 font-mono text-[8.5px] tracking-[0.1em] text-subtle uppercase">

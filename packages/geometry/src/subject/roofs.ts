@@ -1,7 +1,7 @@
-import * as THREE from "three";
 import { bounds, degToRad, type Roof } from "@solstice/schema";
-import { extrudePolygon } from "../polygon.js";
+import * as THREE from "three";
 import { ensureStandardAttributes } from "../attributes.js";
+import { extrudePolygon } from "../polygon.js";
 
 export class UnsupportedRoofError extends Error {
   constructor(kind: string) {
@@ -54,15 +54,17 @@ export function buildRoof(roof: Roof): THREE.BufferGeometry {
     d: [number, number, number],
     e: [number, number, number],
   ) => {
-    push(...a); push(...c); push(...d);
-    push(...a); push(...d); push(...e);
+    push(...a);
+    push(...c);
+    push(...d);
+    push(...a);
+    push(...d);
+    push(...e);
   };
-  const tri = (
-    a: [number, number, number],
-    c: [number, number, number],
-    d: [number, number, number],
-  ) => {
-    push(...a); push(...c); push(...d);
+  const tri = (a: [number, number, number], c: [number, number, number], d: [number, number, number]) => {
+    push(...a);
+    push(...c);
+    push(...d);
   };
 
   if (ridgeAlongZ) {

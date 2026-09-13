@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
+  lintScene,
   MAX_COORDINATE,
   POST_HALF_WIDTH,
   polygonNetArea,
-  scatterSeed,
-  SceneDocument,
   ScatterField,
-  lintScene,
+  SceneDocument,
   scatterLattice,
+  scatterSeed,
 } from "../src/index.js";
 import { baseScene } from "./fixtures.js";
 
@@ -204,9 +204,7 @@ describe("the document ceiling", () => {
   });
 
   it("refuses rows a millimetre apart", () => {
-    expect(() =>
-      ScatterField.parse(field({ arrangement: "rows", rowSpacing: [1e-6, 1e-6] })),
-    ).toThrow();
+    expect(() => ScatterField.parse(field({ arrangement: "rows", rowSpacing: [1e-6, 1e-6] }))).toThrow();
   });
 
   it("makes an absurd field an error, not a warning", () => {

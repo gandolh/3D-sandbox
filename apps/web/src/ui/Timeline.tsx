@@ -1,6 +1,6 @@
-import { useMemo } from "react";
-import { dayBounds, sunPosition, utcToLocalClock } from "@solstice/solar";
 import { clockToMinutes, evaluate, minutesToClock } from "@solstice/animation";
+import { dayBounds, sunPosition, utcToLocalClock } from "@solstice/solar";
+import { useMemo } from "react";
 import { setSolar, useStore } from "../state/store.js";
 
 const transport = (action: "play" | "pause" | "seek", at?: number): void => {
@@ -44,9 +44,7 @@ export function Timeline() {
    * wins — and `seek` commits to it, so scrubbing the playhead stays live too.
    */
   const played =
-    playing && animation !== undefined
-      ? evaluate(animation, playhead)["solar.minutes"]
-      : undefined;
+    playing && animation !== undefined ? evaluate(animation, playhead)["solar.minutes"] : undefined;
   const minutes = played ?? (doc === null ? 0 : clockToMinutes(doc.solar.time));
 
   /**
@@ -59,10 +57,7 @@ export function Timeline() {
    * four astronomical calculations were redone ~60 times a second for four
    * clock times that are identical all day.
    */
-  const bounds = useMemo(
-    () => (doc === null ? null : dayBounds(doc.site, doc.solar)),
-    [doc?.site, doc?.solar],
-  );
+  const bounds = useMemo(() => (doc === null ? null : dayBounds(doc.site, doc.solar)), [doc]);
 
   // This one genuinely does change every frame, which is why the memo exists.
   const solarState = useMemo(() => {
@@ -86,9 +81,7 @@ export function Timeline() {
   return (
     <div className="shrink-0 border-t border-line bg-chrome px-4 pt-2.5 pb-3">
       <div className="mb-2 flex flex-wrap items-center gap-x-4 gap-y-1">
-        <span className="font-mono text-[12px] font-medium text-ink tabular-nums">
-          {solarState.clock}
-        </span>
+        <span className="font-mono text-[12px] font-medium text-ink tabular-nums">{solarState.clock}</span>
         <span className="flex flex-wrap gap-x-3 font-mono text-[10px] text-muted">
           <span>{doc.solar.date.toUpperCase()}</span>
           <span>
@@ -155,9 +148,7 @@ export function Timeline() {
           max={HOURS * 60 - 1}
           step={1}
           value={minutes}
-          onChange={(event) =>
-            setSolar({ ...doc.solar, time: minutesToClock(Number(event.target.value)) })
-          }
+          onChange={(event) => setSolar({ ...doc.solar, time: minutesToClock(Number(event.target.value)) })}
           className="absolute inset-0 h-full w-full cursor-ew-resize opacity-0"
         />
       </div>

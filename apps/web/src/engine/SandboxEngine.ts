@@ -1,17 +1,17 @@
+import { minutesToClock } from "@solstice/animation";
+import {
+  type AssetSource,
+  type GeneratedScene,
+  generateScene,
+  type MaterialSource,
+} from "@solstice/geometry";
+import type { CuboidCollider } from "@solstice/physics";
+import type { SceneDocument, Shot } from "@solstice/schema";
+import { resolveSolar, skyGradient } from "@solstice/solar";
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { TransformControls } from "three/addons/controls/TransformControls.js";
 import { Sky } from "three/addons/objects/Sky.js";
-import type { SceneDocument, Shot } from "@solstice/schema";
-import {
-  generateScene,
-  type AssetSource,
-  type GeneratedScene,
-  type MaterialSource,
-} from "@solstice/geometry";
-import type { CuboidCollider } from "@solstice/physics";
-import { resolveSolar, skyGradient } from "@solstice/solar";
-import { minutesToClock } from "@solstice/animation";
 // Type-only, so `three-gpu-pathtracer` is not in the first paint.
 //
 // Everything this module needs from `PathTracer.js` is used solely inside
@@ -19,13 +19,10 @@ import { minutesToClock } from "@solstice/animation";
 // The chunk is still statically built and served from the same directory — this
 // changes *when* it loads, not where it comes from, so the static-deploy
 // decision is untouched.
-import type {
-  PathTraceSession,
-  RenderProgress,
-  RenderSettings,
-} from "./PathTracer.js";
+import type { PathTraceSession, RenderProgress, RenderSettings } from "./PathTracer.js";
 
 type Tracer = typeof import("./PathTracer.js");
+
 import { frameShot, shotCamera } from "./shot.js";
 
 /**
@@ -160,7 +157,14 @@ export class SandboxEngine {
     this.selectionBox.visible = false;
     this.colliderOverlay.visible = false;
     this.colliderOverlay.name = "collider-overlay";
-    this.scene.add(this.sky, this.sun, this.sun.target, this.ambient, this.selectionBox, this.colliderOverlay);
+    this.scene.add(
+      this.sky,
+      this.sun,
+      this.sun.target,
+      this.ambient,
+      this.selectionBox,
+      this.colliderOverlay,
+    );
 
     canvas.addEventListener("pointerdown", this.onPointerDown);
     this.observeResize();
@@ -253,10 +257,10 @@ export class SandboxEngine {
     this.ambient.intensity = lighting.ambientIntensity;
 
     const uniforms = this.sky.material.uniforms;
-    uniforms["turbidity"]!.value = lighting.sky.turbidity;
-    uniforms["rayleigh"]!.value = lighting.sky.rayleigh;
-    uniforms["mieCoefficient"]!.value = 0.005;
-    uniforms["mieDirectionalG"]!.value = 0.8;
+    uniforms.turbidity!.value = lighting.sky.turbidity;
+    uniforms.rayleigh!.value = lighting.sky.rayleigh;
+    uniforms.mieCoefficient!.value = 0.005;
+    uniforms.mieDirectionalG!.value = 0.8;
     // The **true** direction, not the light's clamped one.
     //
     // These were the same vector, and that is the bug: the clamp exists to keep
@@ -267,7 +271,7 @@ export class SandboxEngine {
     // tracer's environment, built from the same unclamped direction the render
     // path uses, correctly saw night. Scrub past sunset, see dusk, press
     // Render, get night.
-    uniforms["sunPosition"]!.value.set(direction.x, direction.y, direction.z).normalize();
+    uniforms.sunPosition!.value.set(direction.x, direction.y, direction.z).normalize();
 
     // Below the horizon three's `Sky` drives its whole result from
     // `sunIntensity(dot(sun, up))`, which is 0 there — so the dome would paint
@@ -277,12 +281,7 @@ export class SandboxEngine {
     this.sky.visible = !below;
     if (below) {
       const { zenith } = skyGradient(direction.y, lighting.sky.turbidity);
-      this.scene.background = this.nightSky.setRGB(
-        zenith.r,
-        zenith.g,
-        zenith.b,
-        THREE.LinearSRGBColorSpace,
-      );
+      this.scene.background = this.nightSky.setRGB(zenith.r, zenith.g, zenith.b, THREE.LinearSRGBColorSpace);
     } else {
       this.scene.background = null;
     }
@@ -455,7 +454,10 @@ export class SandboxEngine {
       await session.start((progress) => this.events.onRenderProgress(progress));
       await new Promise<void>((resolve) => {
         const poll = (): void => {
-          if (this.render !== session || session.complete) return resolve();
+          if (this.render !== session || session.complete) {
+            resolve();
+            return;
+          }
           setTimeout(poll, 120);
         };
         poll();
@@ -508,10 +510,7 @@ export class SandboxEngine {
    * The sky still lights the render, but as a pre-filtered environment map
    * rather than as geometry.
    */
-  private buildRenderScene(
-    solved: ReturnType<typeof resolveSolar> | null,
-    tracer: Tracer,
-  ): THREE.Scene {
+  private buildRenderScene(solved: ReturnType<typeof resolveSolar> | null, tracer: Tracer): THREE.Scene {
     const renderScene = new THREE.Scene();
     if (this.generated !== null) renderScene.add(this.generated.root.clone());
 

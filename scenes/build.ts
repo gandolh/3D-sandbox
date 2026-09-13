@@ -12,9 +12,9 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 import {
-  SceneValidationError,
   formatFinding,
   loadScene,
+  SceneValidationError,
   sceneCounts,
   scheduleOfAreas,
   serializeScene,

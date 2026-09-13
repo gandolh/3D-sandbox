@@ -1,4 +1,4 @@
-import { wallAngle, wallLength, type Opening, type Wall } from "@solstice/schema";
+import { type Opening, type Wall, wallAngle, wallLength } from "@solstice/schema";
 
 /** A point on the sheet, in millimetres from the top-left. */
 export type Pt = readonly [number, number];

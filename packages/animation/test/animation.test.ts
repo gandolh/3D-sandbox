@@ -1,13 +1,6 @@
+import { Animation, Track } from "@solstice/schema";
 import { describe, expect, it } from "vitest";
-import { Track, Animation } from "@solstice/schema";
-import {
-  clockToMinutes,
-  ease,
-  evaluate,
-  evaluateTrack,
-  minutesToClock,
-  mod,
-} from "../src/index.js";
+import { clockToMinutes, ease, evaluate, evaluateTrack, minutesToClock, mod } from "../src/index.js";
 
 const track = (keys: { at: number; value: number; easing?: string }[]) =>
   Track.parse({ id: "t", target: "solar.minutes", keyframes: keys });
@@ -86,10 +79,14 @@ describe("evaluate", () => {
       duration: 10,
       loop,
       tracks: [
-        { id: "sun", target: "solar.minutes", keyframes: [
-          { at: 0, value: 360, easing: "linear" },
-          { at: 10, value: 1200, easing: "linear" },
-        ] },
+        {
+          id: "sun",
+          target: "solar.minutes",
+          keyframes: [
+            { at: 0, value: 360, easing: "linear" },
+            { at: 10, value: 1200, easing: "linear" },
+          ],
+        },
       ],
     });
 

@@ -8,12 +8,12 @@
  */
 import {
   doorOpening,
+  type PlanInput,
   rect,
+  type SceneDocumentInput,
   wallsFromFootprint,
   windowOpening,
   withOpenings,
-  type PlanInput,
-  type SceneDocumentInput,
 } from "@solstice/schema";
 
 const WALL_MATERIAL = "plaster-lime-04";
@@ -164,7 +164,13 @@ const villa: SceneDocumentInput = {
     placements: [
       { id: "chair-01", asset: "polyhaven/ArmChair_01", position: [-1.6, 1.4, 2.2], rotationY: 24 },
       { id: "chair-02", asset: "polyhaven/ArmChair_01", position: [1.5, 0.9, 2.6], rotationY: -140 },
-      { id: "table-01", asset: "polyhaven/CoffeeTable_01", position: [0, 2.1, 1.1], rotationY: 0, scale: 1.2 },
+      {
+        id: "table-01",
+        asset: "polyhaven/CoffeeTable_01",
+        position: [0, 2.1, 1.1],
+        rotationY: 0,
+        scale: 1.2,
+      },
     ],
   },
 
@@ -184,10 +190,7 @@ const villa: SceneDocumentInput = {
         // trees do not touch the walls either. Without these the forest grew
         // straight through all six: n-03 alone is 108 m², which at this
         // density puts about two trees inside its rooms.
-        exclude: [
-          rect(-14, -16, 28, 32),
-          ...NEIGHBOURS.map((n) => grown(n.footprint, 2)),
-        ],
+        exclude: [rect(-14, -16, 28, 32), ...NEIGHBOURS.map((n) => grown(n.footprint, 2))],
       },
     ],
     masses: NEIGHBOURS,

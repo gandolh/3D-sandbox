@@ -1,12 +1,12 @@
+import { type ScatterField, type ScatterInstance, scatterInstances } from "@solstice/schema";
 import * as THREE from "three";
-import { scatterInstances, type ScatterField, type ScatterInstance } from "@solstice/schema";
 import { ensureStandardAttributes } from "../attributes.js";
 
+export type { ScatterInstance };
 // The placement half of this module moved to `@solstice/schema/derive`: it is
 // pure arithmetic over the document, and the linter has to reproduce it exactly
 // to count a row planting. What stays here is the half that needs `three`.
 export { scatterInstances };
-export type { ScatterInstance };
 
 /**
  * Placeholder vegetation: a cone on a cylinder, at the planting's own height.

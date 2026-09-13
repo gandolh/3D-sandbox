@@ -38,9 +38,7 @@ describe("boxProjectUv", () => {
       const us = [uv[i], uv[i + 2], uv[i + 4]] as number[];
       const vs = [uv[i + 1], uv[i + 3], uv[i + 5]] as number[];
       // A degenerate triangle in UV space is the symptom of a mixed axis.
-      const area = Math.abs(
-        (us[1]! - us[0]!) * (vs[2]! - vs[0]!) - (us[2]! - us[0]!) * (vs[1]! - vs[0]!),
-      );
+      const area = Math.abs((us[1]! - us[0]!) * (vs[2]! - vs[0]!) - (us[2]! - us[0]!) * (vs[1]! - vs[0]!));
       expect(area).toBeGreaterThan(0);
     }
   });

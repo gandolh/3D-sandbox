@@ -28,11 +28,7 @@ export default defineConfig({
           environment: "node",
           // `assets/` is scripts rather than a workspace, but the bake server's
           // path guards are security code and have to be tested like it.
-          include: [
-            "packages/*/test/**/*.test.ts",
-            "apps/*/test/**/*.test.ts",
-            "assets/test/**/*.test.ts",
-          ],
+          include: ["packages/*/test/**/*.test.ts", "apps/*/test/**/*.test.ts", "assets/test/**/*.test.ts"],
         },
       },
       {

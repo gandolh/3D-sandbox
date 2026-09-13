@@ -1,5 +1,5 @@
-import { area } from "../../geometry.js";
 import { estimateScatterInstances } from "../../derive/scatter.js";
+import { area } from "../../geometry.js";
 import type { RawFinding, Rule } from "../types.js";
 
 /** Zero-area polygons generate nothing and usually mean transposed coordinates. */
@@ -19,16 +19,10 @@ export const polygonsHaveArea: Rule = {
     };
 
     doc.subject.levels.forEach((l, li) =>
-      l.slabs.forEach((s, si) =>
-        check(s.polygon, `subject.levels[${li}].slabs[${si}]`, `slab "${s.id}"`),
-      ),
+      l.slabs.forEach((s, si) => check(s.polygon, `subject.levels[${li}].slabs[${si}]`, `slab "${s.id}"`)),
     );
-    doc.context.masses.forEach((m, i) =>
-      check(m.footprint, `context.masses[${i}]`, `mass "${m.id}"`),
-    );
-    doc.context.scatter.forEach((s, i) =>
-      check(s.area, `context.scatter[${i}]`, `scatter field "${s.id}"`),
-    );
+    doc.context.masses.forEach((m, i) => check(m.footprint, `context.masses[${i}]`, `mass "${m.id}"`));
+    doc.context.scatter.forEach((s, i) => check(s.area, `context.scatter[${i}]`, `scatter field "${s.id}"`));
 
     return out;
   },

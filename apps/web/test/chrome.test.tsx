@@ -1,8 +1,8 @@
-import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { RenderOverlay } from "../src/ui/RenderOverlay.jsx";
+import { describe, expect, it, vi } from "vitest";
 import type { RenderProgress } from "../src/engine/PathTracer.js";
+import { RenderOverlay } from "../src/ui/RenderOverlay.jsx";
 
 /**
  * The parts of the interface briefs 35 and 36 paid for, finally asserted.

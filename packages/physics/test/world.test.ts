@@ -1,7 +1,7 @@
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { SceneDocument } from "@solstice/schema";
-import { PhysicsWorld, initPhysics } from "../src/world.js";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { deriveColliders } from "../src/colliders.js";
+import { initPhysics, PhysicsWorld } from "../src/world.js";
 import { baseScene } from "./fixtures.js";
 
 const CHAIR: [number, number, number] = [0.25, 0.4, 0.25];
@@ -144,7 +144,7 @@ describe("resting positions are snapped to the surface", () => {
     const result = world.dropToRest([3, 6, 2.5], { halfExtents: tall });
     expect(result.position[1]).toBeCloseTo(tall[1], 4);
   });
-})
+});
 
 describe("placements collide with each other", () => {
   const sizes = {
@@ -157,9 +157,7 @@ describe("placements collide with each other", () => {
       ...doc,
       subject: {
         ...doc.subject,
-        placements: [
-          { id: "table-01", asset: "a/table", position: [2, 0, 2], rotationY: 0, scale: 1 },
-        ],
+        placements: [{ id: "table-01", asset: "a/table", position: [2, 0, 2], rotationY: 0, scale: 1 }],
       },
     };
   };
@@ -201,9 +199,7 @@ describe("ignoreEntity", () => {
       ...doc,
       subject: {
         ...doc.subject,
-        placements: [
-          { id: "bench-01", asset: "a/bench", position: [2, 0.5, 2], rotationY: 0, scale: 1 },
-        ],
+        placements: [{ id: "bench-01", asset: "a/bench", position: [2, 0.5, 2], rotationY: 0, scale: 1 }],
       },
     };
   };
@@ -243,7 +239,11 @@ describe("ignoreEntity", () => {
 describe("what a box is resting on, when it is not resting on its middle", () => {
   const sizes = {
     get: (id: string) =>
-      id === "a/chair" ? ([0.78, 0.86, 0.83] as const) : id === "a/post" ? ([0.3, 0.6, 0.3] as const) : undefined,
+      id === "a/chair"
+        ? ([0.78, 0.86, 0.83] as const)
+        : id === "a/post"
+          ? ([0.3, 0.6, 0.3] as const)
+          : undefined,
   };
 
   const withChair = (rotationY: number): SceneDocument => {
@@ -291,8 +291,7 @@ describe("what a box is resting on, when it is not resting on its middle", () =>
     // like clearance and was not.
     const world = await PhysicsWorld.create(withChair(152), sizes);
     const straight = await PhysicsWorld.create(withChair(0), sizes);
-    const at = (w: PhysicsWorld) =>
-      w.dropToRest([2.52, 3, 2], { halfExtents: [0.1, 0.1, 0.1] }).restingOn;
+    const at = (w: PhysicsWorld) => w.dropToRest([2.52, 3, 2], { halfExtents: [0.1, 0.1, 0.1] }).restingOn;
     // x = 2.52 is outside the chair's own 0.78 m width and inside the footprint
     // it has once turned.
     expect(at(straight)).toBe("slab-1");

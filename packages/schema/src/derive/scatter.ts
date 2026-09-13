@@ -1,7 +1,7 @@
-import { bounds, pointInPolygon, polygonNetArea } from "../geometry.js";
-import { mulberry32, pick, randomBetween } from "./random.js";
-import type { M } from "../units.js";
 import type { ScatterField } from "../document.js";
+import { bounds, pointInPolygon, polygonNetArea } from "../geometry.js";
+import type { M } from "../units.js";
+import { mulberry32, pick, randomBetween } from "./random.js";
 
 export interface ScatterInstance {
   asset: string;
@@ -72,7 +72,6 @@ const cellCount = (origin: M, limit: M, step: M): number =>
  * three, now that the thing being described also asks.
  */
 export function estimateScatterInstances(field: ScatterField): ScatterEstimate {
-  const gross = polygonNetArea(field.area, []);
   // Clipped, not subtracted whole. See `polygonNetArea`: an exclusion hanging
   // over the field's edge used to remove the half that was never inside it, and
   // two overlapping exclusions removed their overlap twice.
@@ -107,8 +106,7 @@ export function estimateScatterInstances(field: ScatterField): ScatterEstimate {
 }
 
 /** How many instances a randomly-arranged field aims for. */
-const scatterTarget = (net: number, density: number): number =>
-  Math.round((net / 100) * density);
+const scatterTarget = (net: number, density: number): number => Math.round((net / 100) * density);
 
 /**
  * The RNG seed a field actually plants with: the author's `seed`, with the

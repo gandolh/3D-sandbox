@@ -1,9 +1,9 @@
-import { mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import type { FastifyInstance } from "fastify";
 import { serializeScene } from "@solstice/schema";
+import type { FastifyInstance } from "fastify";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { buildApp } from "../src/app.js";
 import type { SceneIndex } from "../src/store/index-db.js";
 
@@ -36,7 +36,9 @@ describe("health and listing", () => {
   });
 
   it("summarises each scene without re-reading the file", async () => {
-    const { scenes } = (await get("/api/scenes")).json() as { scenes: Array<Record<string, number | string>> };
+    const { scenes } = (await get("/api/scenes")).json() as {
+      scenes: Array<Record<string, number | string>>;
+    };
     expect(scenes).toHaveLength(1);
     expect(scenes[0]).toMatchObject({
       id: "villa-carpathia",
@@ -63,14 +65,11 @@ describe("reading a scene", () => {
 
 describe("path traversal", () => {
   // The id becomes a filename. This is the security boundary, not a nicety.
-  it.each(["..", "../secrets", "..%2Fsecrets", "a/b", "a.b", "-leading"])(
-    "rejects %s",
-    async (id) => {
-      const res = await get(`/api/scenes/${id}`);
-      expect([400, 404]).toContain(res.statusCode);
-      expect(res.statusCode).not.toBe(200);
-    },
-  );
+  it.each(["..", "../secrets", "..%2Fsecrets", "a/b", "a.b", "-leading"])("rejects %s", async (id) => {
+    const res = await get(`/api/scenes/${id}`);
+    expect([400, 404]).toContain(res.statusCode);
+    expect(res.statusCode).not.toBe(200);
+  });
 
   it("rejects traversal on write too", async () => {
     const res = await app.inject({
@@ -85,7 +84,7 @@ describe("path traversal", () => {
 describe("writing", () => {
   it("accepts a valid document and updates the index", async () => {
     const edited = structuredClone(reference) as Record<string, unknown>;
-    (edited["title"] as unknown) = "Villa Carpathia II";
+    (edited.title as unknown) = "Villa Carpathia II";
 
     const res = await app.inject({ method: "PUT", url: "/api/scenes/villa-carpathia", payload: edited });
     expect(res.statusCode).toBe(200);
@@ -124,7 +123,11 @@ describe("writing", () => {
   });
 
   it("rejects a payload that is not a scene at all", async () => {
-    const res = await app.inject({ method: "PUT", url: "/api/scenes/villa-carpathia", payload: { hello: 1 } });
+    const res = await app.inject({
+      method: "PUT",
+      url: "/api/scenes/villa-carpathia",
+      payload: { hello: 1 },
+    });
     expect(res.statusCode).toBe(422);
   });
 

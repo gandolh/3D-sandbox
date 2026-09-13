@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
 import { SceneDocument } from "@solstice/schema";
+import { describe, expect, it } from "vitest";
 import { translateEntity } from "../src/lib/entities.js";
 import { DEFAULT_SCENE_ID, sceneById } from "../src/scenes.js";
 

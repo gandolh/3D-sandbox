@@ -1,6 +1,6 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
 import { PhysicsWorld } from "@solstice/physics";
 import { SceneDocument } from "@solstice/schema";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { collidersFor, disposePhysics, physicsFor, sizesFromMap } from "../src/lib/physics.js";
 import { DEFAULT_SCENE_ID, sceneById } from "../src/scenes.js";
 
@@ -15,9 +15,7 @@ const stubCreate = () => {
   let n = 0;
   return vi
     .spyOn(PhysicsWorld, "create")
-    .mockImplementation(
-      async () => ({ id: ++n, dispose: () => {} }) as unknown as PhysicsWorld,
-    );
+    .mockImplementation(async () => ({ id: ++n, dispose: () => {} }) as unknown as PhysicsWorld);
 };
 
 afterEach(() => {

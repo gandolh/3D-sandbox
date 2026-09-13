@@ -1,17 +1,17 @@
-import { beforeEach, describe, expect, it } from "vitest";
 import { SceneDocument } from "@solstice/schema";
+import { beforeEach, describe, expect, it } from "vitest";
+import scene from "../../../scenes/greenhollow.scene.json";
 import {
   editDocument,
   getState,
   loadDocument,
-  setPlayhead,
   setAlert,
   setLoadError,
+  setPlayhead,
   setShotId,
   setSolar,
   setStatus,
 } from "../src/state/store.js";
-import scene from "../../../scenes/greenhollow.scene.json";
 
 const doc = () => SceneDocument.parse(scene);
 

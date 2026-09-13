@@ -6,12 +6,11 @@
  * That split is what lets a scene be written with loops and helpers while the
  * runtime still consumes inert data.
  */
-import type { Plan } from "../geometry.js";
-import type { SceneDocumentInput } from "../document.js";
 
-type WallInput = NonNullable<
-  NonNullable<SceneDocumentInput["subject"]>["levels"]
->[number]["walls"];
+import type { SceneDocumentInput } from "../document.js";
+import type { Plan } from "../geometry.js";
+
+type WallInput = NonNullable<NonNullable<SceneDocumentInput["subject"]>["levels"]>[number]["walls"];
 type OpeningInput = NonNullable<NonNullable<WallInput>[number]["openings"]>[number];
 /**
  * One wall as the document declares it, before parsing.
@@ -54,12 +53,14 @@ export const windowOpening = (
   sill: number,
 ): OpeningInput => ({ id, kind: "window", offset, width, height, sill });
 
-export const doorOpening = (
-  id: string,
-  offset: number,
-  width: number,
-  height: number,
-): OpeningInput => ({ id, kind: "door", offset, width, height, sill: 0 });
+export const doorOpening = (id: string, offset: number, width: number, height: number): OpeningInput => ({
+  id,
+  kind: "door",
+  offset,
+  width,
+  height,
+  sill: 0,
+});
 
 /**
  * Walls around a closed footprint, one per edge, numbered from a prefix.
@@ -106,9 +107,7 @@ export function withOpenings(
     return { ...w, openings: [...(w.openings ?? []), ...openings] };
   });
   if (!matched) {
-    throw new Error(
-      `withOpenings: no wall with id "${id}" (have: ${walls.map((w) => w.id).join(", ")})`,
-    );
+    throw new Error(`withOpenings: no wall with id "${id}" (have: ${walls.map((w) => w.id).join(", ")})`);
   }
   return out;
 }

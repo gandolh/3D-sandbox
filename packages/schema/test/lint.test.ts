@@ -1,16 +1,16 @@
 import { describe, expect, it } from "vitest";
 import {
-  SceneDocument,
-  ScatterField,
   estimateScatterInstances,
-  SceneValidationError,
   hasErrors,
-  RULES,
+  type LintFinding,
   lintScene,
   loadScene,
+  RULES,
   resolveEntities,
-  type LintFinding,
+  ScatterField,
+  SceneDocument,
   type SceneDocumentInput,
+  SceneValidationError,
 } from "../src/index.js";
 import { baseScene } from "./fixtures.js";
 
@@ -173,9 +173,7 @@ describe("opening-fits-height", () => {
     const doc = baseScene();
     const wall = doc.subject!.levels![0]!.walls![0]!;
     wall.height = 3.6;
-    wall.openings = [
-      { id: "w-1", kind: "window", offset: 2, width: 1.4, height: 2.2, sill: 0.9 },
-    ];
+    wall.openings = [{ id: "w-1", kind: "window", offset: 2, width: 1.4, height: 2.2, sill: 0.9 }];
     expect(lint(doc)).toEqual([]);
   });
 
@@ -286,7 +284,7 @@ describe("references", () => {
 
   it("warns about a material nothing uses", () => {
     const doc = baseScene();
-    doc.materials!["spare"] = { label: "Spare", source: "procedural", baseColor: "#FFFFFF" };
+    doc.materials!.spare = { label: "Spare", source: "procedural", baseColor: "#FFFFFF" };
     const found = lint(doc).filter((f) => f.rule === "materials-are-used");
     expect(found[0]!.severity).toBe("warning");
   });
@@ -365,7 +363,7 @@ describe("loadScene", () => {
 
   it("returns warnings without throwing", () => {
     const doc = baseScene();
-    doc.materials!["spare"] = { label: "Spare", source: "procedural", baseColor: "#FFFFFF" };
+    doc.materials!.spare = { label: "Spare", source: "procedural", baseColor: "#FFFFFF" };
     const { findings } = loadScene(doc);
     expect(hasErrors(findings)).toBe(false);
     expect(findings).toHaveLength(1);
@@ -449,7 +447,12 @@ describe("estimateScatterInstances", () => {
     ScatterField.parse({
       id: "f",
       assets: ["a"],
-      area: [[-50, -50], [50, -50], [50, 50], [-50, 50]],
+      area: [
+        [-50, -50],
+        [50, -50],
+        [50, 50],
+        [-50, 50],
+      ],
       density,
       exclude,
     });
@@ -461,7 +464,14 @@ describe("estimateScatterInstances", () => {
   });
 
   it("subtracts exclusions", () => {
-    const clearing = [[[-20, -20], [20, -20], [20, 20], [-20, 20]]];
+    const clearing = [
+      [
+        [-20, -20],
+        [20, -20],
+        [20, 20],
+        [-20, 20],
+      ],
+    ];
     const { net, instances } = estimateScatterInstances(field(2, clearing));
     expect(net).toBeCloseTo(8_400);
     expect(instances).toBe(168);
@@ -473,9 +483,21 @@ describe("estimateScatterInstances", () => {
     const forest = ScatterField.parse({
       id: "forest",
       assets: ["a"],
-      area: [[-60, -60], [60, -60], [60, 60], [-60, 60]],
+      area: [
+        [-60, -60],
+        [60, -60],
+        [60, 60],
+        [-60, 60],
+      ],
       density: 2.1,
-      exclude: [[[-14, -16], [14, -16], [14, 16], [-14, 16]]],
+      exclude: [
+        [
+          [-14, -16],
+          [14, -16],
+          [14, 16],
+          [-14, 16],
+        ],
+      ],
     });
     expect(estimateScatterInstances(forest).instances).toBe(284);
   });
@@ -535,7 +557,6 @@ describe("roof-covers-walls, the overhang direction", () => {
   });
 });
 
-
 describe("rooms-are-habitable", () => {
   /**
    * The fixture's envelope is x 0…6, z 0…8, walls 0.24 thick on those lines.
@@ -566,8 +587,7 @@ describe("rooms-are-habitable", () => {
     ],
   });
 
-  const found = (doc: SceneDocumentInput) =>
-    lint(doc).filter((f) => f.rule === "rooms-are-habitable");
+  const found = (doc: SceneDocumentInput) => lint(doc).filter((f) => f.rule === "rooms-are-habitable");
 
   it("accepts a room inside the walls, with its window", () => {
     expect(found(withRooms(box("r-1", "living", 0.2, 0.2, 5.8, 7.8)))).toEqual([]);
@@ -584,9 +604,7 @@ describe("rooms-are-habitable", () => {
   });
 
   it("rejects two rooms that overlap", () => {
-    const f = found(
-      withRooms(box("r-1", "living", 0.2, 0.2, 4, 7.8), box("r-2", "bed", 3, 0.2, 5.8, 7.8)),
-    );
+    const f = found(withRooms(box("r-1", "living", 0.2, 0.2, 4, 7.8), box("r-2", "bed", 3, 0.2, 5.8, 7.8)));
     const overlap = f.filter((x) => x.message.includes("overlap"));
     expect(overlap).toHaveLength(1);
     expect(overlap[0]!.severity).toBe("error");
@@ -858,9 +876,7 @@ const FIRES: Record<string, () => LintFinding[]> = {
     const doc = baseScene();
     doc.subject = {
       ...doc.subject,
-      placements: [
-        { id: "p-01", asset: "polyhaven/not_a_real_slug", position: [1, 0, 1], rotationY: 0 },
-      ],
+      placements: [{ id: "p-01", asset: "polyhaven/not_a_real_slug", position: [1, 0, 1], rotationY: 0 }],
     };
     return lint(doc, { knownAssets: new Set(["polyhaven/ArmChair_01"]) });
   },

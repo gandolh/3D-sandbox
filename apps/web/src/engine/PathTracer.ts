@@ -1,8 +1,8 @@
+import { hexToRgb, type SunVector, skyRadianceMap } from "@solstice/solar";
 import * as THREE from "three";
-import { DenoiseMaterial, WebGLPathTracer } from "three-gpu-pathtracer";
 import { FullScreenQuad } from "three/addons/postprocessing/Pass.js";
+import { DenoiseMaterial, WebGLPathTracer } from "three-gpu-pathtracer";
 import { GenerateMeshBVHWorker } from "three-mesh-bvh/worker";
-import { hexToRgb, skyRadianceMap, type SunVector } from "@solstice/solar";
 
 export interface RenderSettings {
   width: number;

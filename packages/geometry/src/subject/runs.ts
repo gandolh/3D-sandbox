@@ -1,8 +1,8 @@
+import { type Plan, POST_HALF_WIDTH, type Run } from "@solstice/schema";
 import * as THREE from "three";
-import { POST_HALF_WIDTH, type Plan, type Run } from "@solstice/schema";
 import { ensureStandardAttributes } from "../attributes.js";
-import { mulberry32, randomBetween } from "../random.js";
 import { mergeSimple } from "../context/scatter.js";
+import { mulberry32, randomBetween } from "../random.js";
 
 // Post section, in metres. Slim enough to read as metalwork at render scale.
 // Shared with `run-is-well-formed`, which warns when a run is narrower than two
@@ -10,8 +10,6 @@ import { mergeSimple } from "../context/scatter.js";
 const POST = POST_HALF_WIDTH;
 /** Beam section for a pergola's rafters. */
 const BEAM = 0.07;
-/** How thick a trained climber reads as, sitting on top of the beams. */
-const CANOPY = 0.22;
 
 interface Segment {
   from: Plan;
@@ -69,11 +67,7 @@ function hedgeParts(run: Run): THREE.BufferGeometry[] {
     const geometry = new THREE.BoxGeometry(segment.length, run.height, run.width);
     geometry.translate(0, run.height / 2, 0);
     geometry.rotateY(segment.angle);
-    geometry.translate(
-      (segment.from[0] + segment.to[0]) / 2,
-      0,
-      (segment.from[1] + segment.to[1]) / 2,
-    );
+    geometry.translate((segment.from[0] + segment.to[0]) / 2, 0, (segment.from[1] + segment.to[1]) / 2);
     return geometry;
   });
 }
@@ -110,11 +104,7 @@ function posts(run: Run, height: number): THREE.BufferGeometry[] {
       for (const side of sidesFor(run)) {
         const post = boxAt(segment, i * step, [POST, height, POST], 0);
         // Offset perpendicular to the run: rotate the side vector into place.
-        post.translate(
-          Math.sin(segment.angle) * side * -1,
-          0,
-          Math.cos(segment.angle) * side * -1,
-        );
+        post.translate(Math.sin(segment.angle) * side * -1, 0, Math.cos(segment.angle) * side * -1);
         out.push(post);
       }
     }
@@ -250,13 +240,9 @@ function canopy(run: Run, height: number): Canopy {
 
       const u = along / segment.length;
       position.set(
-        segment.from[0] +
-          (segment.to[0] - segment.from[0]) * u +
-          Math.sin(segment.angle) * across * -1,
+        segment.from[0] + (segment.to[0] - segment.from[0]) * u + Math.sin(segment.angle) * across * -1,
         height + lift,
-        segment.from[1] +
-          (segment.to[1] - segment.from[1]) * u +
-          Math.cos(segment.angle) * across * -1,
+        segment.from[1] + (segment.to[1] - segment.from[1]) * u + Math.cos(segment.angle) * across * -1,
       );
       // `rotateX(tilt)` then `rotateY(spin)` applied to the geometry is a YXZ
       // Euler in that order — matching it exactly is what keeps the canopy
@@ -297,8 +283,7 @@ export function buildRun(run: Run): RunGeometry {
 
   const height = run.height;
   const structure = [...posts(run, height), ...beams(run, height, run.kind === "pergola")];
-  const climber =
-    run.kind === "pergola" && run.climber !== undefined ? canopy(run, height) : null;
+  const climber = run.kind === "pergola" && run.climber !== undefined ? canopy(run, height) : null;
 
   return { structure: structure.map(ensureStandardAttributes), climber };
 }

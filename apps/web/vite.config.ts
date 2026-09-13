@@ -1,10 +1,10 @@
 import { createReadStream } from "node:fs";
 import { stat } from "node:fs/promises";
 import { extname, join, normalize, resolve } from "node:path";
+import tailwindcss from "@tailwindcss/vite";
+import react from "@vitejs/plugin-react";
 import { defineConfig, type Plugin } from "vite";
 import { readManifest } from "../../assets/manifest.ts";
-import react from "@vitejs/plugin-react";
-import tailwindcss from "@tailwindcss/vite";
 
 /**
  * Serve `assets-src/` at `/assets-src/` in dev.
@@ -49,10 +49,7 @@ function assetsSrc(): Plugin {
                   .map((e) => ({
                     id: e.id,
                     maps: Object.fromEntries(
-                      Object.entries(e.maps!).map(([role, file]) => [
-                        role,
-                        `${e.source}/${e.slug}/${file}`,
-                      ]),
+                      Object.entries(e.maps!).map(([role, file]) => [role, `${e.source}/${e.slug}/${file}`]),
                     ),
                   })),
                 impostors: entries
@@ -90,7 +87,7 @@ function assetsSrc(): Plugin {
 export default defineConfig({
   // Relative base so the built client works under a Caddy sub-path later
   // without a rebuild. Costs nothing now; saves a surprise at deploy time.
-  base: process.env["SOLSTICE_BASE"] ?? "/",
+  base: process.env.SOLSTICE_BASE ?? "/",
   /**
    * Where `Save` writes. Defaults to the dev proxy below.
    *
@@ -102,7 +99,7 @@ export default defineConfig({
    * goes straight to downloading the canonical file.
    */
   define: {
-    __API_BASE__: JSON.stringify(process.env["SOLSTICE_API_BASE"] ?? "/api"),
+    __API_BASE__: JSON.stringify(process.env.SOLSTICE_API_BASE ?? "/api"),
   },
   plugins: [react(), tailwindcss(), assetsSrc()],
   server: {

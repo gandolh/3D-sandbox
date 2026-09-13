@@ -1,5 +1,5 @@
-import * as THREE from "three";
 import type { Material, SceneDocument } from "@solstice/schema";
+import * as THREE from "three";
 import type { MaterialMaps, MaterialSource } from "./assets.js";
 
 /**
@@ -28,7 +28,7 @@ function toThreeMaterial(
   const material = new THREE.MeshStandardMaterial({
     // Kept even with a map: `baseColor` tints it, and it is what the surface
     // falls back to on a machine with nothing downloaded.
-    color: new THREE.Color(loaded?.map === undefined ? definition.baseColor ?? FALLBACK_COLOUR : "#ffffff"),
+    color: new THREE.Color(loaded?.map === undefined ? (definition.baseColor ?? FALLBACK_COLOUR) : "#ffffff"),
     roughness: definition.roughness ?? 0.85,
     metalness: definition.metalness ?? 0,
   });

@@ -1,15 +1,15 @@
-import * as THREE from "three";
-import { Brush, Evaluator, SUBTRACTION } from "three-bvh-csg";
 import {
   degToRad,
+  type Level,
+  type Opening,
+  type Wall,
   wallAngle,
   wallBearing,
   wallLength,
   wallMidpoint,
-  type Level,
-  type Opening,
-  type Wall,
 } from "@solstice/schema";
+import * as THREE from "three";
+import { Brush, type Evaluator, SUBTRACTION } from "three-bvh-csg";
 import { ensureStandardAttributes } from "../attributes.js";
 
 /**

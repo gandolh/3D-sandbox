@@ -1,7 +1,8 @@
-import { getPosition, getTimes } from "suncalc";
 import type { SceneDocument, Site, SolarTime } from "@solstice/schema";
+import { getPosition, getTimes } from "suncalc";
 
 export * from "./timezone.js";
+
 import { localToUtc, utcToLocalClock } from "./timezone.js";
 
 /** A unit vector, Y-up, pointing from the origin toward the sun. */
@@ -104,8 +105,7 @@ export function directionFrom(altitude: number, sceneAzimuth: number): SunVector
 export function dayBounds(site: Site, solar: SolarTime): DayBounds {
   const noonish = localToUtc(solar.date, "12:00", site.timezone);
   const times = getTimes(noonish, site.latitude, site.longitude);
-  const clock = (d: Date | null): string =>
-    d === null ? "—" : utcToLocalClock(d, site.timezone);
+  const clock = (d: Date | null): string => (d === null ? "—" : utcToLocalClock(d, site.timezone));
 
   return {
     sunrise: times.sunrise,

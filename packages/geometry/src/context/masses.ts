@@ -1,8 +1,8 @@
+import { type BuildingMass, bounds, degToRad, type Paving, type RoadNetwork } from "@solstice/schema";
 import * as THREE from "three";
-import { bounds, degToRad, type BuildingMass, type Paving, type RoadNetwork } from "@solstice/schema";
+import { ensureStandardAttributes } from "../attributes.js";
 import { extrudePolygon } from "../polygon.js";
 import { mergeSimple } from "./scatter.js";
-import { ensureStandardAttributes } from "../attributes.js";
 
 /**
  * A neighbouring building: an extruded footprint, with a crude prism on top when
@@ -19,8 +19,7 @@ export function buildMass(mass: BuildingMass): THREE.BufferGeometry {
   // Same rule as `subject/roofs.ts`: declared bearing wins, and the long-axis
   // guess is only a fallback. It has to be the same rule — a neighbour and the
   // house it abuts are the same roofline.
-  const ridgeAlongZ =
-    mass.ridgeBearing === undefined ? depth >= width : mass.ridgeBearing % 180 === 0;
+  const ridgeAlongZ = mass.ridgeBearing === undefined ? depth >= width : mass.ridgeBearing % 180 === 0;
   const span = ridgeAlongZ ? width : depth;
   const rise = (span / 2) * Math.tan(degToRad(mass.pitch));
   const base = mass.height;
@@ -31,15 +30,21 @@ export function buildMass(mass: BuildingMass): THREE.BufferGeometry {
   const positions: number[] = [];
   const push = (x: number, y: number, z: number) => positions.push(x, y, z);
   const quad = (a: number[], c: number[], d: number[], e: number[]) => {
-    push(a[0]!, a[1]!, a[2]!); push(c[0]!, c[1]!, c[2]!); push(d[0]!, d[1]!, d[2]!);
-    push(a[0]!, a[1]!, a[2]!); push(d[0]!, d[1]!, d[2]!); push(e[0]!, e[1]!, e[2]!);
+    push(a[0]!, a[1]!, a[2]!);
+    push(c[0]!, c[1]!, c[2]!);
+    push(d[0]!, d[1]!, d[2]!);
+    push(a[0]!, a[1]!, a[2]!);
+    push(d[0]!, d[1]!, d[2]!);
+    push(e[0]!, e[1]!, e[2]!);
   };
 
   // Gable ends are filled in as well as the slopes. Without them the extruded
   // walls stop at `height` and you see straight through the triangle under the
   // ridge — cheap context geometry is fine, see-through context geometry is not.
   const tri = (a: number[], c: number[], d: number[]) => {
-    push(a[0]!, a[1]!, a[2]!); push(c[0]!, c[1]!, c[2]!); push(d[0]!, d[1]!, d[2]!);
+    push(a[0]!, a[1]!, a[2]!);
+    push(c[0]!, c[1]!, c[2]!);
+    push(d[0]!, d[1]!, d[2]!);
   };
 
   if (ridgeAlongZ) {

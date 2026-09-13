@@ -1,6 +1,6 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { loadAssets } from "../src/engine/AssetLoader.js";
 
 /**
@@ -103,9 +103,7 @@ describe("the library outlives any one document", () => {
 
   const docWith = (materials: Record<string, { source: string; slug: string }>) =>
     ({
-      materials: Object.fromEntries(
-        Object.entries(materials).map(([id, m]) => [id, { label: id, ...m }]),
-      ),
+      materials: Object.fromEntries(Object.entries(materials).map(([id, m]) => [id, { label: id, ...m }])),
     }) as never;
 
   it("resolves each document's own material ids against the same library", async () => {
@@ -174,14 +172,14 @@ describe("loadAssets, when the assets are there", () => {
   };
 
   const stubGltf = (scene: THREE.Scene) =>
-    vi.spyOn(GLTFLoader.prototype, "loadAsync").mockImplementation(
-      async () => Promise.resolve({ scene }) as never,
-    );
+    vi
+      .spyOn(GLTFLoader.prototype, "loadAsync")
+      .mockImplementation(async () => Promise.resolve({ scene }) as never);
 
   const stubTextures = () =>
-    vi.spyOn(THREE.TextureLoader.prototype, "loadAsync").mockImplementation(async () =>
-      Promise.resolve(new THREE.Texture()),
-    );
+    vi
+      .spyOn(THREE.TextureLoader.prototype, "loadAsync")
+      .mockImplementation(async () => Promise.resolve(new THREE.Texture()));
 
   it("admits a model that carries geometry", async () => {
     stubGltf(meshScene());
@@ -230,9 +228,11 @@ describe("loadAssets, when the assets are there", () => {
         : new Response("", { status: 404 }),
     );
     const loaded = await loadAssets();
-    const maps = loaded.materialsFor({
-      materials: { wall: { label: "W", source: "polyhaven", slug: "clay_plaster" } },
-    } as never).maps("wall");
+    const maps = loaded
+      .materialsFor({
+        materials: { wall: { label: "W", source: "polyhaven", slug: "clay_plaster" } },
+      } as never)
+      .maps("wall");
 
     expect(maps!.map!.colorSpace).toBe(THREE.SRGBColorSpace);
     expect(maps!.normalMap!.colorSpace).toBe(THREE.NoColorSpace);

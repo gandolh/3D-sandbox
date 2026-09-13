@@ -18,8 +18,8 @@
  *    primitive; it is a function, and it should live beside its caller.
  */
 export * from "./constants.js";
-export * from "./scatter.js";
-export * from "./random.js";
-export * from "./walls.js";
 export * from "./counts.js";
 export * from "./materials.js";
+export * from "./random.js";
+export * from "./scatter.js";
+export * from "./walls.js";

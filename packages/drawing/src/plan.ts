@@ -1,6 +1,6 @@
 import { area, bounds, type Level, type Opening, type SceneDocument, type Wall } from "@solstice/schema";
+import { cutsThrough, openingPlan, project, type Sheet, wallCorners, wallSpan } from "./geometry.js";
 import { CUT_HEIGHT, INK, WEIGHT } from "./style.js";
-import { cutsThrough, openingPlan, project, wallCorners, wallSpan, type Sheet } from "./geometry.js";
 
 export interface PlanOptions {
   /** Drawing scale denominator: 100 means 1:100. */
@@ -13,8 +13,7 @@ export interface PlanOptions {
   levelId?: string;
 }
 
-const esc = (s: string): string =>
-  s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+const esc = (s: string): string => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
 const n = (v: number): string => (Math.round(v * 100) / 100).toString();
 
@@ -186,9 +185,7 @@ function subjectWalls(level: Level): Wall[] {
     pt[1] >= box.minZ - 1e-6 &&
     pt[1] <= box.maxZ + 1e-6;
 
-  return level.walls.filter(
-    (w) => envelope.includes(w) || (inside(w.start) && inside(w.end)),
-  );
+  return level.walls.filter((w) => envelope.includes(w) || (inside(w.start) && inside(w.end)));
 }
 
 /** The solid stretches of a wall: everything the section cuts that is not a hole. */
@@ -305,8 +302,7 @@ function sweepFlag(
   from: readonly [number, number],
   to: readonly [number, number],
 ): 0 | 1 {
-  const cross =
-    (from[0] - hinge[0]) * (to[1] - hinge[1]) - (from[1] - hinge[1]) * (to[0] - hinge[0]);
+  const cross = (from[0] - hinge[0]) * (to[1] - hinge[1]) - (from[1] - hinge[1]) * (to[0] - hinge[0]);
   return cross > 0 ? 1 : 0;
 }
 
@@ -317,11 +313,7 @@ function sweepFlag(
  * builder works in and what the document's own units note says a length is
  * presented as.
  */
-function dimensionStrings(
-  extent: ReturnType<typeof bounds>,
-  p: Project,
-  sheet: Sheet,
-): string[] {
+function dimensionStrings(extent: ReturnType<typeof bounds>, p: Project, sheet: Sheet): string[] {
   const out: string[] = [];
   const off = 9;
   const tick = 1.6;
@@ -386,7 +378,9 @@ function scaleBar(sheet: Sheet, margin: number, height: number): string[] {
   ];
   for (let i = 0; i <= metres; i++) {
     const x = margin + i * sheet.mmPerM;
-    out.push(`<path d="M${n(x)},${n(y - 1.4)} L${n(x)},${n(y + 1.4)}" stroke="${INK.line}" stroke-width="${WEIGHT.fine}"/>`);
+    out.push(
+      `<path d="M${n(x)},${n(y - 1.4)} L${n(x)},${n(y + 1.4)}" stroke="${INK.line}" stroke-width="${WEIGHT.fine}"/>`,
+    );
   }
   out.push(
     `<text x="${n(margin + len + 2)}" y="${n(y + 1)}" font-size="2.6" fill="${INK.label}">${metres} m</text>`,

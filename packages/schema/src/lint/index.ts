@@ -3,8 +3,8 @@ import { resolveEntities } from "./entities.js";
 import { polygonsHaveArea, scatterDensityIsSane, shotCameraIsValid } from "./rules/context.js";
 import { uniqueIds } from "./rules/identity.js";
 import { assetResolves, materialResolves, materialsAreUsed } from "./rules/references.js";
-import { roomsAreHabitable } from "./rules/rooms.js";
 import { roofCoversWalls } from "./rules/roofs.js";
+import { roomsAreHabitable } from "./rules/rooms.js";
 import { runIsWellFormed } from "./rules/runs.js";
 import {
   openingFitsHeight,
@@ -14,8 +14,8 @@ import {
 } from "./rules/walls.js";
 import { DEFAULTS, type LintFinding, type LintOptions, type Rule } from "./types.js";
 
-export * from "./types.js";
 export * from "./entities.js";
+export * from "./types.js";
 
 /** Every rule, in the order findings are reported. */
 export const RULES: readonly Rule[] = [

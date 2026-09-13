@@ -71,9 +71,7 @@ export const assetResolves: Rule = {
       check(p.asset, `subject.placements[${i}]`, `placement "${p.id}"`),
     );
     doc.context.scatter.forEach((s, i) =>
-      s.assets.forEach((a, ai) =>
-        check(a, `context.scatter[${i}].assets[${ai}]`, `scatter field "${s.id}"`),
-      ),
+      s.assets.forEach((a, ai) => check(a, `context.scatter[${i}].assets[${ai}]`, `scatter field "${s.id}"`)),
     );
 
     return out;

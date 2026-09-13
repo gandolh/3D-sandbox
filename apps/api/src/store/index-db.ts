@@ -1,14 +1,8 @@
-import { DatabaseSync } from "node:sqlite";
 import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
+import { DatabaseSync } from "node:sqlite";
 import { estimateScatterInstances, lintScene, sceneCounts } from "@solstice/schema";
-import {
-  idFromFilename,
-  listSceneFiles,
-  readSceneFile,
-  sceneBytes,
-  sceneMtime,
-} from "./files.js";
+import { idFromFilename, listSceneFiles, readSceneFile, sceneBytes, sceneMtime } from "./files.js";
 
 /**
  * The derived index.

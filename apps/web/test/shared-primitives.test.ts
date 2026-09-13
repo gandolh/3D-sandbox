@@ -1,13 +1,7 @@
-import { describe, expect, it } from "vitest";
-import {
-  ScatterField,
-  estimateScatterInstances,
-  wallAngle,
-  type Level,
-  type Wall,
-} from "@solstice/schema";
 import { scatterInstances, wallSolid } from "@solstice/geometry";
 import { wallColliders } from "@solstice/physics";
+import { estimateScatterInstances, type Level, ScatterField, type Wall, wallAngle } from "@solstice/schema";
+import { describe, expect, it } from "vitest";
 
 /**
  * The drift guards for brief 37.

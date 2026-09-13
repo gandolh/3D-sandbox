@@ -1,6 +1,6 @@
-import { z } from "zod";
+import type { z } from "zod";
 import { SceneDocument } from "./document.js";
-import { errorsOf, formatFinding, lintScene, type LintFinding, type LintOptions } from "./lint/index.js";
+import { errorsOf, formatFinding, type LintFinding, type LintOptions, lintScene } from "./lint/index.js";
 
 export class SceneValidationError extends Error {
   readonly findings: readonly LintFinding[];

@@ -112,9 +112,7 @@ export async function readManifest(dir = ASSETS_DIR): Promise<ManifestEntry[]> {
         source,
         slug: entry.name,
         ...(gltf === undefined ? {} : { gltf }),
-        ...(atlas === undefined
-          ? {}
-          : { impostor: { atlas, meta: "impostor/impostor.json" } }),
+        ...(atlas === undefined ? {} : { impostor: { atlas, meta: "impostor/impostor.json" } }),
         ...(Object.keys(maps).length === 0 ? {} : { maps }),
         files: files.sort(),
       });

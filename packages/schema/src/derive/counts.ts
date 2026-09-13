@@ -1,5 +1,5 @@
-import { area } from "../geometry.js";
 import type { Room, SceneDocument } from "./../document.js";
+import { area } from "../geometry.js";
 
 /** What a scene is made of, for anything that summarises one. */
 export interface SceneCounts {

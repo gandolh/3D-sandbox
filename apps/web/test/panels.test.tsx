@@ -1,11 +1,11 @@
-import { describe, expect, it } from "vitest";
+import { SceneDocument } from "@solstice/schema";
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { SceneDocument } from "@solstice/schema";
+import { describe, expect, it } from "vitest";
+import { DEFAULT_SCENE_ID, sceneById } from "../src/scenes.js";
+import { loadDocument, setLoadError } from "../src/state/store.js";
 import { Inspector } from "../src/ui/Inspector.jsx";
 import { SceneTree } from "../src/ui/SceneTree.jsx";
-import { loadDocument, setLoadError } from "../src/state/store.js";
-import { DEFAULT_SCENE_ID, sceneById } from "../src/scenes.js";
 
 const load = () => loadDocument(SceneDocument.parse(sceneById(DEFAULT_SCENE_ID)!.json));
 

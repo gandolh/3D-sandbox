@@ -1,9 +1,9 @@
-import * as THREE from "three";
 // `pointInPolygon` moved to `@solstice/schema` so the linter could reach it;
 // re-exported here because every caller in this package already imports from
 // this module, and two import sites for one predicate is how the copy came
 // back last time.
-import { pointInPolygon, type Plan } from "@solstice/schema";
+import { type Plan, pointInPolygon } from "@solstice/schema";
+import * as THREE from "three";
 
 import { ensureStandardAttributes } from "./attributes.js";
 
@@ -34,11 +34,7 @@ export function shapeFromPolygon(polygon: readonly Plan[]): THREE.Shape {
  * Extrude a plan polygon upward by `height`, with its base at y = `base`.
  * The result is in world space, Y-up.
  */
-export function extrudePolygon(
-  polygon: readonly Plan[],
-  base: number,
-  height: number,
-): THREE.BufferGeometry {
+export function extrudePolygon(polygon: readonly Plan[], base: number, height: number): THREE.BufferGeometry {
   const geometry = new THREE.ExtrudeGeometry(shapeFromPolygon(polygon), {
     depth: height,
     bevelEnabled: false,

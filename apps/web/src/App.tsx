@@ -1,13 +1,13 @@
+import { lintScene, SceneDocument, serializeScene } from "@solstice/schema";
 import { useEffect } from "react";
-import { SceneDocument, lintScene, serializeScene } from "@solstice/schema";
+import { DEFAULT_SCENE_ID, sceneById } from "./scenes.js";
+import { getState, loadDocument, setLoadError, setStatus, useStore } from "./state/store.js";
 import { Inspector } from "./ui/Inspector.jsx";
+import { PlanView } from "./ui/PlanView.jsx";
 import { SceneTree } from "./ui/SceneTree.jsx";
 import { Timeline } from "./ui/Timeline.jsx";
 import { Toolbar } from "./ui/Toolbar.jsx";
-import { PlanView } from "./ui/PlanView.jsx";
 import { Viewport } from "./ui/Viewport.jsx";
-import { getState, loadDocument, setLoadError, setStatus, useStore } from "./state/store.js";
-import { DEFAULT_SCENE_ID, sceneById } from "./scenes.js";
 
 export function App() {
   const status = useStore((s) => s.status);
@@ -28,9 +28,7 @@ export function App() {
     }
     const parsed = SceneDocument.safeParse(scene.json);
     if (!parsed.success) {
-      setLoadError(
-        `${scene.title} failed to parse: ${parsed.error.issues[0]?.message ?? "unknown"}`,
-      );
+      setLoadError(`${scene.title} failed to parse: ${parsed.error.issues[0]?.message ?? "unknown"}`);
       return;
     }
     loadDocument(parsed.data, scene.id);

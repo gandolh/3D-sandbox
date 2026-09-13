@@ -1,36 +1,30 @@
+import type { SceneDocument } from "@solstice/schema";
 import * as THREE from "three";
 import { Evaluator } from "three-bvh-csg";
-import type { SceneDocument } from "@solstice/schema";
-
-import { buildMaterials, resolveMaterial, type MaterialTable } from "./materials.js";
-import { ensureStandardAttributes } from "./attributes.js";
-import { extrudePolygon } from "./polygon.js";
-import { buildWall } from "./subject/walls.js";
-import { UnsupportedRoofError, buildRoof } from "./subject/roofs.js";
-import { buildRun } from "./subject/runs.js";
 import type { AssetSource, MaterialSource } from "./assets.js";
-import {
-  buildScatterMesh,
-  mergeSimple,
-  scatterInstances,
-  type ScatterInstance,
-} from "./context/scatter.js";
+import { ensureStandardAttributes } from "./attributes.js";
 import { buildImpostorGeometry, impostorMaterial } from "./context/impostor.js";
-import { boxProjectUv } from "./uv.js";
 import { buildMass, buildPaving, buildRoad } from "./context/masses.js";
+import { buildScatterMesh, mergeSimple, type ScatterInstance, scatterInstances } from "./context/scatter.js";
+import { buildMaterials, resolveMaterial } from "./materials.js";
+import { extrudePolygon } from "./polygon.js";
+import { buildRoof, UnsupportedRoofError } from "./subject/roofs.js";
+import { buildRun } from "./subject/runs.js";
+import { buildWall } from "./subject/walls.js";
+import { boxProjectUv } from "./uv.js";
 
-export * from "./random.js";
-export * from "./attributes.js";
-export * from "./uv.js";
-export * from "./polygon.js";
-export * from "./materials.js";
-export * from "./subject/walls.js";
-export * from "./subject/roofs.js";
-export * from "./subject/runs.js";
 export * from "./assets.js";
-export * from "./context/scatter.js";
+export * from "./attributes.js";
 export * from "./context/impostor.js";
 export * from "./context/masses.js";
+export * from "./context/scatter.js";
+export * from "./materials.js";
+export * from "./polygon.js";
+export * from "./random.js";
+export * from "./subject/roofs.js";
+export * from "./subject/runs.js";
+export * from "./subject/walls.js";
+export * from "./uv.js";
 
 export interface TierStats {
   meshes: number;
@@ -103,10 +97,7 @@ const triangleCount = (geometry: THREE.BufferGeometry): number => {
  * only reason triangle counts and scatter determinism have real tests rather
  * than a screenshot someone squinted at.
  */
-export function generateScene(
-  doc: SceneDocument,
-  options: GenerateOptions = {},
-): GeneratedScene {
+export function generateScene(doc: SceneDocument, options: GenerateOptions = {}): GeneratedScene {
   const includeContext = options.includeContext ?? true;
   const includeTerrain = options.includeTerrain ?? true;
 
@@ -197,7 +188,14 @@ export function generateScene(
     geometry.scale(placement.scale, placement.scale, placement.scale);
     geometry.rotateY(THREE.MathUtils.degToRad(placement.rotationY));
     geometry.translate(...placement.position);
-    attach(subject, stats.subject, geometry, doc.site.terrain.material, `placement:${placement.id}`, loaded === undefined ? {} : { project: false });
+    attach(
+      subject,
+      stats.subject,
+      geometry,
+      doc.site.terrain.material,
+      `placement:${placement.id}`,
+      loaded === undefined ? {} : { project: false },
+    );
   }
 
   for (const run of doc.subject.runs) {
@@ -226,11 +224,7 @@ export function generateScene(
         side: THREE.DoubleSide,
         name: shared.name,
       });
-      const mesh = new THREE.InstancedMesh(
-        climber.geometry,
-        leafMaterial,
-        climber.transforms.length,
-      );
+      const mesh = new THREE.InstancedMesh(climber.geometry, leafMaterial, climber.transforms.length);
       mesh.name = `run:${run.id}:climber`;
       mesh.castShadow = true;
       mesh.receiveShadow = true;

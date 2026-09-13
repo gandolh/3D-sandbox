@@ -115,15 +115,15 @@ export function skyRadianceMap(options: SkyMapOptions): SkyMap {
         g = ground.g * lit * (1 - depth * 0.6);
         b = ground.b * lit * (1 - depth * 0.6);
       } else {
-        const t = Math.pow(clamp01(dy), 0.55);
+        const t = clamp01(dy) ** 0.55;
         r = mix(horizon.r, zenith.r, t);
         g = mix(horizon.g, zenith.g, t);
         b = mix(horizon.b, zenith.b, t);
 
         const alignment = clamp01(dx * sun.x + dy * sun.y + dz * sun.z);
         if (sun.y > 0) {
-          const disc = Math.pow(alignment, discPower) * 120;
-          const glow = Math.pow(alignment, glowPower) * 1.4;
+          const disc = alignment ** discPower * 120;
+          const glow = alignment ** glowPower * 1.4;
           r += sunColor.r * (disc + glow);
           g += sunColor.g * (disc + glow);
           b += sunColor.b * (disc + glow);

@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, readFileSync, writeFileSync, existsSync, statSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -19,10 +19,7 @@ import { beforeAll, describe, expect, it } from "vitest";
  * test is the temp-file-and-rename dance, not HTTP.
  */
 
-const script = readFileSync(
-  fileURLToPath(new URL("../../assets-src/download.sh", import.meta.url)),
-  "utf8",
-);
+const script = readFileSync(fileURLToPath(new URL("../../assets-src/download.sh", import.meta.url)), "utf8");
 
 /** The helper, lifted out of the generated script so the real text is tested. */
 const helper = script.slice(script.indexOf("fetch_one() {"), script.indexOf("\n}\n") + 3);
@@ -45,10 +42,7 @@ const run = (target: string, want: number): { ok: boolean; err: string } => {
       "bash",
       // stderr folded into stdout: the warnings are the interesting output, and
       // `execFileSync` only hands back the latter.
-      [
-        "-c",
-        `set -euo pipefail\n${helper}\nfetch_one "file://${source}" "${target}" ${want} 2>&1`,
-      ],
+      ["-c", `set -euo pipefail\n${helper}\nfetch_one "file://${source}" "${target}" ${want} 2>&1`],
       { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] },
     );
     return { ok: true, err };
@@ -124,13 +118,10 @@ describe("the generated scripts", () => {
     // A single `curl -o "$target"` slipping back in would restore the bug for
     // that one asset, quietly.
     for (const name of ["download.sh", "download-heavy.sh"]) {
-      const text = readFileSync(
-        fileURLToPath(new URL(`../../assets-src/${name}`, import.meta.url)),
-        "utf8",
-      );
+      const text = readFileSync(fileURLToPath(new URL(`../../assets-src/${name}`, import.meta.url)), "utf8");
       const direct = text
         .split("\n")
-        .filter((line) => line.includes("curl") && !line.startsWith("  curl -fsSL -o \"$target.part\""));
+        .filter((line) => line.includes("curl") && !line.startsWith('  curl -fsSL -o "$target.part"'));
       expect(direct, name).toEqual([]);
     }
   });
@@ -139,10 +130,7 @@ describe("the generated scripts", () => {
     // "—" used to stand for an unknown size, which reads as a small one — and
     // that is how ambientCG sat outside the heavy-asset split entirely, its
     // `bytes` hardcoded to 0 while the API reported a real number all along.
-    const md = readFileSync(
-      fileURLToPath(new URL("../../assets-src/DOWNLOADS.md", import.meta.url)),
-      "utf8",
-    );
+    const md = readFileSync(fileURLToPath(new URL("../../assets-src/DOWNLOADS.md", import.meta.url)), "utf8");
     expect(md).not.toMatch(/\| — \|/);
     expect(md).not.toMatch(/size unknown/);
   });

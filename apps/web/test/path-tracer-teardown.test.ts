@@ -1,7 +1,7 @@
-import { describe, expect, it, vi } from "vitest";
 import type * as THREE from "three";
 import * as pathtracer from "three-gpu-pathtracer";
 import { WebGLPathTracer } from "three-gpu-pathtracer";
+import { describe, expect, it, vi } from "vitest";
 import { disposeUniformValues } from "../src/engine/PathTracer.js";
 
 /**

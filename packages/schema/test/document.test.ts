@@ -1,13 +1,13 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
-  SCHEMA_VERSION,
-  SceneDocument,
   area,
   degToRad,
   intervalsOverlap,
   lintScene,
   loadScene,
+  SCHEMA_VERSION,
+  SceneDocument,
   serializeScene,
 } from "../src/index.js";
 import { baseScene } from "./fixtures.js";
@@ -20,7 +20,7 @@ describe("strictness", () => {
 
   it("rejects an unknown key nested inside a wall", () => {
     const doc = baseScene();
-    (doc.subject!.levels![0]!.walls![0] as Record<string, unknown>)["heigth"] = 2.7;
+    (doc.subject!.levels![0]!.walls![0] as Record<string, unknown>).heigth = 2.7;
     expect(() => SceneDocument.parse(doc)).toThrow();
   });
 

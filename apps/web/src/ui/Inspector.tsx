@@ -1,7 +1,7 @@
-import { editDocument, getState, setStatus, useStore } from "../state/store.js";
-import { physicsFor, physicsReady } from "../lib/physics.js";
-import { mToMm, mmToM, wallBearing, wallLength } from "@solstice/schema";
+import { mmToM, mToMm, wallBearing, wallLength } from "@solstice/schema";
 import { findEntity, setWallBearing, setWallLength } from "../lib/entities.js";
+import { physicsFor, physicsReady } from "../lib/physics.js";
+import { editDocument, getState, setStatus, useStore } from "../state/store.js";
 import { Divider, Field, PanelTitle } from "./primitives.jsx";
 import { Scroll } from "./Scroll.jsx";
 
@@ -12,8 +12,7 @@ export function Inspector() {
   const loadError = useStore((s) => s.loadError);
 
   const entity = doc !== null && selection !== null ? findEntity(doc, selection) : null;
-  const relevant =
-    selection === null ? [] : findings.filter((f) => f.entities.includes(selection));
+  const relevant = selection === null ? [] : findings.filter((f) => f.entities.includes(selection));
 
   return (
     <aside className="flex w-[238px] shrink-0 flex-col border-l border-line bg-panel">
@@ -36,8 +35,8 @@ export function Inspector() {
               </span>
               {loadError}
               <span className="mt-1.5 block text-muted">
-                Nothing is selectable until a scene loads. Pick another from the
-                toolbar, or fix the file and reload.
+                Nothing is selectable until a scene loads. Pick another from the toolbar, or fix the file and
+                reload.
               </span>
             </div>
           ) : doc === null ? (
@@ -47,27 +46,21 @@ export function Inspector() {
               Select something in the viewport or the tree.
             </p>
           ) : entity.kind === "wall" ? (
-            <WallInspector
-              id={entity.wall.id}
-              levelIndex={entity.levelIndex}
-              wallIndex={entity.wallIndex}
-            />
+            <WallInspector id={entity.wall.id} levelIndex={entity.levelIndex} wallIndex={entity.wallIndex} />
           ) : entity.kind === "placement" ? (
             <PlacementInspector index={entity.index} />
           ) : (
             <div className="pt-2">
               <Header kind={entity.kind} id={selection ?? ""} />
-              <p className="text-[11.5px] text-muted">
-                No editable parameters yet for this entity type.
-              </p>
+              <p className="text-[11.5px] text-muted">No editable parameters yet for this entity type.</p>
             </div>
           )}
 
           {relevant.length > 0 && (
             <div className="mt-3 space-y-2">
-              {relevant.map((finding, i) => (
+              {relevant.map((finding) => (
                 <div
-                  key={`${finding.rule}-${i}`}
+                  key={`${finding.rule}:${finding.path}`}
                   className={`rounded-sm border p-2 text-[11px] leading-snug ${
                     finding.severity === "error"
                       ? "border-danger/40 bg-danger/10 text-danger"
@@ -106,15 +99,7 @@ const Header = ({ kind, id }: { kind: string; id: string }) => (
   </div>
 );
 
-function WallInspector({
-  id,
-  levelIndex,
-  wallIndex,
-}: {
-  id: string;
-  levelIndex: number;
-  wallIndex: number;
-}) {
+function WallInspector({ id, levelIndex, wallIndex }: { id: string; levelIndex: number; wallIndex: number }) {
   const doc = useStore((s) => s.document);
   const wall = doc?.subject.levels[levelIndex]?.walls[wallIndex];
   const level = doc?.subject.levels[levelIndex];
@@ -140,14 +125,24 @@ function WallInspector({
         label="Height"
         unit="m"
         value={wall.height ?? level.height}
-        onCommit={(next) => next > 0 && edit((w) => { w.height = next; })}
+        onCommit={(next) =>
+          next > 0 &&
+          edit((w) => {
+            w.height = next;
+          })
+        }
       />
       <Field
         label="Thickness"
         unit="mm"
         step={10}
         value={mToMm(wall.thickness)}
-        onCommit={(next) => next > 0 && edit((w) => { w.thickness = mmToM(next); })}
+        onCommit={(next) =>
+          next > 0 &&
+          edit((w) => {
+            w.thickness = mmToM(next);
+          })
+        }
       />
       <Field
         label="Bearing"
@@ -234,7 +229,6 @@ function WallInspector({
   );
 }
 
-
 /**
  * Placements are the one thing physics is here to help with.
  *
@@ -263,10 +257,12 @@ function PlacementInspector({ index }: { index: number }) {
     // than at first paint, so the first drop of a session waits for a download
     // and every later one does not. Two different waits, two messages.
     setStatus(physicsReady() ? `Dropping ${placement.id}…` : "Loading the physics engine…");
-    let world;
-    try {
-      world = await physicsFor({ doc: current, revision, sizes: getState().assetSizes });
-    } catch {
+    const world = await physicsFor({
+      doc: current,
+      revision,
+      sizes: getState().assetSizes,
+    }).catch(() => null);
+    if (world === null) {
       setStatus("Could not load the physics engine — drop to floor is unavailable");
       return;
     }
@@ -278,11 +274,7 @@ function PlacementInspector({ index }: { index: number }) {
     const half: [number, number, number] =
       size === undefined
         ? [0.3 * placement.scale, 0.45 * placement.scale, 0.3 * placement.scale]
-        : [
-            (size[0] * placement.scale) / 2,
-            (size[1] * placement.scale) / 2,
-            (size[2] * placement.scale) / 2,
-          ];
+        : [(size[0] * placement.scale) / 2, (size[1] * placement.scale) / 2, (size[2] * placement.scale) / 2];
     const from: [number, number, number] = [
       placement.position[0],
       Math.max(placement.position[1], half[1] + 0.05) + 2,
@@ -305,16 +297,58 @@ function PlacementInspector({ index }: { index: number }) {
   return (
     <div>
       <Header kind="placement" id={placement.id} />
-      <Field label="X" unit="m" value={placement.position[0]}
-        onCommit={(v) => edit((p) => { p.position = [v, p.position[1], p.position[2]]; })} />
-      <Field label="Y" unit="m" value={placement.position[1]}
-        onCommit={(v) => edit((p) => { p.position = [p.position[0], v, p.position[2]]; })} />
-      <Field label="Z" unit="m" value={placement.position[2]}
-        onCommit={(v) => edit((p) => { p.position = [p.position[0], p.position[1], v]; })} />
-      <Field label="Rotation" unit="°" step={5} value={placement.rotationY}
-        onCommit={(v) => edit((p) => { p.rotationY = v; })} />
-      <Field label="Scale" value={placement.scale} step={0.05}
-        onCommit={(v) => v > 0 && edit((p) => { p.scale = v; })} />
+      <Field
+        label="X"
+        unit="m"
+        value={placement.position[0]}
+        onCommit={(v) =>
+          edit((p) => {
+            p.position = [v, p.position[1], p.position[2]];
+          })
+        }
+      />
+      <Field
+        label="Y"
+        unit="m"
+        value={placement.position[1]}
+        onCommit={(v) =>
+          edit((p) => {
+            p.position = [p.position[0], v, p.position[2]];
+          })
+        }
+      />
+      <Field
+        label="Z"
+        unit="m"
+        value={placement.position[2]}
+        onCommit={(v) =>
+          edit((p) => {
+            p.position = [p.position[0], p.position[1], v];
+          })
+        }
+      />
+      <Field
+        label="Rotation"
+        unit="°"
+        step={5}
+        value={placement.rotationY}
+        onCommit={(v) =>
+          edit((p) => {
+            p.rotationY = v;
+          })
+        }
+      />
+      <Field
+        label="Scale"
+        value={placement.scale}
+        step={0.05}
+        onCommit={(v) =>
+          v > 0 &&
+          edit((p) => {
+            p.scale = v;
+          })
+        }
+      />
 
       <button
         type="button"

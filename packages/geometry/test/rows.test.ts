@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
 import { ScatterField } from "@solstice/schema";
+import { describe, expect, it } from "vitest";
 import { scatterInstances } from "../src/context/scatter.js";
 
 const field = (over: Partial<ScatterField> = {}): ScatterField => ({
@@ -51,7 +51,16 @@ describe("row-arranged scatter", () => {
 
   it("respects exclusions", () => {
     const withHole = scatterInstances(
-      field({ exclude: [[[0, 0], [30, 0], [30, 10], [0, 10]]] }),
+      field({
+        exclude: [
+          [
+            [0, 0],
+            [30, 0],
+            [30, 10],
+            [0, 10],
+          ],
+        ],
+      }),
     );
     expect(withHole.length).toBeLessThan(20);
     expect(withHole.every((i) => i.position[2] > 10)).toBe(true);

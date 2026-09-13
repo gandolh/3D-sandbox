@@ -1,5 +1,5 @@
-import { area, bounds, boundsContain, intervalsOverlap } from "../../geometry.js";
 import type { Level, Wall } from "../../document.js";
+import { area, bounds, boundsContain, intervalsOverlap } from "../../geometry.js";
 import type { RawFinding, Rule } from "../types.js";
 
 /**
@@ -169,8 +169,7 @@ function structureUnder(level: Level, roofBox: ReturnType<typeof bounds>): Wall[
     groups.push(merged);
   }
 
-  const roofArea =
-    Math.max(0, roofBox.maxX - roofBox.minX) * Math.max(0, roofBox.maxZ - roofBox.minZ);
+  const roofArea = Math.max(0, roofBox.maxX - roofBox.minX) * Math.max(0, roofBox.maxZ - roofBox.minZ);
 
   let best: Wall[] = [];
   let bestOverlap = 0;

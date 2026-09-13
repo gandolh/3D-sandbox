@@ -1,6 +1,6 @@
 import RAPIER from "@dimforge/rapier3d-compat";
 import type { SceneDocument } from "@solstice/schema";
-import { deriveColliders, type CuboidCollider, type PlacementSizes } from "./colliders.js";
+import { type CuboidCollider, deriveColliders, type PlacementSizes } from "./colliders.js";
 
 export interface DropOptions {
   /** Half-extents of the box being placed. */
@@ -64,10 +64,7 @@ export class PhysicsWorld {
           .setTranslation(...collider.position)
           .setRotation(quaternionFromY(collider.rotationY)),
       );
-      const created = this.world.createCollider(
-        RAPIER.ColliderDesc.cuboid(...collider.halfExtents),
-        body,
-      );
+      const created = this.world.createCollider(RAPIER.ColliderDesc.cuboid(...collider.halfExtents), body);
       this.byHandle.set(created.handle, collider);
     }
   }
@@ -106,12 +103,11 @@ export class PhysicsWorld {
     const restSpeed = options.restSpeed ?? 0.01;
 
     const body = this.world.createRigidBody(
-      RAPIER.RigidBodyDesc.dynamic().setTranslation(...from).lockRotations(),
+      RAPIER.RigidBodyDesc.dynamic()
+        .setTranslation(...from)
+        .lockRotations(),
     );
-    const collider = this.world.createCollider(
-      RAPIER.ColliderDesc.cuboid(...halfExtents),
-      body,
-    );
+    const collider = this.world.createCollider(RAPIER.ColliderDesc.cuboid(...halfExtents), body);
 
     // Disabled rather than removed, so the world stays reusable across drops —
     // it is cached per document revision and a second drop must see the same

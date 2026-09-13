@@ -1,4 +1,5 @@
-import type { SceneDocument } from "@solstice/schema";
+// Type-only, so it is erased rather than emitted as an import.
+import type { PhysicsWorld } from "@solstice/physics";
 // `@solstice/physics/colliders`, not the package root.
 //
 // `deriveColliders` is pure arithmetic over the document and the
@@ -8,9 +9,8 @@ import type { SceneDocument } from "@solstice/schema";
 // through the root pulls ~2 MB of inlined WASM into the first paint — for a
 // feature (drop to floor) most visitors never reach. The second entry point is
 // what lets a bundler tell the two halves apart.
-import { deriveColliders, type CuboidCollider, type PlacementSizes } from "@solstice/physics/colliders";
-// Type-only, so it is erased rather than emitted as an import.
-import type { PhysicsWorld } from "@solstice/physics";
+import { type CuboidCollider, deriveColliders, type PlacementSizes } from "@solstice/physics/colliders";
+import type { SceneDocument } from "@solstice/schema";
 
 /** Every input a physics world is derived from. */
 export interface PhysicsInputs {

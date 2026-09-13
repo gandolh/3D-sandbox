@@ -9,7 +9,7 @@
  * Resolution is 2k throughout: `.gitignore` keeps 4k out of git, and 2k is what
  * a 1920×1080 render can actually resolve.
  */
-import { mkdir, readFile, readdir, stat, writeFile, chmod } from "node:fs/promises";
+import { chmod, mkdir, readdir, readFile, stat, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { SceneDocument } from "@solstice/schema";
@@ -105,7 +105,20 @@ async function resolvePolyHaven(w: Wanted): Promise<Resolved> {
   const downloads: Download[] = [];
 
   if (w.kind === "model") {
-    const gltf = (files["gltf"] as Record<string, { gltf?: { url?: string; size?: number; include?: Record<string, { url?: string; size?: number }> } }> | undefined)?.[RES]?.gltf;
+    const gltf = (
+      files.gltf as
+        | Record<
+            string,
+            {
+              gltf?: {
+                url?: string;
+                size?: number;
+                include?: Record<string, { url?: string; size?: number }>;
+              };
+            }
+          >
+        | undefined
+    )?.[RES]?.gltf;
     if (gltf?.url === undefined) return { ...w, ok: false, downloads: [], note: `no ${RES} glTF` };
     downloads.push({ url: gltf.url, target: `${w.slug}_${RES}.gltf`, bytes: gltf.size ?? 0 });
     // A glTF is useless without the images it names — or its .bin.
@@ -116,7 +129,9 @@ async function resolvePolyHaven(w: Wanted): Promise<Resolved> {
     }
   } else {
     for (const map of PH_MAPS) {
-      const entry = (files[map] as Record<string, Record<string, { url?: string; size?: number }>> | undefined)?.[RES]?.["jpg"];
+      const entry = (
+        files[map] as Record<string, Record<string, { url?: string; size?: number }>> | undefined
+      )?.[RES]?.jpg;
       if (entry?.url !== undefined) {
         downloads.push({
           url: entry.url,
@@ -131,18 +146,25 @@ async function resolvePolyHaven(w: Wanted): Promise<Resolved> {
 }
 
 async function resolveAmbientCg(w: Wanted): Promise<Resolved> {
-  const response = await fetch(
-    `https://ambientcg.com/api/v2/full_json?id=${w.slug}&include=downloadData`,
-  );
+  const response = await fetch(`https://ambientcg.com/api/v2/full_json?id=${w.slug}&include=downloadData`);
   if (!response.ok) {
     return { ...w, ok: false, downloads: [], note: `not found (HTTP ${response.status})` };
   }
   const body = (await response.json()) as {
-    foundAssets?: { downloadFolders?: Record<string, { downloadFiletypeCategories?: Record<string, { downloads?: { attribute?: string; downloadLink?: string }[] }> }> }[];
+    foundAssets?: {
+      downloadFolders?: Record<
+        string,
+        {
+          downloadFiletypeCategories?: Record<
+            string,
+            { downloads?: { attribute?: string; downloadLink?: string }[] }
+          >;
+        }
+      >;
+    }[];
   };
   const zips =
-    body.foundAssets?.[0]?.downloadFolders?.["default"]?.downloadFiletypeCategories?.["zip"]
-      ?.downloads ?? [];
+    body.foundAssets?.[0]?.downloadFolders?.default?.downloadFiletypeCategories?.zip?.downloads ?? [];
   const pick = zips.find((z) => z.attribute === `${RES.toUpperCase()}-JPG`);
   if (pick?.downloadLink === undefined) {
     return { ...w, ok: false, downloads: [], note: `no ${RES.toUpperCase()}-JPG zip` };
@@ -170,7 +192,9 @@ async function resolveAmbientCg(w: Wanted): Promise<Resolved> {
 }
 
 const resolved: Resolved[] = [];
-for (const w of [...wanted.values()].sort((a, b) => `${a.source}/${a.slug}`.localeCompare(`${b.source}/${b.slug}`))) {
+for (const w of [...wanted.values()].sort((a, b) =>
+  `${a.source}/${a.slug}`.localeCompare(`${b.source}/${b.slug}`),
+)) {
   if (w.source === "polyhaven") resolved.push(await resolvePolyHaven(w));
   else if (w.source === "ambientcg") resolved.push(await resolveAmbientCg(w));
   else resolved.push({ ...w, ok: false, downloads: [], note: `unknown source "${w.source}"` });
@@ -191,8 +215,7 @@ const fetchable = resolved.filter((r) => r.ok && totalBytes(r.downloads) <= HEAV
  * noticing. If this string ever appears, the resolver for that source has
  * stopped reporting a size and the split has stopped protecting it.
  */
-const bytes = (n: number): string =>
-  n === 0 ? "**size unknown**" : `${(n / 1024 / 1024).toFixed(1)} MB`;
+const bytes = (n: number): string => (n === 0 ? "**size unknown**" : `${(n / 1024 / 1024).toFixed(1)} MB`);
 
 const rows = resolved
   .map((r) => {

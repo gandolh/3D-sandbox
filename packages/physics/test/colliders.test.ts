@@ -1,6 +1,6 @@
+import { Level, type SceneDocument, Wall } from "@solstice/schema";
 import { describe, expect, it } from "vitest";
-import { Level, SceneDocument, Wall } from "@solstice/schema";
-import { deriveColliders, degToRad, wallColliders, type CuboidCollider } from "../src/colliders.js";
+import { type CuboidCollider, degToRad, deriveColliders, wallColliders } from "../src/colliders.js";
 import { baseScene } from "./fixtures.js";
 
 const level = Level.parse({ id: "L1", name: "Ground", elevation: 0, height: 2.7 });
@@ -78,7 +78,10 @@ describe("wall colliders", () => {
       ]),
       level,
     );
-    const fullHeight = out.filter((c) => c.halfExtents[1] > 1.3).map(spanAlong).sort((a, b) => a[0] - b[0]);
+    const fullHeight = out
+      .filter((c) => c.halfExtents[1] > 1.3)
+      .map(spanAlong)
+      .sort((a, b) => a[0] - b[0]);
     expect(fullHeight).toHaveLength(3);
     expect(fullHeight[0]![1]).toBeCloseTo(1);
     expect(fullHeight[1]![0]).toBeCloseTo(2.4);
@@ -102,7 +105,9 @@ describe("wall colliders", () => {
   });
 
   it("drops a zero-length wall entirely", () => {
-    expect(wallColliders(Wall.parse({ id: "W-0", start: [1, 1], end: [1, 1], material: "m" }), level)).toEqual([]);
+    expect(
+      wallColliders(Wall.parse({ id: "W-0", start: [1, 1], end: [1, 1], material: "m" }), level),
+    ).toEqual([]);
   });
 });
 
@@ -211,8 +216,13 @@ describe("placement colliders", () => {
    * (−0.45, 0, −0.89), which is what shipped.
    */
   it("yaws the box the way the same placement's mesh is yawed", () => {
-    const doc = { ...withPlacements(), subject: { ...withPlacements().subject,
-      placements: [{ id: "table-01", asset: "a/table", position: [0, 0, 0], rotationY: 90, scale: 1 }] } } as SceneDocument;
+    const doc = {
+      ...withPlacements(),
+      subject: {
+        ...withPlacements().subject,
+        placements: [{ id: "table-01", asset: "a/table", position: [0, 0, 0], rotationY: 90, scale: 1 }],
+      },
+    } as SceneDocument;
     const table = deriveColliders(doc, sizes).find((c) => c.entity === "table-01");
     const yaw = table!.rotationY;
     const [hx] = table!.halfExtents;
