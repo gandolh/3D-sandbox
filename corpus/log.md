@@ -908,3 +908,72 @@ checking against your memory of the design rather than against the code.
 
 One finding captured rather than fixed: a drop reports *"settled on nothing"*
 when it settled on a slab (`corpus/todos/drop-reports-settled-on-nothing.md`).
+
+## 2026-09-13 — The yard, the rooms, and a drawing
+
+Three briefs from one request: pave the ground people walk on, give the plan
+rooms, and produce a real floor plan. Plus a verification pass over yesterday's
+eleven, which found two acceptance criteria that were not actually met.
+
+**The verification pass is the part worth repeating.** Reading the outcome
+notes would have said everything was done. Checking the *code* against the
+*criteria* found that brief 45's "the same number for every arrangement" held
+only for rectangles — an L-shaped row field quoted 130 against 100 placed — and
+that brief 27's "a duplicate run id is an error" had been tested with a run
+colliding with a *wall*, which passes on the old rule too. Both are now closed,
+and 45's fix moved the row placement into `schema/derive` so the estimate walks
+the lattice the generator walks rather than approximating it.
+
+**47 — the gate became two gates.** The layout problem was not the paving, it
+was that one 4 m opening made the car and the person share an entrance, so
+either the drive swung around the vine walk or the walk crossed the drive. The
+Banat answer is the *poartă mare* and the *portiță*: a carriage gate and a
+pedestrian wicket. The wicket lands on the house's own axis at x = 1.2, which
+was already the front door's centreline and the vine's; the carriage gate sits
+east at x = 6.0, on the line a drive needs to reach the garage. Neither route
+crosses the other at any point between the road and its destination.
+
+Brick where people go, gravel where cars go — and the material argument is not
+taste. Banat yards are paved *"with brick and stone, for letting the earth
+breathe, and not by cement, which brings dampness to the houses"*: a
+permeable-paving argument made long before the phrase existed, and a real
+constraint for a house with no damp course. Herringbone because courses at 45°
+to travel spread a wheel load instead of letting one paver rock.
+
+The facing guard caught an inversion in `buildPaving` before it was ever looked
+at — the first time that file has caught a bug in *new* work.
+
+**48 — rooms found a door that had been walled up since brief 46.** The chimney
+stood from x −0.4 to 1.0 on the `DAY` line; `d-living`, the only door into the
+living room, spans −0.3 to 0.9 on that same line. A 1.4 m masonry mass was built
+across **100 % of the 1.2 m door**. Nothing had caught it because nothing in the
+document knew there was a room on either side of that wall — which is exactly
+what `Room` is for, and it surfaced while working out the living room's polygon.
+
+The computed schedule also put brief 46's hand-worked "118.6 m²" at 119.7, and
+showed a single **12.2 m² "bathroom"** — twice what a bathroom is, in a house
+with nowhere to keep food. It is a 7.3 m² bathroom and a 4.4 m² larder now,
+split north–south so both keep the east wall and neither loses its window.
+
+Brief 27's arming guard fired on `rooms-are-habitable` the day after it was
+built, on a rule it had never seen. That is the difference between a mechanism
+that works and one that works in principle.
+
+**49 — a drawing, and it had to be a section.** A camera pointed down gives a
+roof; hiding the roof gives wall tops. `packages/drawing` cuts at 1.2 m and
+renders SVG with no `three`, no DOM and no GPU — and the payoff is that every
+convention can be asserted. At 2.5 m nothing is cut, the doors become dashed
+thresholds, and the swing count drops to zero: that test *is* the difference
+between a section and a top view.
+
+Two graphic faults that only looking could have found. The ISO weight hierarchy
+inverted itself, because at 1:100 a 120 mm partition is 1.2 mm on paper and a
+0.7 mm stroke each side leaves no fill — partitions solid black, external walls
+grey. And choosing which building to draw by wall connectivity **silently lost
+six of ten doors**, because a partition shares a corner with nothing; it is
+picked by enclosed area now, then every wall inside it adopted.
+
+**400 → 426 tests.** Three new entities — `Paving`, `Room`, and a drawing
+package — and two of them found real bugs in the existing plan within minutes
+of existing. That is the argument for making implicit things explicit: not that
+the model is tidier, but that a thing with a name can be checked.

@@ -17,7 +17,8 @@ semantic linter), `@solstice/geometry` (document → three.js), `@solstice/solar
 (site + clock → sun, sky, light), `@solstice/physics` (derived colliders,
 drop-to-rest) and `@solstice/animation` (headless track evaluation).
 `apps/api` persists scenes over seven routes with files as truth and a
-rebuildable `node:sqlite` index. **389 tests pass.**
+rebuildable `node:sqlite` index, and `@solstice/drawing` renders a measured
+floor plan as SVG with no GPU. **426 tests pass.**
 
 **The scenes.** `greenhollow` is a smallholding — porch, vine pergola, garage,
 hedges, walled front, kitchen garden, greenhouse, pond, orchard in rows.
@@ -36,9 +37,15 @@ is operated there by hand. Nothing in `apps/` or `packages/` waits on it.
 ## Next
 
 Four audit rounds on 2026-09-12 — twelve lenses in all — produced **24 briefs
-(22–45)**, plus **46** for the house plan. The full ranked lists are in
-[log.md](../log.md). **All 25 are done.** `corpus/briefs/todo/` is empty for the
-first time since the audit.
+(22–45)**, plus **46–49** for the house and its drawings. The full ranked lists
+are in [log.md](../log.md). **All 28 are done** and `corpus/briefs/todo/` is
+empty.
+
+A verification pass on 2026-09-13 re-read every acceptance criterion against the
+code rather than against the outcome notes, and found **two that were not
+actually met** — 45's estimate agreed with the generator only for rectangles,
+and 27's duplicate-id test exercised the wrong collision. Both closed. Worth
+repeating on any batch of briefs closed quickly.
 
 The suite went **255 → 389 tests** across that work, and the change in *kind*
 matters more than the count: a shared `FIRES` registry that fails when a lint

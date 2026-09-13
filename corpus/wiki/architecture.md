@@ -1,6 +1,6 @@
 ---
 summary: Layer map, dependency direction, and the document-to-pixels pipeline — how a scene JSON file becomes a rendered image.
-updated: 2026-09-11
+updated: 2026-09-13
 ---
 
 # Architecture
@@ -19,8 +19,9 @@ packages/schema          ← depends on nothing but zod
       ├──► packages/geometry   (document → three.js meshes; CPU only, no GL)
       ├──► packages/solar      (site + clock → sun, sky, lighting; suncalc)
       ├──► packages/physics    (document → colliders; rapier, headless)
+      ├──► packages/drawing    (document → SVG floor plan; no three, no DOM)
       │         │
-      │         └──► apps/web  (the three above → WebGL2 → path tracer)
+      │         └──► apps/web  (the four above → WebGL2 → path tracer)
       │
       └──► apps/api            (Fastify; validates on write, never stores invalid)
 
@@ -29,7 +30,18 @@ assets/                  ← manifest, download list, impostor bake harness
 ```
 
 `packages/schema` is the bottom of the stack and must stay free of three.js,
-React, and Fastify. `packages/geometry` sits above it and depends on three.js but
+React, and Fastify. Inside it, `src/derive/` is the home for any computation a
+**generator and its checker both need** — a wall's angle, a field's instance
+count, a scene's room areas — under two rules: no `three` import, and two
+callers in different packages. See `decisions.md`; it exists because nine such
+computations had drifted into duplicate copies, each living in the code that
+checked the other.
+
+`packages/drawing` is the second output path and deliberately parallel to
+`geometry` rather than layered on it: a plan is a **horizontal section rendered
+as vectors**, not a view of meshes, and it has to be producible on a machine
+with no GPU. That constraint is what lets the whole drawing be asserted in
+tests — line weights, door swings, room labels — rather than eyeballed. `packages/geometry` sits above it and depends on three.js but
 **never on a WebGL context** — geometry construction and CSG are pure CPU work, so
 the generator is testable headlessly in Node. That is why triangle counts, opening
 cuts and scatter determinism have real tests rather than a screenshot someone
