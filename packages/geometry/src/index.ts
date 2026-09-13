@@ -3,6 +3,7 @@ import * as THREE from "three";
 import { Evaluator } from "three-bvh-csg";
 import type { AssetSource, MaterialSource } from "./assets.js";
 import { ensureStandardAttributes } from "./attributes.js";
+import type { GeometryCache } from "./cache.js";
 import { buildImpostorGeometry, impostorMaterial } from "./context/impostor.js";
 import { buildMass, buildPaving, buildRoad } from "./context/masses.js";
 import { buildScatterMesh, mergeSimple, type ScatterInstance, scatterInstances } from "./context/scatter.js";
@@ -15,6 +16,7 @@ import { boxProjectUv } from "./uv.js";
 
 export * from "./assets.js";
 export * from "./attributes.js";
+export * from "./cache.js";
 export * from "./context/impostor.js";
 export * from "./context/masses.js";
 export * from "./context/scatter.js";
@@ -60,6 +62,14 @@ export interface GenerateOptions {
   assets?: AssetSource;
   /** Loaded PBR maps. Absent means every material is its `baseColor`. */
   materials?: MaterialSource;
+  /**
+   * Wall geometry kept between generations.
+   *
+   * Optional, and absent in every test that is not about the cache — the
+   * generator must produce identical output with and without it, which is the
+   * only reason a cache here is safe. See `GeometryCache`.
+   */
+  cache?: GeometryCache;
 }
 
 /**
@@ -168,7 +178,11 @@ export function generateScene(doc: SceneDocument, options: GenerateOptions = {})
     subject.add(levelGroup);
 
     for (const wall of level.walls) {
-      attach(levelGroup, stats.subject, buildWall(wall, level, evaluator), wall.material, `wall:${wall.id}`);
+      const geometry =
+        options.cache === undefined
+          ? buildWall(wall, level, evaluator)
+          : options.cache.wall(wall, level, () => buildWall(wall, level, evaluator));
+      attach(levelGroup, stats.subject, geometry, wall.material, `wall:${wall.id}`);
     }
     for (const slab of level.slabs) {
       const geometry = extrudePolygon(slab.polygon, level.elevation - slab.thickness, slab.thickness);

@@ -103,6 +103,38 @@ to move code between two files that both already live in `schema`. The `derive/`
 folder and its two rules are the boundary instead, and they are cheap to enforce
 by reading.
 
+## Derived geometry may be *cached*, but only per-wall and only by whole-value key
+_2026-09-13_ — `GeometryCache` keeps wall geometry between generations. The key
+is `JSON.stringify` of the entire `Wall` plus the two `Level` fields
+`buildWall` reads, and callers always receive a **clone**.
+Rejected: caching every entity kind; keying on object identity; keying on a
+hand-listed set of fields.
+**Why**: the generator still rebuilds the whole document on every revision, and
+that stays — regenerating everything is what makes it impossible for the scene
+graph to disagree with the document. What changed is that after briefs 51 and
+52 the remaining cost became *concentrated*: **23 of Greenhollow's 28 ms is
+wall CSG**, 82 %, across the 11 walls that carry openings. Runs are 1.5 ms and
+roofs 0.3 ms, so caching those would add a class of bug for a rounding error.
+
+The key is the whole value and not a field list because a hand-written list is
+exactly what went stale in brief 24 — add a property to `Wall` tomorrow and it
+participates without anyone remembering. It costs 0.02 ms for 23 walls against
+20 ms of CSG. Identity was rejected outright: `editDocument` structured-clones
+the document, so every entity has a new identity after every edit and an
+identity key would never hit.
+
+Cloning on the way out is not an optimisation detail but the thing that makes
+it safe: the generated scene disposes what it owns, and handing out the cached
+object would let one generation's teardown blank the next one's walls.
+
+- *Consequence*: measured 30.0 ms → **5.8 ms** for a one-wall edit on
+  Greenhollow. End to end in the browser the edit's longest task is 61 ms, so
+  the remainder is GPU upload and React — different problems.
+- *Consequence*: the cache is bounded (256 entries, oldest evicted and
+  disposed). A long session visits a new key on every nudge of every wall.
+- *Consequence*: `SandboxEngine` owns and frees it, because it outlives every
+  generated scene by design and nothing else would.
+
 ## Visual direction: Darkroom
 _2026-09-11_ — Near-black chrome, hairline separation, sun-amber accent.
 Rejected: "Drawing Set" (paper ground, drafting overlays) and "Gallery" (inset

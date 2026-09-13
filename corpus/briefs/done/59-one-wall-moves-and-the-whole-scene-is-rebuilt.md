@@ -83,3 +83,63 @@ with the size of the scene rather than the size of the edit.
 - A from-scratch generation and an incrementally-updated one are indistinguishable.
 - No geometry is leaked across a sequence of edits.
 - `npm run check` exits 0.
+
+---
+
+## Outcome — 2026-09-13
+
+**The premise had changed by the time this was reached, and that changed the
+work.** The brief quoted 98 ms for Greenhollow. Briefs 51 and 52 brought that
+to **32 ms** without touching the design — 51 stopped the rebuild happening per
+keystroke at all, and 52 removed the canopy's 39 ms. So I re-measured before
+building anything.
+
+**Re-measuring is what decided the scope.** The remaining cost turned out to be
+concentrated rather than spread:
+
+| | ms | share |
+|---|---|---|
+| wall CSG (11 of 23 walls carry openings) | **23.0** | **82 %** |
+| all runs | 1.5 | 5 % |
+| all roofs | 0.3 | 1 % |
+| whole build with context | 28.2 | |
+
+So this caches **walls only**. Caching runs and roofs would have added a class
+of bug for a rounding error.
+
+**Prototyped before committing to a design**, which is what settled the key:
+
+| | ms |
+|---|---|
+| rebuild all 23 walls | 20.03 |
+| clone 23 prebuilt geometries | 0.27 |
+| `JSON.stringify` 23 walls (the key) | **0.02** |
+| one wall moved: 22 clones + 1 CSG | **3.75** |
+
+**In the real generator: 30.0 ms → 5.8 ms**, with 137 hits and 24 misses.
+
+**The key is the whole `Wall`, not a field list**, and that is the brief's
+"impossible to get wrong by adding an input later" requirement met the way
+brief 24 met it. Identity was rejected outright — `editDocument`
+structured-clones, so every entity has a new identity after every edit and an
+identity key would never hit once.
+
+**Callers get a clone.** That is not a detail: the generated scene disposes
+what it owns, and handing out the cached object would let one generation's
+teardown blank the next one's walls. There is a test that does exactly that —
+generate, dispose, generate again, assert every wall still has vertices.
+
+**Five tests, and the first one is the whole safety argument**: a cached scene
+is fingerprinted mesh-by-mesh against one built from scratch and must be
+identical. Plus: one moved wall is exactly one new key; changing an opening's
+`sill` — a field no hand-rolled key would have listed — is a miss; clones
+survive disposal; and the cache stays bounded and frees what it evicts.
+
+**One honest correction to my own measurement.** Timing an edit through CDP
+first gave 585–744 ms, which I nearly recorded. It was the automation channel,
+not the app: measured properly with `PerformanceObserver`, the synchronous
+commit is **5 ms** and the edit's longest task is **61 ms**. So the cache
+removes ~24 ms from an ~85 ms path and the remainder is GPU upload and React —
+worth knowing, and a different problem from this one.
+
+Decision recorded in `decisions.md`. `npm run check` clean, **459 tests**.

@@ -106,7 +106,9 @@ export function SceneTree() {
     if (items.length === 0) return;
     // `findIndex`, not `indexOf`: `document.activeElement` is `Element | null`
     // and this is an `HTMLElement[]`. Biome's `useIndexOf` fix is right in
-    // general and wrong here, which is why it is an unsafe fix.
+    // general and wrong here, which is why it is an unsafe fix — `tsc` rejects
+    // the rewrite.
+    // biome-ignore lint/complexity/useIndexOf: activeElement is Element | null against HTMLElement[]
     const here = items.findIndex((el) => el === document.activeElement);
     const next =
       event.key === "Home"
