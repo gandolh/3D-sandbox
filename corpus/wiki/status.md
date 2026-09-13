@@ -146,7 +146,7 @@ nothing"* when it settled on a slab.
 | 50 | [A dragged placement springs back](../briefs/done/50-a-dragged-placement-springs-back.md) | done |
 | 51 | [Every keystroke rebuilds the scene](../briefs/done/51-every-keystroke-rebuilds-the-scene.md) | done |
 | 52 | [The vine allocates four thousand geometries](../briefs/done/52-the-vine-allocates-four-thousand-geometries.md) | done |
-| 53 | [No linter, no formatter](../briefs/todo/53-no-linter-no-formatter.md) | todo |
+| 53 | [No linter, no formatter](../briefs/done/53-no-linter-no-formatter.md) | done |
 | 54 | [Scenes typecheck green and crash](../briefs/done/54-scenes-typecheck-green-and-crash.md) | done |
 | 55 | [No test can touch the interface](../briefs/done/55-no-test-can-touch-the-interface.md) | done |
 | 56 | [Nothing runs the gate](../briefs/todo/56-nothing-runs-the-gate.md) | todo |
