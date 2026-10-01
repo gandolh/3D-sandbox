@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { beforeAll, describe, expect, it } from "vitest";
+import { downloadScript, heavyScript, type ScriptAsset } from "../download-script.ts";
 
 /**
  * `fetch_one`, the shell helper the generated download scripts share.
@@ -133,5 +134,77 @@ describe("the generated scripts", () => {
     const md = readFileSync(fileURLToPath(new URL("../../assets-src/DOWNLOADS.md", import.meta.url)), "utf8");
     expect(md).not.toMatch(/\| — \|/);
     expect(md).not.toMatch(/size unknown/);
+  });
+});
+
+/**
+ * What reaches the generated scripts, when something hostile does.
+ *
+ * The schema now refuses these slugs, but the generator reads `.scene.json`
+ * files from disk and should not have to trust that — so the assembly is fed
+ * them directly, the result is run under `bash`, and the assertion is about
+ * side effects rather than about what the text looks like.
+ */
+describe("a hostile slug in the generated scripts", () => {
+  const PAYLOADS = ["x\n$(touch pwned-newline) #", 'x"; touch pwned-double; "', "x'; touch pwned-single; '"];
+  const MARKERS = ["pwned-newline", "pwned-double", "pwned-single"];
+
+  /** Write `text` as a script in a fresh directory and run it there. */
+  const execute = (name: string, text: string): string => {
+    const where = mkdtempSync(join(tmpdir(), "solstice-dl-hostile-"));
+    writeFileSync(join(where, name), text);
+    // `unzip` is stubbed: the fetched "zip" is a plain file, and what is under
+    // test is the quoting around the call, not unzip.
+    execFileSync("bash", ["-c", `unzip() { return 0; }; export -f unzip; bash ${name}`], {
+      cwd: where,
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+    return where;
+  };
+
+  const asset = (slug: string, target: string): ScriptAsset => ({
+    source: "ambientcg",
+    slug,
+    downloads: [{ url: `file://${source}`, target, bytes: BODY.length }],
+  });
+
+  it("keeps an unresolved one inside its comment", () => {
+    const missing = PAYLOADS.map((slug) => ({ source: "ambientcg", slug, downloads: [], note: "not found" }));
+    const text = downloadScript([], missing, [], () => "");
+    expect(text.split("\n").filter((l) => l.startsWith("# UNRESOLVED"))).toHaveLength(PAYLOADS.length);
+    const where = execute("download.sh", text);
+    for (const marker of MARKERS) expect(existsSync(join(where, marker)), marker).toBe(false);
+  });
+
+  it("keeps a fetched one inside its quotes", () => {
+    const fetchable = PAYLOADS.map((slug, i) => asset(slug, `${slug}_${i}.zip`));
+    const where = execute(
+      "download.sh",
+      downloadScript(fetchable, [], [], () => ""),
+    );
+    for (const marker of MARKERS) expect(existsSync(join(where, marker)), marker).toBe(false);
+  });
+
+  it("keeps a heavy one inside its quotes and its comment", () => {
+    const heavy = PAYLOADS.map((slug, i) => asset(slug, `textures/${slug}_${i}.jpg`));
+    const where = execute(
+      "download-heavy.sh",
+      heavyScript(heavy, () => "1 MB"),
+    );
+    for (const marker of MARKERS) expect(existsSync(join(where, marker)), marker).toBe(false);
+    const skipped = execute(
+      "download.sh",
+      downloadScript([], [], heavy, () => "1 MB"),
+    );
+    for (const marker of MARKERS) expect(existsSync(join(skipped, marker)), marker).toBe(false);
+  });
+
+  it("quotes so that the real file still lands where the slug says", () => {
+    const slug = 'it\'s a "slug"';
+    const where = execute(
+      "download.sh",
+      downloadScript([asset(slug, "map.jpg")], [], [], () => ""),
+    );
+    expect(readFileSync(join(where, "ambientcg", slug, "map.jpg"), "utf8")).toBe(BODY);
   });
 });

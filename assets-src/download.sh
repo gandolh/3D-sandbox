@@ -32,171 +32,177 @@ fetch_one() {                                 # url target expected_bytes
 }
 
 
-echo "→ ambientcg/Asphalt026A"
-mkdir -p "ambientcg/Asphalt026A"
-fetch_one "https://ambientcg.com/get?file=Asphalt026A_2K-JPG.zip" "ambientcg/Asphalt026A/Asphalt026A_2K-JPG.zip" 33760965
-unzip -oq "ambientcg/Asphalt026A/Asphalt026A_2K-JPG.zip" -d "ambientcg/Asphalt026A" && rm "ambientcg/Asphalt026A/Asphalt026A_2K-JPG.zip"
-find "ambientcg/Asphalt026A" -type f \( -name '*.blend' -o -name '*.usdc' -o -name '*.mtlx' -o -name '*.tres' -o -name '*NormalDX*' -o -name 'Asphalt026A.png' \) -delete
+echo '→ ambientcg/Asphalt026A'
+mkdir -p 'ambientcg/Asphalt026A'
+fetch_one 'https://ambientcg.com/get?file=Asphalt026A_2K-JPG.zip' 'ambientcg/Asphalt026A/Asphalt026A_2K-JPG.zip' 33760965
+unzip -oq 'ambientcg/Asphalt026A/Asphalt026A_2K-JPG.zip' -d 'ambientcg/Asphalt026A' && rm 'ambientcg/Asphalt026A/Asphalt026A_2K-JPG.zip'
+find 'ambientcg/Asphalt026A' -type f \( -name '*.blend' -o -name '*.usdc' -o -name '*.mtlx' -o -name '*.tres' -o -name '*NormalDX*' -o -name 'Asphalt026A.png' \) -delete
 
-echo "→ ambientcg/Concrete034"
-mkdir -p "ambientcg/Concrete034"
-fetch_one "https://ambientcg.com/get?file=Concrete034_2K-JPG.zip" "ambientcg/Concrete034/Concrete034_2K-JPG.zip" 10598720
-unzip -oq "ambientcg/Concrete034/Concrete034_2K-JPG.zip" -d "ambientcg/Concrete034" && rm "ambientcg/Concrete034/Concrete034_2K-JPG.zip"
-find "ambientcg/Concrete034" -type f \( -name '*.blend' -o -name '*.usdc' -o -name '*.mtlx' -o -name '*.tres' -o -name '*NormalDX*' -o -name 'Concrete034.png' \) -delete
+echo '→ ambientcg/Concrete034'
+mkdir -p 'ambientcg/Concrete034'
+fetch_one 'https://ambientcg.com/get?file=Concrete034_2K-JPG.zip' 'ambientcg/Concrete034/Concrete034_2K-JPG.zip' 10598720
+unzip -oq 'ambientcg/Concrete034/Concrete034_2K-JPG.zip' -d 'ambientcg/Concrete034' && rm 'ambientcg/Concrete034/Concrete034_2K-JPG.zip'
+find 'ambientcg/Concrete034' -type f \( -name '*.blend' -o -name '*.usdc' -o -name '*.mtlx' -o -name '*.tres' -o -name '*NormalDX*' -o -name 'Concrete034.png' \) -delete
 
-echo "→ ambientcg/Gravel023"
-mkdir -p "ambientcg/Gravel023"
-fetch_one "https://ambientcg.com/get?file=Gravel023_2K-JPG.zip" "ambientcg/Gravel023/Gravel023_2K-JPG.zip" 31379349
-unzip -oq "ambientcg/Gravel023/Gravel023_2K-JPG.zip" -d "ambientcg/Gravel023" && rm "ambientcg/Gravel023/Gravel023_2K-JPG.zip"
-find "ambientcg/Gravel023" -type f \( -name '*.blend' -o -name '*.usdc' -o -name '*.mtlx' -o -name '*.tres' -o -name '*NormalDX*' -o -name 'Gravel023.png' \) -delete
+echo '→ ambientcg/Gravel023'
+mkdir -p 'ambientcg/Gravel023'
+fetch_one 'https://ambientcg.com/get?file=Gravel023_2K-JPG.zip' 'ambientcg/Gravel023/Gravel023_2K-JPG.zip' 31379349
+unzip -oq 'ambientcg/Gravel023/Gravel023_2K-JPG.zip' -d 'ambientcg/Gravel023' && rm 'ambientcg/Gravel023/Gravel023_2K-JPG.zip'
+find 'ambientcg/Gravel023' -type f \( -name '*.blend' -o -name '*.usdc' -o -name '*.mtlx' -o -name '*.tres' -o -name '*NormalDX*' -o -name 'Gravel023.png' \) -delete
 
-echo "→ polyhaven/ArmChair_01"
-mkdir -p "polyhaven/ArmChair_01"
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Models/gltf/2k/ArmChair_01/ArmChair_01_2k.gltf" "polyhaven/ArmChair_01/ArmChair_01_2k.gltf" 2643
-mkdir -p "polyhaven/ArmChair_01/textures"
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/ArmChair_01/Armchair_01_nor_gl_2k.jpg" "polyhaven/ArmChair_01/textures/Armchair_01_nor_gl_2k.jpg" 1482566
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/ArmChair_01/ArmChair_01.bin" "polyhaven/ArmChair_01/ArmChair_01.bin" 154012
-mkdir -p "polyhaven/ArmChair_01/textures"
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/ArmChair_01/Armchair_01_diff_2k.jpg" "polyhaven/ArmChair_01/textures/Armchair_01_diff_2k.jpg" 723200
-mkdir -p "polyhaven/ArmChair_01/textures"
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/ArmChair_01/Armchair_01_arm_2k.jpg" "polyhaven/ArmChair_01/textures/Armchair_01_arm_2k.jpg" 442886
+echo '→ ambientcg/PavingStones137'
+mkdir -p 'ambientcg/PavingStones137'
+fetch_one 'https://ambientcg.com/get?file=PavingStones137_2K-JPG.zip' 'ambientcg/PavingStones137/PavingStones137_2K-JPG.zip' 27122033
+unzip -oq 'ambientcg/PavingStones137/PavingStones137_2K-JPG.zip' -d 'ambientcg/PavingStones137' && rm 'ambientcg/PavingStones137/PavingStones137_2K-JPG.zip'
+find 'ambientcg/PavingStones137' -type f \( -name '*.blend' -o -name '*.usdc' -o -name '*.mtlx' -o -name '*.tres' -o -name '*NormalDX*' -o -name 'PavingStones137.png' \) -delete
 
-echo "→ polyhaven/clay_plaster"
-mkdir -p "polyhaven/clay_plaster"
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/clay_plaster/clay_plaster_diff_2k.jpg" "polyhaven/clay_plaster/clay_plaster_diff_2k.jpg" 1621557
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/clay_plaster/clay_plaster_nor_gl_2k.jpg" "polyhaven/clay_plaster/clay_plaster_nor_gl_2k.jpg" 3241213
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/clay_plaster/clay_plaster_arm_2k.jpg" "polyhaven/clay_plaster/clay_plaster_arm_2k.jpg" 1449174
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/clay_plaster/clay_plaster_disp_2k.jpg" "polyhaven/clay_plaster/clay_plaster_disp_2k.jpg" 1177269
+echo '→ polyhaven/ArmChair_01'
+mkdir -p 'polyhaven/ArmChair_01'
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/gltf/2k/ArmChair_01/ArmChair_01_2k.gltf' 'polyhaven/ArmChair_01/ArmChair_01_2k.gltf' 2643
+mkdir -p 'polyhaven/ArmChair_01/textures'
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/ArmChair_01/Armchair_01_nor_gl_2k.jpg' 'polyhaven/ArmChair_01/textures/Armchair_01_nor_gl_2k.jpg' 1482566
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/ArmChair_01/ArmChair_01.bin' 'polyhaven/ArmChair_01/ArmChair_01.bin' 154012
+mkdir -p 'polyhaven/ArmChair_01/textures'
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/ArmChair_01/Armchair_01_diff_2k.jpg' 'polyhaven/ArmChair_01/textures/Armchair_01_diff_2k.jpg' 723200
+mkdir -p 'polyhaven/ArmChair_01/textures'
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/ArmChair_01/Armchair_01_arm_2k.jpg' 'polyhaven/ArmChair_01/textures/Armchair_01_arm_2k.jpg' 442886
 
-echo "→ polyhaven/CoffeeTable_01"
-mkdir -p "polyhaven/CoffeeTable_01"
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Models/gltf/2k/CoffeeTable_01/CoffeeTable_01_2k.gltf" "polyhaven/CoffeeTable_01/CoffeeTable_01_2k.gltf" 3182
-mkdir -p "polyhaven/CoffeeTable_01/textures"
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/CoffeeTable_01/CoffeeTable_01_nor_gl_2k.jpg" "polyhaven/CoffeeTable_01/textures/CoffeeTable_01_nor_gl_2k.jpg" 582920
-mkdir -p "polyhaven/CoffeeTable_01/textures"
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/CoffeeTable_01/CoffeeTable_01_arm_2k.jpg" "polyhaven/CoffeeTable_01/textures/CoffeeTable_01_arm_2k.jpg" 613649
-mkdir -p "polyhaven/CoffeeTable_01/textures"
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/CoffeeTable_01/CoffeeTable_01_diff_2k.jpg" "polyhaven/CoffeeTable_01/textures/CoffeeTable_01_diff_2k.jpg" 639146
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/CoffeeTable_01/CoffeeTable_01.bin" "polyhaven/CoffeeTable_01/CoffeeTable_01.bin" 394920
+echo '→ polyhaven/clay_plaster'
+mkdir -p 'polyhaven/clay_plaster'
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/clay_plaster/clay_plaster_diff_2k.jpg' 'polyhaven/clay_plaster/clay_plaster_diff_2k.jpg' 1621557
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/clay_plaster/clay_plaster_nor_gl_2k.jpg' 'polyhaven/clay_plaster/clay_plaster_nor_gl_2k.jpg' 3241213
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/clay_plaster/clay_plaster_arm_2k.jpg' 'polyhaven/clay_plaster/clay_plaster_arm_2k.jpg' 1449174
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/clay_plaster/clay_plaster_disp_2k.jpg' 'polyhaven/clay_plaster/clay_plaster_disp_2k.jpg' 1177269
 
-echo "→ polyhaven/leafy_grass"
-mkdir -p "polyhaven/leafy_grass"
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/leafy_grass/leafy_grass_diff_2k.jpg" "polyhaven/leafy_grass/leafy_grass_diff_2k.jpg" 4766204
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/leafy_grass/leafy_grass_nor_gl_2k.jpg" "polyhaven/leafy_grass/leafy_grass_nor_gl_2k.jpg" 6047262
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/leafy_grass/leafy_grass_arm_2k.jpg" "polyhaven/leafy_grass/leafy_grass_arm_2k.jpg" 4116600
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/leafy_grass/leafy_grass_disp_2k.jpg" "polyhaven/leafy_grass/leafy_grass_disp_2k.jpg" 2545281
+echo '→ polyhaven/CoffeeTable_01'
+mkdir -p 'polyhaven/CoffeeTable_01'
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/gltf/2k/CoffeeTable_01/CoffeeTable_01_2k.gltf' 'polyhaven/CoffeeTable_01/CoffeeTable_01_2k.gltf' 3182
+mkdir -p 'polyhaven/CoffeeTable_01/textures'
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/CoffeeTable_01/CoffeeTable_01_nor_gl_2k.jpg' 'polyhaven/CoffeeTable_01/textures/CoffeeTable_01_nor_gl_2k.jpg' 582920
+mkdir -p 'polyhaven/CoffeeTable_01/textures'
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/CoffeeTable_01/CoffeeTable_01_arm_2k.jpg' 'polyhaven/CoffeeTable_01/textures/CoffeeTable_01_arm_2k.jpg' 613649
+mkdir -p 'polyhaven/CoffeeTable_01/textures'
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/CoffeeTable_01/CoffeeTable_01_diff_2k.jpg' 'polyhaven/CoffeeTable_01/textures/CoffeeTable_01_diff_2k.jpg' 639146
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/CoffeeTable_01/CoffeeTable_01.bin' 'polyhaven/CoffeeTable_01/CoffeeTable_01.bin' 394920
 
-echo "→ polyhaven/outdoor_table_chair_set_01"
-mkdir -p "polyhaven/outdoor_table_chair_set_01"
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Models/gltf/2k/outdoor_table_chair_set_01/outdoor_table_chair_set_01_2k.gltf" "polyhaven/outdoor_table_chair_set_01/outdoor_table_chair_set_01_2k.gltf" 6826
-mkdir -p "polyhaven/outdoor_table_chair_set_01/textures"
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/outdoor_table_chair_set_01/outdoor_table_chair_set_01_chair_nor_gl_2k.jpg" "polyhaven/outdoor_table_chair_set_01/textures/outdoor_table_chair_set_01_chair_nor_gl_2k.jpg" 227267
-mkdir -p "polyhaven/outdoor_table_chair_set_01/textures"
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/outdoor_table_chair_set_01/outdoor_table_chair_set_01_table_arm_2k.jpg" "polyhaven/outdoor_table_chair_set_01/textures/outdoor_table_chair_set_01_table_arm_2k.jpg" 695054
-mkdir -p "polyhaven/outdoor_table_chair_set_01/textures"
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/outdoor_table_chair_set_01/outdoor_table_chair_set_01_table_diff_2k.jpg" "polyhaven/outdoor_table_chair_set_01/textures/outdoor_table_chair_set_01_table_diff_2k.jpg" 520192
-mkdir -p "polyhaven/outdoor_table_chair_set_01/textures"
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/outdoor_table_chair_set_01/outdoor_table_chair_set_01_chair_diff_2k.jpg" "polyhaven/outdoor_table_chair_set_01/textures/outdoor_table_chair_set_01_chair_diff_2k.jpg" 506077
-mkdir -p "polyhaven/outdoor_table_chair_set_01/textures"
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/outdoor_table_chair_set_01/outdoor_table_chair_set_01_chair_arm_2k.jpg" "polyhaven/outdoor_table_chair_set_01/textures/outdoor_table_chair_set_01_chair_arm_2k.jpg" 583486
-mkdir -p "polyhaven/outdoor_table_chair_set_01/textures"
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/outdoor_table_chair_set_01/outdoor_table_chair_set_01_table_nor_gl_2k.jpg" "polyhaven/outdoor_table_chair_set_01/textures/outdoor_table_chair_set_01_table_nor_gl_2k.jpg" 205693
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/outdoor_table_chair_set_01/outdoor_table_chair_set_01.bin" "polyhaven/outdoor_table_chair_set_01/outdoor_table_chair_set_01.bin" 456856
+echo '→ polyhaven/leafy_grass'
+mkdir -p 'polyhaven/leafy_grass'
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/leafy_grass/leafy_grass_diff_2k.jpg' 'polyhaven/leafy_grass/leafy_grass_diff_2k.jpg' 4766204
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/leafy_grass/leafy_grass_nor_gl_2k.jpg' 'polyhaven/leafy_grass/leafy_grass_nor_gl_2k.jpg' 6047262
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/leafy_grass/leafy_grass_arm_2k.jpg' 'polyhaven/leafy_grass/leafy_grass_arm_2k.jpg' 4116600
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/leafy_grass/leafy_grass_disp_2k.jpg' 'polyhaven/leafy_grass/leafy_grass_disp_2k.jpg' 2545281
 
-echo "→ polyhaven/painted_wooden_bench"
-mkdir -p "polyhaven/painted_wooden_bench"
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Models/gltf/2k/painted_wooden_bench/painted_wooden_bench_2k.gltf" "polyhaven/painted_wooden_bench/painted_wooden_bench_2k.gltf" 2835
-mkdir -p "polyhaven/painted_wooden_bench/textures"
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/painted_wooden_bench/painted_wooden_bench_arm_2k.jpg" "polyhaven/painted_wooden_bench/textures/painted_wooden_bench_arm_2k.jpg" 2232819
-mkdir -p "polyhaven/painted_wooden_bench/textures"
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/painted_wooden_bench/painted_wooden_bench_nor_gl_2k.jpg" "polyhaven/painted_wooden_bench/textures/painted_wooden_bench_nor_gl_2k.jpg" 3522953
-mkdir -p "polyhaven/painted_wooden_bench/textures"
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/painted_wooden_bench/painted_wooden_bench_diff_2k.jpg" "polyhaven/painted_wooden_bench/textures/painted_wooden_bench_diff_2k.jpg" 2210706
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/painted_wooden_bench/painted_wooden_bench.bin" "polyhaven/painted_wooden_bench/painted_wooden_bench.bin" 25444
+echo '→ polyhaven/outdoor_table_chair_set_01'
+mkdir -p 'polyhaven/outdoor_table_chair_set_01'
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/gltf/2k/outdoor_table_chair_set_01/outdoor_table_chair_set_01_2k.gltf' 'polyhaven/outdoor_table_chair_set_01/outdoor_table_chair_set_01_2k.gltf' 6826
+mkdir -p 'polyhaven/outdoor_table_chair_set_01/textures'
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/outdoor_table_chair_set_01/outdoor_table_chair_set_01_chair_nor_gl_2k.jpg' 'polyhaven/outdoor_table_chair_set_01/textures/outdoor_table_chair_set_01_chair_nor_gl_2k.jpg' 227267
+mkdir -p 'polyhaven/outdoor_table_chair_set_01/textures'
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/outdoor_table_chair_set_01/outdoor_table_chair_set_01_table_arm_2k.jpg' 'polyhaven/outdoor_table_chair_set_01/textures/outdoor_table_chair_set_01_table_arm_2k.jpg' 695054
+mkdir -p 'polyhaven/outdoor_table_chair_set_01/textures'
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/outdoor_table_chair_set_01/outdoor_table_chair_set_01_table_diff_2k.jpg' 'polyhaven/outdoor_table_chair_set_01/textures/outdoor_table_chair_set_01_table_diff_2k.jpg' 520192
+mkdir -p 'polyhaven/outdoor_table_chair_set_01/textures'
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/outdoor_table_chair_set_01/outdoor_table_chair_set_01_chair_diff_2k.jpg' 'polyhaven/outdoor_table_chair_set_01/textures/outdoor_table_chair_set_01_chair_diff_2k.jpg' 506077
+mkdir -p 'polyhaven/outdoor_table_chair_set_01/textures'
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/outdoor_table_chair_set_01/outdoor_table_chair_set_01_chair_arm_2k.jpg' 'polyhaven/outdoor_table_chair_set_01/textures/outdoor_table_chair_set_01_chair_arm_2k.jpg' 583486
+mkdir -p 'polyhaven/outdoor_table_chair_set_01/textures'
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/outdoor_table_chair_set_01/outdoor_table_chair_set_01_table_nor_gl_2k.jpg' 'polyhaven/outdoor_table_chair_set_01/textures/outdoor_table_chair_set_01_table_nor_gl_2k.jpg' 205693
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/outdoor_table_chair_set_01/outdoor_table_chair_set_01.bin' 'polyhaven/outdoor_table_chair_set_01/outdoor_table_chair_set_01.bin' 456856
 
-echo "→ polyhaven/planter_box_01"
-mkdir -p "polyhaven/planter_box_01"
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Models/gltf/2k/planter_box_01/planter_box_01_2k.gltf" "polyhaven/planter_box_01/planter_box_01_2k.gltf" 2787
-mkdir -p "polyhaven/planter_box_01/textures"
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/planter_box_01/planter_box_01_diff_2k.jpg" "polyhaven/planter_box_01/textures/planter_box_01_diff_2k.jpg" 2351123
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/planter_box_01/planter_box_01.bin" "polyhaven/planter_box_01/planter_box_01.bin" 250580
-mkdir -p "polyhaven/planter_box_01/textures"
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/planter_box_01/planter_box_01_arm_2k.jpg" "polyhaven/planter_box_01/textures/planter_box_01_arm_2k.jpg" 2612579
-mkdir -p "polyhaven/planter_box_01/textures"
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/planter_box_01/planter_box_01_nor_gl_2k.jpg" "polyhaven/planter_box_01/textures/planter_box_01_nor_gl_2k.jpg" 2773444
+echo '→ polyhaven/painted_wooden_bench'
+mkdir -p 'polyhaven/painted_wooden_bench'
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/gltf/2k/painted_wooden_bench/painted_wooden_bench_2k.gltf' 'polyhaven/painted_wooden_bench/painted_wooden_bench_2k.gltf' 2835
+mkdir -p 'polyhaven/painted_wooden_bench/textures'
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/painted_wooden_bench/painted_wooden_bench_arm_2k.jpg' 'polyhaven/painted_wooden_bench/textures/painted_wooden_bench_arm_2k.jpg' 2232819
+mkdir -p 'polyhaven/painted_wooden_bench/textures'
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/painted_wooden_bench/painted_wooden_bench_nor_gl_2k.jpg' 'polyhaven/painted_wooden_bench/textures/painted_wooden_bench_nor_gl_2k.jpg' 3522953
+mkdir -p 'polyhaven/painted_wooden_bench/textures'
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/painted_wooden_bench/painted_wooden_bench_diff_2k.jpg' 'polyhaven/painted_wooden_bench/textures/painted_wooden_bench_diff_2k.jpg' 2210706
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/painted_wooden_bench/painted_wooden_bench.bin' 'polyhaven/painted_wooden_bench/painted_wooden_bench.bin' 25444
 
-echo "→ polyhaven/planter_box_02"
-mkdir -p "polyhaven/planter_box_02"
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Models/gltf/2k/planter_box_02/planter_box_02_2k.gltf" "polyhaven/planter_box_02/planter_box_02_2k.gltf" 2787
-mkdir -p "polyhaven/planter_box_02/textures"
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/planter_box_02/planter_box_02_nor_gl_2k.jpg" "polyhaven/planter_box_02/textures/planter_box_02_nor_gl_2k.jpg" 2846697
-mkdir -p "polyhaven/planter_box_02/textures"
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/planter_box_02/planter_box_02_diff_2k.jpg" "polyhaven/planter_box_02/textures/planter_box_02_diff_2k.jpg" 2264519
-mkdir -p "polyhaven/planter_box_02/textures"
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/planter_box_02/planter_box_02_arm_2k.jpg" "polyhaven/planter_box_02/textures/planter_box_02_arm_2k.jpg" 2577372
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/planter_box_02/planter_box_02.bin" "polyhaven/planter_box_02/planter_box_02.bin" 359296
+echo '→ polyhaven/planter_box_01'
+mkdir -p 'polyhaven/planter_box_01'
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/gltf/2k/planter_box_01/planter_box_01_2k.gltf' 'polyhaven/planter_box_01/planter_box_01_2k.gltf' 2787
+mkdir -p 'polyhaven/planter_box_01/textures'
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/planter_box_01/planter_box_01_diff_2k.jpg' 'polyhaven/planter_box_01/textures/planter_box_01_diff_2k.jpg' 2351123
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/planter_box_01/planter_box_01.bin' 'polyhaven/planter_box_01/planter_box_01.bin' 250580
+mkdir -p 'polyhaven/planter_box_01/textures'
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/planter_box_01/planter_box_01_arm_2k.jpg' 'polyhaven/planter_box_01/textures/planter_box_01_arm_2k.jpg' 2612579
+mkdir -p 'polyhaven/planter_box_01/textures'
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/planter_box_01/planter_box_01_nor_gl_2k.jpg' 'polyhaven/planter_box_01/textures/planter_box_01_nor_gl_2k.jpg' 2773444
 
-echo "→ polyhaven/planter_box_03"
-mkdir -p "polyhaven/planter_box_03"
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Models/gltf/2k/planter_box_03/planter_box_03_2k.gltf" "polyhaven/planter_box_03/planter_box_03_2k.gltf" 2790
-mkdir -p "polyhaven/planter_box_03/textures"
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/planter_box_03/planter_box_03_nor_gl_2k.jpg" "polyhaven/planter_box_03/textures/planter_box_03_nor_gl_2k.jpg" 2860312
-mkdir -p "polyhaven/planter_box_03/textures"
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/planter_box_03/planter_box_03_arm_2k.jpg" "polyhaven/planter_box_03/textures/planter_box_03_arm_2k.jpg" 2539233
-mkdir -p "polyhaven/planter_box_03/textures"
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/planter_box_03/planter_box_03_diff_2k.jpg" "polyhaven/planter_box_03/textures/planter_box_03_diff_2k.jpg" 2373531
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/planter_box_03/planter_box_03.bin" "polyhaven/planter_box_03/planter_box_03.bin" 420144
+echo '→ polyhaven/planter_box_02'
+mkdir -p 'polyhaven/planter_box_02'
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/gltf/2k/planter_box_02/planter_box_02_2k.gltf' 'polyhaven/planter_box_02/planter_box_02_2k.gltf' 2787
+mkdir -p 'polyhaven/planter_box_02/textures'
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/planter_box_02/planter_box_02_nor_gl_2k.jpg' 'polyhaven/planter_box_02/textures/planter_box_02_nor_gl_2k.jpg' 2846697
+mkdir -p 'polyhaven/planter_box_02/textures'
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/planter_box_02/planter_box_02_diff_2k.jpg' 'polyhaven/planter_box_02/textures/planter_box_02_diff_2k.jpg' 2264519
+mkdir -p 'polyhaven/planter_box_02/textures'
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/planter_box_02/planter_box_02_arm_2k.jpg' 'polyhaven/planter_box_02/textures/planter_box_02_arm_2k.jpg' 2577372
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/planter_box_02/planter_box_02.bin' 'polyhaven/planter_box_02/planter_box_02.bin' 359296
 
-echo "→ polyhaven/roof_tiles_14"
-mkdir -p "polyhaven/roof_tiles_14"
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/roof_tiles_14/roof_tiles_14_diff_2k.jpg" "polyhaven/roof_tiles_14/roof_tiles_14_diff_2k.jpg" 1389810
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/roof_tiles_14/roof_tiles_14_nor_gl_2k.jpg" "polyhaven/roof_tiles_14/roof_tiles_14_nor_gl_2k.jpg" 1673189
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/roof_tiles_14/roof_tiles_14_arm_2k.jpg" "polyhaven/roof_tiles_14/roof_tiles_14_arm_2k.jpg" 696470
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/roof_tiles_14/roof_tiles_14_disp_2k.jpg" "polyhaven/roof_tiles_14/roof_tiles_14_disp_2k.jpg" 481440
+echo '→ polyhaven/planter_box_03'
+mkdir -p 'polyhaven/planter_box_03'
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/gltf/2k/planter_box_03/planter_box_03_2k.gltf' 'polyhaven/planter_box_03/planter_box_03_2k.gltf' 2790
+mkdir -p 'polyhaven/planter_box_03/textures'
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/planter_box_03/planter_box_03_nor_gl_2k.jpg' 'polyhaven/planter_box_03/textures/planter_box_03_nor_gl_2k.jpg' 2860312
+mkdir -p 'polyhaven/planter_box_03/textures'
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/planter_box_03/planter_box_03_arm_2k.jpg' 'polyhaven/planter_box_03/textures/planter_box_03_arm_2k.jpg' 2539233
+mkdir -p 'polyhaven/planter_box_03/textures'
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/planter_box_03/planter_box_03_diff_2k.jpg' 'polyhaven/planter_box_03/textures/planter_box_03_diff_2k.jpg' 2373531
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/planter_box_03/planter_box_03.bin' 'polyhaven/planter_box_03/planter_box_03.bin' 420144
 
-echo "→ polyhaven/shrub_01"
-mkdir -p "polyhaven/shrub_01"
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Models/gltf/2k/shrub_01/shrub_01_2k.gltf" "polyhaven/shrub_01/shrub_01_2k.gltf" 2895
-mkdir -p "polyhaven/shrub_01/textures"
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/shrub_01/shrub_01_nor_gl_2k.jpg" "polyhaven/shrub_01/textures/shrub_01_nor_gl_2k.jpg" 2628947
-mkdir -p "polyhaven/shrub_01/textures"
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/shrub_01/shrub_01_arm_2k.jpg" "polyhaven/shrub_01/textures/shrub_01_arm_2k.jpg" 1232008
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/shrub_01/shrub_01.bin" "polyhaven/shrub_01/shrub_01.bin" 5239664
-mkdir -p "polyhaven/shrub_01/textures"
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/shrub_01/shrub_01_diff_2k.jpg" "polyhaven/shrub_01/textures/shrub_01_diff_2k.jpg" 1651989
+echo '→ polyhaven/roof_tiles_14'
+mkdir -p 'polyhaven/roof_tiles_14'
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/roof_tiles_14/roof_tiles_14_diff_2k.jpg' 'polyhaven/roof_tiles_14/roof_tiles_14_diff_2k.jpg' 1389810
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/roof_tiles_14/roof_tiles_14_nor_gl_2k.jpg' 'polyhaven/roof_tiles_14/roof_tiles_14_nor_gl_2k.jpg' 1673189
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/roof_tiles_14/roof_tiles_14_arm_2k.jpg' 'polyhaven/roof_tiles_14/roof_tiles_14_arm_2k.jpg' 696470
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/roof_tiles_14/roof_tiles_14_disp_2k.jpg' 'polyhaven/roof_tiles_14/roof_tiles_14_disp_2k.jpg' 481440
 
-echo "→ polyhaven/shrub_02"
-mkdir -p "polyhaven/shrub_02"
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Models/gltf/2k/shrub_02/shrub_02_2k.gltf" "polyhaven/shrub_02/shrub_02_2k.gltf" 8083
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/shrub_02/shrub_02.bin" "polyhaven/shrub_02/shrub_02.bin" 758692
-mkdir -p "polyhaven/shrub_02/textures"
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/shrub_02/shrub_02_arm_2k.jpg" "polyhaven/shrub_02/textures/shrub_02_arm_2k.jpg" 1039322
-mkdir -p "polyhaven/shrub_02/textures"
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/shrub_02/shrub_02_nor_gl_2k.jpg" "polyhaven/shrub_02/textures/shrub_02_nor_gl_2k.jpg" 1667532
-mkdir -p "polyhaven/shrub_02/textures"
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/shrub_02/shrub_02_diff_2k.jpg" "polyhaven/shrub_02/textures/shrub_02_diff_2k.jpg" 1319985
+echo '→ polyhaven/shrub_01'
+mkdir -p 'polyhaven/shrub_01'
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/gltf/2k/shrub_01/shrub_01_2k.gltf' 'polyhaven/shrub_01/shrub_01_2k.gltf' 2895
+mkdir -p 'polyhaven/shrub_01/textures'
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/shrub_01/shrub_01_nor_gl_2k.jpg' 'polyhaven/shrub_01/textures/shrub_01_nor_gl_2k.jpg' 2628947
+mkdir -p 'polyhaven/shrub_01/textures'
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/shrub_01/shrub_01_arm_2k.jpg' 'polyhaven/shrub_01/textures/shrub_01_arm_2k.jpg' 1232008
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/shrub_01/shrub_01.bin' 'polyhaven/shrub_01/shrub_01.bin' 5239664
+mkdir -p 'polyhaven/shrub_01/textures'
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/shrub_01/shrub_01_diff_2k.jpg' 'polyhaven/shrub_01/textures/shrub_01_diff_2k.jpg' 1651989
 
-echo "→ polyhaven/shrub_03"
-mkdir -p "polyhaven/shrub_03"
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Models/gltf/2k/shrub_03/shrub_03_2k.gltf" "polyhaven/shrub_03/shrub_03_2k.gltf" 7296
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/shrub_03/shrub_03.bin" "polyhaven/shrub_03/shrub_03.bin" 238684
-mkdir -p "polyhaven/shrub_03/textures"
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/shrub_03/shrub_03_nor_gl_2k.jpg" "polyhaven/shrub_03/textures/shrub_03_nor_gl_2k.jpg" 1526365
-mkdir -p "polyhaven/shrub_03/textures"
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/shrub_03/shrub_03_diff_2k.jpg" "polyhaven/shrub_03/textures/shrub_03_diff_2k.jpg" 1520137
-mkdir -p "polyhaven/shrub_03/textures"
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/shrub_03/shrub_03_arm_2k.jpg" "polyhaven/shrub_03/textures/shrub_03_arm_2k.jpg" 1205240
+echo '→ polyhaven/shrub_02'
+mkdir -p 'polyhaven/shrub_02'
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/gltf/2k/shrub_02/shrub_02_2k.gltf' 'polyhaven/shrub_02/shrub_02_2k.gltf' 8083
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/shrub_02/shrub_02.bin' 'polyhaven/shrub_02/shrub_02.bin' 758692
+mkdir -p 'polyhaven/shrub_02/textures'
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/shrub_02/shrub_02_arm_2k.jpg' 'polyhaven/shrub_02/textures/shrub_02_arm_2k.jpg' 1039322
+mkdir -p 'polyhaven/shrub_02/textures'
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/shrub_02/shrub_02_nor_gl_2k.jpg' 'polyhaven/shrub_02/textures/shrub_02_nor_gl_2k.jpg' 1667532
+mkdir -p 'polyhaven/shrub_02/textures'
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/shrub_02/shrub_02_diff_2k.jpg' 'polyhaven/shrub_02/textures/shrub_02_diff_2k.jpg' 1319985
 
-echo "→ polyhaven/shrub_04"
-mkdir -p "polyhaven/shrub_04"
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Models/gltf/2k/shrub_04/shrub_04_2k.gltf" "polyhaven/shrub_04/shrub_04_2k.gltf" 2882
-mkdir -p "polyhaven/shrub_04/textures"
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/shrub_04/shrub_04_arm_2k.jpg" "polyhaven/shrub_04/textures/shrub_04_arm_2k.jpg" 1005689
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/shrub_04/shrub_04.bin" "polyhaven/shrub_04/shrub_04.bin" 749084
-mkdir -p "polyhaven/shrub_04/textures"
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/shrub_04/shrub_04_nor_gl_2k.jpg" "polyhaven/shrub_04/textures/shrub_04_nor_gl_2k.jpg" 1428577
-mkdir -p "polyhaven/shrub_04/textures"
-fetch_one "https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/shrub_04/shrub_04_diff_2k.jpg" "polyhaven/shrub_04/textures/shrub_04_diff_2k.jpg" 1202317
+echo '→ polyhaven/shrub_03'
+mkdir -p 'polyhaven/shrub_03'
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/gltf/2k/shrub_03/shrub_03_2k.gltf' 'polyhaven/shrub_03/shrub_03_2k.gltf' 7296
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/shrub_03/shrub_03.bin' 'polyhaven/shrub_03/shrub_03.bin' 238684
+mkdir -p 'polyhaven/shrub_03/textures'
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/shrub_03/shrub_03_nor_gl_2k.jpg' 'polyhaven/shrub_03/textures/shrub_03_nor_gl_2k.jpg' 1526365
+mkdir -p 'polyhaven/shrub_03/textures'
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/shrub_03/shrub_03_diff_2k.jpg' 'polyhaven/shrub_03/textures/shrub_03_diff_2k.jpg' 1520137
+mkdir -p 'polyhaven/shrub_03/textures'
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/shrub_03/shrub_03_arm_2k.jpg' 'polyhaven/shrub_03/textures/shrub_03_arm_2k.jpg' 1205240
+
+echo '→ polyhaven/shrub_04'
+mkdir -p 'polyhaven/shrub_04'
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/gltf/2k/shrub_04/shrub_04_2k.gltf' 'polyhaven/shrub_04/shrub_04_2k.gltf' 2882
+mkdir -p 'polyhaven/shrub_04/textures'
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/shrub_04/shrub_04_arm_2k.jpg' 'polyhaven/shrub_04/textures/shrub_04_arm_2k.jpg' 1005689
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/gltf/4k/shrub_04/shrub_04.bin' 'polyhaven/shrub_04/shrub_04.bin' 749084
+mkdir -p 'polyhaven/shrub_04/textures'
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/shrub_04/shrub_04_nor_gl_2k.jpg' 'polyhaven/shrub_04/textures/shrub_04_nor_gl_2k.jpg' 1428577
+mkdir -p 'polyhaven/shrub_04/textures'
+fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/shrub_04/shrub_04_diff_2k.jpg' 'polyhaven/shrub_04/textures/shrub_04_diff_2k.jpg' 1202317
 
 # SKIPPED polyhaven/fir_tree_01 — 486.6 MB, see download-heavy.sh
 # SKIPPED polyhaven/pine_tree_01 — 936.7 MB, see download-heavy.sh

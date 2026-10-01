@@ -14,6 +14,7 @@ Run `bash assets-src/download.sh` to fetch everything into place.
 | `ambientcg/Asphalt026A` | material | 1 file(s), 32.2 MB | elmsgate, greenhollow, villa-carpathia |
 | `ambientcg/Concrete034` | material | 1 file(s), 10.1 MB | elmsgate, greenhollow, villa-carpathia |
 | `ambientcg/Gravel023` | material | 1 file(s), 29.9 MB | elmsgate, greenhollow |
+| `ambientcg/PavingStones137` | material | 1 file(s), 25.9 MB | greenhollow |
 | `polyhaven/ArmChair_01` | model | 5 file(s), 2.7 MB | greenhollow, villa-carpathia |
 | `polyhaven/clay_plaster` | material | 4 file(s), 7.1 MB | elmsgate, greenhollow, villa-carpathia |
 | `polyhaven/CoffeeTable_01` | model | 5 file(s), 2.1 MB | greenhollow, villa-carpathia |
@@ -49,4 +50,4 @@ times, and a BVH has to be built over it either way. These want decimating to a
 scatter LOD first. `download.sh` skips them; `download-heavy.sh` fetches them
 if you want the originals to decimate from.
 
-Fetched by `download.sh`: **162.0 MB** across 17 assets.
+Fetched by `download.sh`: **187.8 MB** across 18 assets.

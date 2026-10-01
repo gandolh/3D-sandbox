@@ -39,8 +39,19 @@ export const Material = z.strictObject({
   label: z.string().min(1),
   /** Where the maps come from. `procedural` means no texture set at all. */
   source: z.enum(["polyhaven", "ambientcg", "procedural"]),
-  /** Asset slug at the source, e.g. `plaster_brick_pattern`. */
-  slug: z.string().max(128).optional(),
+  /**
+   * Asset slug at the source, e.g. `plaster_brick_pattern`.
+   *
+   * `AssetId`'s character class without the `/`: a slug is one path segment,
+   * joined as `<source>/<slug>` into download paths and generated shell, so a
+   * separator would let it name a directory outside its source. Unconstrained,
+   * a newline in it ended a comment in `download.sh` and ran the rest.
+   */
+  slug: z
+    .string()
+    .regex(/^[A-Za-z0-9][A-Za-z0-9_.-]*$/, "source slug: letters, digits, `_`, `.`, `-`")
+    .max(128)
+    .optional(),
   /**
    * sRGB hex. The whole surface when `source` is `procedural`, and the
    * stand-in until the maps are downloaded when it is not — so a textured

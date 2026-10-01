@@ -39,6 +39,28 @@ describe("strictness", () => {
     doc.solar.time = "25:00";
     expect(() => SceneDocument.parse(doc)).toThrow();
   });
+
+  // A slug reaches `download.sh`. Each of these once parsed, linted clean and
+  // could be persisted; the first one ran its `$(…)` when the script did.
+  it.each([
+    ["a newline and a command", "x\n$(touch pwned) #"],
+    ["a double quote", 'x"y'],
+    ["a single quote", "x'y"],
+    ["a space", "clay plaster"],
+    ["a path separator", "../escape"],
+  ])("rejects a material slug containing %s", (_, slug) => {
+    const doc = baseScene();
+    doc.materials = { m: { label: "M", source: "ambientcg", slug } };
+    expect(() => SceneDocument.parse(doc)).toThrow();
+  });
+
+  it("accepts the slugs the sources actually use", () => {
+    for (const slug of ["clay_plaster", "Asphalt026A", "roof_tiles_14", "PavingStones137"]) {
+      const doc = baseScene();
+      doc.materials = { m: { label: "M", source: "polyhaven", slug } };
+      expect(() => SceneDocument.parse(doc), slug).not.toThrow();
+    }
+  });
 });
 
 describe("defaults", () => {
