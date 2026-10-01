@@ -14,8 +14,9 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
  * Loads the glTF the manifest knows about, once, into an `AssetSource`.
  *
  * The index comes from the dev server rather than a committed file, because the
- * downloads themselves are gitignored — 17 assets are 135 MB — and an index of
- * files that are not there would be wrong on every fresh clone.
+ * downloads themselves are gitignored — their sizes are in
+ * `assets-src/DOWNLOADS.md`, generated from the scenes — and an index of files
+ * that are not there would be wrong on every fresh clone.
  *
  * Every failure resolves to "no asset", never to a throw. A production build has
  * no `/assets-src` at all, and the correct behaviour there is the proxy, not a
@@ -44,7 +45,7 @@ export async function loadAssets(signal?: AbortSignal): Promise<LoadedAssets> {
   /**
    * Stop, if the caller has stopped caring.
    *
-   * The signal used to reach only `index.json`, so an unmount let all 273 MB
+   * The signal used to reach only `index.json`, so an unmount let every asset
    * finish downloading, decoded every glTF and uploaded every texture — and
    * then the guarded `.then` discarded the lot with no handle to dispose it,
    * while the remount started the same download again. Checked between stages

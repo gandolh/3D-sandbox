@@ -1,6 +1,6 @@
 ---
 summary: Where scene assets come from, what the CC0 libraries actually cover, how invented slugs are now caught, and the vegetation weight that makes photoreal trees unusable without decimation.
-updated: 2026-09-11
+updated: 2026-10-01
 ---
 
 # Assets
@@ -50,7 +50,9 @@ commits:
 | `ArmChair_01` | 0.1 MB | 2.5 MB | 2.7 MB |
 | everything else | — | — | under 11 MB each |
 
-Three trees are **1,533 MB**; the other seventeen assets together are 88 MB.
+Three trees are **1,533 MB**; every other asset is under 11 MB. The current
+totals are in `assets-src/DOWNLOADS.md`, which `npm run assets` regenerates —
+this page once carried them too, and they went stale within a fortnight.
 
 This contradicts the sizing behind the two-tier decision, which says "a photoreal
 tree is 50–200k triangles". It is out by roughly two orders of magnitude — 905 MB
@@ -61,8 +63,8 @@ is more right than it knew; the *number* in it was wrong.
 once or 284 times: it still has to reach the GPU, and a BVH still has to be built
 over it. Tiering saves draw calls and authoring effort, not bytes.
 
-So `npm run assets` splits its output. `download.sh` fetches the 88 MB that is
-usable as-is; `download-heavy.sh` fetches the trees separately and is explicitly
+So `npm run assets` splits its output. `download.sh` fetches what is usable
+as-is; `download-heavy.sh` fetches the trees separately and is explicitly
 a **bake source**, not something to commit.
 
 ### Baking an impostor

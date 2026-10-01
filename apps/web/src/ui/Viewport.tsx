@@ -260,7 +260,7 @@ export function Viewport() {
 
     // Models arrive after the first frame. The scene is already standing by
     // then, built from proxies — which is the point: the viewport is usable
-    // immediately and improves, rather than waiting on 135 MB of glTF.
+    // immediately and improves, rather than waiting on every glTF to download.
     const assetLoad = new AbortController();
     void loadAssets(assetLoad.signal).then((loaded) => {
       if (assetLoad.signal.aborted) return;
