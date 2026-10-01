@@ -1,4 +1,4 @@
-import type { SceneDocument } from "@solstice/schema";
+import { degToRad, type SceneDocument } from "@solstice/schema";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { deriveColliders } from "../src/colliders.js";
 import { initPhysics, PhysicsWorld } from "../src/world.js";
@@ -185,6 +185,73 @@ describe("placements collide with each other", () => {
     const result = world.dropToRest([2, 3, 2], { halfExtents: [0.08, 0.08, 0.08] });
     expect(result.restingOn).not.toBe("table-01");
     world.dispose();
+  });
+});
+
+/**
+ * A dropped box falls in the orientation it was authored with.
+ *
+ * Every test above drops an axis-aligned box, which is why none of them could
+ * fail on this: the dropped body was never rotated, and the rays that find what
+ * it rests on were laid out axis-aligned too. A 3 m bench turned 90° was
+ * dropped across a footprint it does not have, landed on a table it cannot
+ * reach, and the document recorded it hovering at table height.
+ */
+describe("a rotated drop", () => {
+  // A 1 × 1 m table, 0.75 m tall, centred at (1.5, 2.5) on the slab.
+  const sizes = {
+    get: (id: string) => (id === "a/table" ? ([1, 0.75, 1] as const) : undefined),
+  };
+  const BENCH: [number, number, number] = [1.5, 0.2, 0.2];
+  const TABLE_TOP = 0.75;
+
+  let tabled: PhysicsWorld;
+  beforeAll(async () => {
+    const doc = baseScene();
+    tabled = await PhysicsWorld.create(
+      {
+        ...doc,
+        subject: {
+          ...doc.subject,
+          placements: [{ id: "table", asset: "a/table", position: [1.5, 0, 2.5], rotationY: 0, scale: 1 }],
+        },
+      },
+      sizes,
+    );
+  });
+  afterAll(() => tabled.dispose());
+
+  const drop = (x: number, z: number, degrees: number) =>
+    tabled.dropToRest([x, 3, z], { halfExtents: BENCH, rotationY: degToRad(degrees) });
+
+  it("lands a bench on the table when it reaches it", () => {
+    // Unrotated, the bench spans x ∈ [1.2, 4.2] — over the table's [1, 2].
+    const result = drop(2.7, 2.5, 0);
+    expect(result.restingOn).toBe("table");
+    expect(result.position[1]).toBeCloseTo(TABLE_TOP + BENCH[1], 3);
+  });
+
+  it("lands the same bench turned 90° on the floor, because it no longer reaches", () => {
+    // Turned, it spans x ∈ [2.5, 2.9]: clear of the table by half a metre.
+    const result = drop(2.7, 2.5, 90);
+    expect(result.restingOn).not.toBe("table");
+    expect(result.position[1]).toBeCloseTo(BENCH[1], 3);
+  });
+
+  it("lands a bench on the table only once it is turned to reach it", () => {
+    // Unrotated it spans z ∈ [3.6, 4.0], behind the table's [2, 3]; turned 90°
+    // it spans z ∈ [2.3, 5.3] and crosses it.
+    expect(drop(1.5, 3.8, 0).restingOn).not.toBe("table");
+    const turned = drop(1.5, 3.8, 90);
+    expect(turned.restingOn).toBe("table");
+    expect(turned.position[1]).toBeCloseTo(TABLE_TOP + BENCH[1], 3);
+  });
+
+  it("finds a table under the middle of a bench resting across it", () => {
+    // 3 m across a 1 m table, centred: every corner is over the floor.
+    const result = drop(1.5, 2.5, 0);
+    expect(result.restingOn).toBe("table");
+    expect(result.position[1]).toBeCloseTo(TABLE_TOP + BENCH[1], 3);
   });
 });
 

@@ -5,6 +5,14 @@ import { type CuboidCollider, deriveColliders, type PlacementSizes } from "./col
 export interface DropOptions {
   /** Half-extents of the box being placed. */
   halfExtents?: [number, number, number];
+  /**
+   * Its turn about Y, in radians — the same field and unit as a placement
+   * collider's. The box falls in this orientation rather than axis-aligned,
+   * because a 3 m bench turned 90° occupies a different 3 m than the one an
+   * unrotated box would test, and it used to land on furniture it could not
+   * reach.
+   */
+  rotationY?: number;
   /** Give up after this many steps rather than spinning on a rolling object. */
   maxSteps?: number;
   /** Linear speed below which the object counts as at rest, m/s. */
@@ -105,6 +113,7 @@ export class PhysicsWorld {
     const body = this.world.createRigidBody(
       RAPIER.RigidBodyDesc.dynamic()
         .setTranslation(...from)
+        .setRotation(quaternionFromY(options.rotationY ?? 0))
         .lockRotations(),
     );
     const collider = this.world.createCollider(RAPIER.ColliderDesc.cuboid(...halfExtents), body);
@@ -133,6 +142,10 @@ export class PhysicsWorld {
 
     const t = body.translation();
     const position: [number, number, number] = [t.x, t.y, t.z];
+    // Read off the body rather than from `options`, so the footprint probed is
+    // the footprint that fell — they cannot disagree.
+    const q = body.rotation();
+    const yaw = 2 * Math.atan2(q.y, q.w);
 
     // Remove the dropped body *before* probing. A downward ray from just inside
     // the box's own bottom face otherwise hits the box itself at toi 0, and the
@@ -143,7 +156,7 @@ export class PhysicsWorld {
     // Snap to the surface. Rapier lets a resting body settle a centimetre or
     // two into what it rests on — correct for a solver, wrong for an authoring
     // aid, where "on the floor" should mean exactly on the floor.
-    const surface = this.surfaceBelow(position, halfExtents);
+    const surface = this.surfaceBelow(position, halfExtents, yaw);
     if (surface !== null) position[1] = surface.y + halfExtents[1];
 
     // Put back whatever this drop was told to ignore, before anything else
@@ -167,16 +180,23 @@ export class PhysicsWorld {
   /**
    * What is directly beneath a resting box, in the document's own language.
    *
-   * **Five rays, not one.** A single ray from the box's centre only finds what
-   * is under its *middle*, and a box does not have to rest on its middle —
-   * anything holding up a corner is invisible to it. That is not a corner case
-   * here, it is the common one: placement colliders carry a `rotationY`, so a
-   * 0.78 × 0.83 armchair turned 152° has a **1.08 m** footprint, and the
-   * coffee table beside it comes to rest on a chair arm its centre ray sails
-   * straight past. The drop worked and reported "settled on nothing", because
-   * nothing was under the middle.
+   * **A grid of rays over the footprint, not one.** A single ray from the box's
+   * centre only finds what is under its *middle*, and a box does not have to
+   * rest on its middle — anything holding up a corner is invisible to it. That
+   * is not a corner case here, it is the common one: a coffee table comes to
+   * rest on a chair arm its centre ray sails straight past, and reports
+   * "settled on nothing".
    *
-   * All five share one origin height, so the smallest time-of-impact is the
+   * Corners alone are not enough either: a 3 m bench resting across a 1 m
+   * table has the table under its middle third and nothing under any corner.
+   * So the rays are spread over the whole footprint, no further apart than
+   * `SPACING`.
+   *
+   * The grid is laid out in the box's own frame and turned by `rotationY`. It
+   * used to be axis-aligned while the box was not, so a bench turned 90° was
+   * probed — and dropped — across a footprint it does not have.
+   *
+   * All rays share one origin height, so the smallest time-of-impact is the
    * highest surface — which is what the box is actually resting on.
    *
    * Every hit is gathered rather than just the first, because a building's floor
@@ -189,6 +209,7 @@ export class PhysicsWorld {
   private surfaceBelow(
     position: [number, number, number],
     halfExtents: [number, number, number],
+    rotationY: number,
   ): { entity: string; y: number } | null {
     // Start above the box's underside so a body that sank into the surface is
     // still measured against the surface, not from inside it.
@@ -198,13 +219,19 @@ export class PhysicsWorld {
     const inset = 0.02;
     const dx = Math.max(0, halfExtents[0] - inset);
     const dz = Math.max(0, halfExtents[2] - inset);
-    const origins: [number, number][] = [
-      [position[0], position[2]],
-      [position[0] - dx, position[2] - dz],
-      [position[0] + dx, position[2] - dz],
-      [position[0] + dx, position[2] + dz],
-      [position[0] - dx, position[2] + dz],
-    ];
+    const cos = Math.cos(rotationY);
+    const sin = Math.sin(rotationY);
+    const nx = Math.ceil((2 * dx) / SPACING);
+    const nz = Math.ceil((2 * dz) / SPACING);
+    const origins: [number, number][] = [];
+    for (let i = 0; i <= nx; i++) {
+      for (let j = 0; j <= nz; j++) {
+        // Local to the box, then turned the way `quaternionFromY` turns it.
+        const lx = nx === 0 ? 0 : -dx + (2 * dx * i) / nx;
+        const lz = nz === 0 ? 0 : -dz + (2 * dz * j) / nz;
+        origins.push([position[0] + lx * cos + lz * sin, position[2] - lx * sin + lz * cos]);
+      }
+    }
 
     let best: { entity: string; toi: number; specific: boolean } | null = null;
     for (const [ox, oz] of origins) {
@@ -238,6 +265,9 @@ export class PhysicsWorld {
     this.byHandle.clear();
   }
 }
+
+/** The widest gap `surfaceBelow` leaves between two rays under a footprint, m. */
+const SPACING = 0.25;
 
 /** Quaternion for a rotation about Y, which is the only rotation colliders use. */
 function quaternionFromY(angle: number): { x: number; y: number; z: number; w: number } {

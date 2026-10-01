@@ -1,4 +1,4 @@
-import { mmToM, mToMm, wallBearing, wallLength } from "@solstice/schema";
+import { degToRad, mmToM, mToMm, wallBearing, wallLength } from "@solstice/schema";
 import { findEntity, setWallBearing, setWallLength } from "../lib/entities.js";
 import { physicsFor, physicsReady } from "../lib/physics.js";
 import { editDocument, getState, setStatus, useStore } from "../state/store.js";
@@ -282,7 +282,13 @@ function PlacementInspector({ index }: { index: number }) {
     ];
     // Without this the placement lands on its own static collider and never
     // moves — "bench-vine settled on bench-vine".
-    const result = world.dropToRest(from, { halfExtents: half, ignoreEntity: placement.id });
+    const result = world.dropToRest(from, {
+      halfExtents: half,
+      // Radians, as the placement's own collider is turned — the box that falls
+      // has to be the box that is there.
+      rotationY: degToRad(placement.rotationY),
+      ignoreEntity: placement.id,
+    });
 
     edit((p) => {
       p.position = [result.position[0], result.position[1] - half[1], result.position[2]];
