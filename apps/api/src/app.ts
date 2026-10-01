@@ -98,10 +98,35 @@ export async function buildApp(overrides: Partial<Config> = {}): Promise<BuiltAp
     return document;
   });
 
+  /**
+   * Whether a scene file is on disk — asked of the disk, the way `PUT` asks,
+   * because the index is a derived cache and a scene dropped in by hand is a
+   * real scene before any rescan notices it. Asking the index here let a `POST`
+   * replace a hand-written file it had never heard of.
+   *
+   * A file that is present but does not load still counts as present: it is
+   * somebody's work, and refusing to overwrite it is the whole point.
+   */
+  const onDisk = async (id: string): Promise<boolean> => {
+    try {
+      await readSceneFile(config.scenesDir, id);
+      return true;
+    } catch (error) {
+      if (error instanceof SceneNotFoundError) return false;
+      if (error instanceof UnsafeIdError) throw error;
+      return true;
+    }
+  };
+
+  /**
+   * Create. No `x-scene-mtime` precondition, unlike `PUT`: a create has no
+   * earlier read to be stale against, and the existence check above it is the
+   * only guard it needs.
+   */
   app.post<{ Body: unknown }>("/api/scenes", async (request, reply) => {
     const body = request.body as { id?: unknown };
     const id = typeof body?.id === "string" ? body.id : "";
-    if (index.get(id) !== null) {
+    if (await onDisk(id)) {
       return reply.code(409).send({ error: "exists", message: `Scene "${id}" already exists` });
     }
     const { document, bytes } = await writeSceneFile(config.scenesDir, id, request.body);
@@ -117,8 +142,8 @@ export async function buildApp(overrides: Partial<Config> = {}): Promise<BuiltAp
    * from a URL a person typed and the cost of a typo was a **second scene**
    * silently appearing beside the one they meant to edit, with the index
    * dutifully listing it. `POST /api/scenes` is how a scene is created, it
-   * already refuses to clobber, and having exactly one door in is worth more
-   * than the convenience.
+   * refuses to clobber any file on disk — indexed or not — and having exactly
+   * one door in is worth more than the convenience.
    *
    * `x-scene-mtime`, echoed from the read, makes the write conditional. Absent,
    * the write proceeds — a caller that never read the file has nothing to be
@@ -135,8 +160,8 @@ export async function buildApp(overrides: Partial<Config> = {}): Promise<BuiltAp
     }
 
     // Existence is checked here rather than inferred from a failed write, and
-    // against the disk rather than the index — the index is a derived cache and
-    // a scene dropped in by hand is a real scene before any rescan notices it.
+    // against the disk rather than the index — see `onDisk`. A file that is
+    // present but does not load fails here too, which is right for a replace.
     await readSceneFile(config.scenesDir, id);
 
     const { document, bytes } = await writeSceneFile(config.scenesDir, id, request.body, expected);

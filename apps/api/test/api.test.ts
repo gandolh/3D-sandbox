@@ -136,6 +136,34 @@ describe("writing", () => {
     expect((await app.inject({ method: "POST", url: "/api/scenes", payload: fresh })).statusCode).toBe(201);
     expect((await app.inject({ method: "POST", url: "/api/scenes", payload: fresh })).statusCode).toBe(409);
   });
+
+  // The test above creates the first scene through the API, so the index knows
+  // about it and the test passes whichever of the two is asked. This one writes
+  // the file behind the API's back, so only a check against the disk refuses.
+  it("refuses to create over a hand-written file the index has not seen", async () => {
+    const handmade = { ...structuredClone(reference), id: "handmade", title: "Precious Hand-Edited Scene" };
+    const path = join(dir, "handmade.scene.json");
+    await writeFile(path, serializeScene(handmade as never), "utf8");
+    const before = await readFile(path, "utf8");
+    expect(index.get("handmade")).toBeNull();
+
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/scenes",
+      payload: { ...handmade, title: "Something else entirely" },
+    });
+    expect(res.statusCode).toBe(409);
+    expect(res.json()).toMatchObject({ error: "exists" });
+    expect(await readFile(path, "utf8")).toBe(before);
+  });
+
+  it("counts a file that does not load as present", async () => {
+    const path = join(dir, "broken.scene.json");
+    await writeFile(path, "{ not json", "utf8");
+    const fresh = { ...structuredClone(reference), id: "broken", title: "Broken" };
+    expect((await app.inject({ method: "POST", url: "/api/scenes", payload: fresh })).statusCode).toBe(409);
+    expect(await readFile(path, "utf8")).toBe("{ not json");
+  });
 });
 
 describe("deleting", () => {
