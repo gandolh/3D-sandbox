@@ -1,6 +1,18 @@
-import { scatterInstances, wallSolid } from "@solstice/geometry";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { buildRun, scatterInstances, wallSolid } from "@solstice/geometry";
 import { wallColliders } from "@solstice/physics";
-import { estimateScatterInstances, type Level, ScatterField, type Wall, wallAngle } from "@solstice/schema";
+import {
+  estimateScatterInstances,
+  type Level,
+  lintScene,
+  POST_WIDTH,
+  type Run,
+  ScatterField,
+  SceneDocument,
+  type Wall,
+  wallAngle,
+} from "@solstice/schema";
 import { describe, expect, it } from "vitest";
 
 /**
@@ -146,5 +158,65 @@ describe("scatter instance count", () => {
     // cell area and quote 133.
     const f = field({ arrangement: "rows", rowSpacing: [3, 4] });
     expect(estimateScatterInstances(f).instances).toBe(13 * 10);
+  });
+});
+
+/**
+ * `run-is-well-formed` warns that a colonnade is "narrower than its own posts —
+ * both rows land in the same place". That is a claim about the generated mesh,
+ * so it is checked against the generated mesh: the rule must fire exactly when
+ * the two rows of posts really do overlap.
+ *
+ * It did not. The constant both sides read was called `POST_HALF_WIDTH`, the
+ * generator used it as the whole section, the rule doubled it — and every
+ * colonnade between 80 and 160 mm wide got a warning about a collision that
+ * left a visible gap.
+ */
+describe("post width", () => {
+  const greenhollow = SceneDocument.parse(
+    JSON.parse(
+      readFileSync(fileURLToPath(new URL("../../../scenes/greenhollow.scene.json", import.meta.url)), "utf8"),
+    ),
+  );
+
+  /** A straight colonnade along +X, so its two rows differ only in Z. */
+  const colonnade = (width: number): Run => ({
+    id: "col",
+    kind: "colonnade",
+    path: [
+      [0, 0],
+      [6, 0],
+    ],
+    width,
+    height: 3,
+    spacing: 3,
+    material: greenhollow.subject.runs.find((r) => r.kind === "colonnade")!.material,
+  });
+
+  /** The gap between the two rows' first posts, face to face. Negative overlaps. */
+  const gap = (width: number): number => {
+    const { structure } = buildRun(colonnade(width));
+    const [a, b] = structure.slice(0, 2).map((g) => {
+      g.computeBoundingBox();
+      return g.boundingBox!;
+    });
+    return Math.max(a!.min.z, b!.min.z) - Math.min(a!.max.z, b!.max.z);
+  };
+
+  const warns = (width: number): boolean => {
+    const doc = structuredClone(greenhollow);
+    doc.subject.runs = [colonnade(width)];
+    return lintScene(doc).some((f) => f.rule === "run-is-well-formed" && f.message.includes("narrower"));
+  };
+
+  it("draws a post exactly the constant's width", () => {
+    const [post] = buildRun(colonnade(1)).structure;
+    post!.computeBoundingBox();
+    expect(post!.boundingBox!.max.x - post!.boundingBox!.min.x).toBeCloseTo(POST_WIDTH, 6);
+    expect(post!.boundingBox!.max.z - post!.boundingBox!.min.z).toBeCloseTo(POST_WIDTH, 6);
+  });
+
+  it.each([0.05, 0.079, 0.081, 0.12, 0.159, 0.3])("warns at %f m exactly when the rows overlap", (width) => {
+    expect(warns(width)).toBe(gap(width) < 0);
   });
 });

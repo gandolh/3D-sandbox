@@ -1,13 +1,13 @@
-import { type Plan, POST_HALF_WIDTH, type Run } from "@solstice/schema";
+import { type Plan, POST_WIDTH, type Run } from "@solstice/schema";
 import * as THREE from "three";
 import { ensureStandardAttributes } from "../attributes.js";
 import { mergeSimple } from "../context/scatter.js";
 import { mulberry32, randomBetween } from "../random.js";
 
 // Post section, in metres. Slim enough to read as metalwork at render scale.
-// Shared with `run-is-well-formed`, which warns when a run is narrower than two
-// posts — a check that means nothing unless it is warning about *this* number.
-const POST = POST_HALF_WIDTH;
+// Shared with `run-is-well-formed`, which warns when a run is narrower than one
+// post — a check that means nothing unless it is warning about *this* number.
+const POST = POST_WIDTH;
 /** Beam section for a pergola's rafters. */
 const BEAM = 0.07;
 

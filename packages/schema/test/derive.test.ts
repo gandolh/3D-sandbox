@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 import {
   lintScene,
   MAX_COORDINATE,
-  POST_HALF_WIDTH,
   polygonNetArea,
   ScatterField,
   SceneDocument,
@@ -44,16 +43,17 @@ const narrowFindings = (width: number) => {
 };
 
 describe("post width", () => {
-  // These two bracket the rule's threshold *in terms of the generator's own
-  // constant*. Re-inline the literal `0.08` in the rule and change the post,
-  // and this is what goes red — which is the whole point of the move: the
-  // rule was checking a copy of the number rather than the number.
-  it("warns below two posts", () => {
-    expect(narrowFindings(2 * POST_HALF_WIDTH - 0.001)).toHaveLength(1);
+  // Absolute widths, not expressions of the constant: the previous version of
+  // these tests bracketed `2 * POST_HALF_WIDTH` and so asserted whatever the
+  // rule computed, bug included. The geometric fact — the rule fires exactly
+  // when the generated rows overlap — is asserted against the real mesh in
+  // `apps/web/test/shared-primitives.test.ts`, the one workspace that sees both.
+  it("stays quiet for a 120 mm colonnade, whose rows stand 40 mm apart", () => {
+    expect(narrowFindings(0.12)).toHaveLength(0);
   });
 
-  it("stays quiet at two posts", () => {
-    expect(narrowFindings(2 * POST_HALF_WIDTH + 0.001)).toHaveLength(0);
+  it("warns for a 50 mm one, whose rows overlap", () => {
+    expect(narrowFindings(0.05)).toHaveLength(1);
   });
 });
 

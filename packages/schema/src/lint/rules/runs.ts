@@ -1,4 +1,4 @@
-import { POST_HALF_WIDTH } from "../../derive/constants.js";
+import { POST_WIDTH } from "../../derive/constants.js";
 import type { RawFinding, Rule } from "../types.js";
 
 /**
@@ -37,7 +37,10 @@ export const runIsWellFormed: Rule = {
       // about the *span* between two rows, which only a pergola and a colonnade
       // have. It used to fire on every railing, and the honest reading of that
       // warning was that the geometry was wrong rather than the number.
-      if (run.kind !== "hedge" && run.kind !== "fence" && run.width < 2 * POST_HALF_WIDTH) {
+      //
+      // One post, not two: rows sit at ±width/2 and each post is `POST_WIDTH`
+      // across, so the faces meet at `width === POST_WIDTH`.
+      if (run.kind !== "hedge" && run.kind !== "fence" && run.width < POST_WIDTH) {
         out.push({
           rule: "run-is-well-formed",
           severity: "warning",

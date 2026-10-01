@@ -711,7 +711,9 @@ describe("run-is-well-formed", () => {
   });
 
   it("warns when a run is narrower than its own two rows of posts", () => {
-    const found = runFindings({ width: 0.1 });
+    // 50 mm: under one 80 mm post, so the rows overlap. This was 0.1 m, which
+    // leaves a 20 mm gap — the test asserted the false positive of brief 63.
+    const found = runFindings({ width: 0.05 });
     expect(found).toHaveLength(1);
     expect(found[0]!.severity).toBe("warning");
     expect(found[0]!.message).toMatch(/narrower than its own posts/);
@@ -721,8 +723,9 @@ describe("run-is-well-formed", () => {
     // The guard added by brief 21. A fence's `width` is the thickness of the
     // thing, so a small number is correct, and this rule used to call every
     // railing a mistake.
-    expect(runFindings({ kind: "fence", width: 0.1 })).toHaveLength(0);
-    expect(runFindings({ kind: "hedge", width: 0.1 })).toHaveLength(0);
+    // Narrow enough that a colonnade *would* warn, or this proves nothing.
+    expect(runFindings({ kind: "fence", width: 0.05 })).toHaveLength(0);
+    expect(runFindings({ kind: "hedge", width: 0.05 })).toHaveLength(0);
   });
 
   it("warns when the post spacing exceeds the whole path", () => {
