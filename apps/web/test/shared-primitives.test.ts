@@ -13,6 +13,7 @@ import {
   type Wall,
   wallAngle,
 } from "@solstice/schema";
+import * as THREE from "three";
 import { describe, expect, it } from "vitest";
 
 /**
@@ -84,6 +85,65 @@ describe("wall orientation", () => {
     // `rotateY` turns +X toward -Z, so the plan direction is (cos, -sin).
     expect(Math.cos(yaw) * length).toBeCloseTo(5 - 1);
     expect(-Math.sin(yaw) * length).toBeCloseTo(3 - -2);
+  });
+});
+
+/**
+ * A run stands against the walls, so it has to turn the way they do.
+ *
+ * `runs.ts` used to carry its own copy of `wallAngle`'s `atan2`. Identical
+ * today, which is why nothing failed — and `open-questions.md` records that the
+ * compass may yet change "by one sign", at which point a copy keeps the old one
+ * and every pergola, fence, hedge and colonnade turns out of line with the walls
+ * beside it. These read the run's direction out of its vertices and hold it to
+ * `wallAngle`'s, so a run that stops following the walls fails here.
+ */
+describe("run orientation", () => {
+  const run = (kind: Run["kind"], width: number): Run => ({
+    id: "r",
+    kind,
+    path: [wall.start, wall.end],
+    width,
+    height: 2.4,
+    spacing: 20,
+    material: "m",
+  });
+  const yaw = wallAngle(wall);
+  /** Unit direction of the wall in plan space — `(cos θ, -sin θ)`. */
+  const dir = [Math.cos(yaw), -Math.sin(yaw)] as const;
+  const length = Math.hypot(5 - 1, 3 - -2);
+  const centre = (g: THREE.BufferGeometry): [number, number] => {
+    g.computeBoundingBox();
+    const c = g.boundingBox!.getCenter(new THREE.Vector3());
+    return [c.x, c.z];
+  };
+
+  it("lays a hedge along the line `wallAngle` gives its path", () => {
+    const [hedge] = buildRun(run("hedge", 0.1)).structure;
+    const position = hedge!.getAttribute("position");
+    const [mx, mz] = [(1 + 5) / 2, (-2 + 3) / 2];
+    for (let i = 0; i < position.count; i++) {
+      const x = position.getX(i) - mx;
+      const z = position.getZ(i) - mz;
+      // Every vertex is at most half the length along the wall's direction and
+      // at most half the width across it. A hedge turned by any other angle
+      // puts its ends far off that line.
+      expect(Math.abs(x * dir[0] + z * dir[1])).toBeLessThanOrEqual(length / 2 + 1e-6);
+      expect(Math.abs(-x * dir[1] + z * dir[0])).toBeLessThanOrEqual(0.05 + 1e-6);
+    }
+  });
+
+  it("stands a colonnade's two rows square across that line", () => {
+    // The offsets that put the rows either side are `sin`/`cos` of the same
+    // angle, so they have to agree with `(cos θ, -sin θ)` as well.
+    const { structure } = buildRun(run("colonnade", 1.2));
+    const [a, b] = [centre(structure[0]!), centre(structure[1]!)];
+    const across: [number, number] = [b[0] - a[0], b[1] - a[1]];
+    expect(across[0] * dir[0] + across[1] * dir[1]).toBeCloseTo(0, 6);
+    expect(Math.hypot(across[0], across[1])).toBeCloseTo(1.2, 6);
+    // Both rows start at the path's first point, not somewhere along it.
+    expect((a[0] + b[0]) / 2).toBeCloseTo(wall.start[0], 6);
+    expect((a[1] + b[1]) / 2).toBeCloseTo(wall.start[1], 6);
   });
 });
 
