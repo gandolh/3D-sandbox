@@ -75,3 +75,20 @@ in a comment rather than leaving it to be re-found.
 - The new test fails if the guard is reverted to `index.get(id)` — verify by
   mutation, do not assume.
 - `npm run check` exits 0.
+
+## Outcome — 2026-10-01
+
+`POST /api/scenes` now asks the disk through `onDisk` (in `app.ts`), which wraps the
+same `readSceneFile` the `PUT` handler uses, so there is still one way to ask. Not-found
+means absent; an unsafe id still throws (400); **anything else, including a
+file that exists but does not parse, counts as present**, because a broken
+hand-edited file is still somebody's work and the point is not to overwrite it.
+Still 409 with the same body. The create route's missing `x-scene-mtime`
+precondition is now explained in a comment (nothing to be stale against). The
+`PUT` doc comment's "already refuses to clobber" now says "any file on disk —
+indexed or not".
+
+Two tests write the file behind the API's back, so the index never sees it:
+a valid hand-made scene (409, bytes unchanged) and an unparseable one (409,
+bytes unchanged). **Mutation:** reverting the guard to `index.get(id)` fails
+both.

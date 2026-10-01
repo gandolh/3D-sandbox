@@ -83,3 +83,24 @@ not that it is correct.
 - A window the plane does cut is drawn exactly as it is today.
 - The new test fails if the guard is removed — verify by mutation.
 - `npm run check` exits 0.
+
+## Outcome — 2026-10-01
+
+**The bug was live in the shipped drawing.** Greenhollow's `w-e2` (sill 1.75,
+head 2.35) is a clerestory, drawn glazed across solid poché. The old
+count-based test passed because it counted it.
+
+The `cutsThrough` guard now runs before either kind is drawn. Any opening the
+plane does not cut is **one dashed line along the wall**, the same mark the door
+threshold already used. The reasoning is in the doc comment: a window above the
+plane is an overhead element (conventionally dashed), one below it is hidden
+inside the wall (dashed), and a door below it is a seen threshold. All three
+say "an opening here, not at this height". The "closes the hole at the cut"
+comment is rewritten.
+
+Tests: the Greenhollow test now asserts glazing equals the number of *cut*
+windows and requires at least one uncut window. A new block swaps one house
+wall's openings: a sill-1.8/height-0.6 clerestory leaves the poché count
+equal to the bare wall's, adds no glazing, and adds one dashed line. An
+ordinary window still adds a glazing line and a poché break. **Mutation:**
+restricting the guard to doors fails 3.

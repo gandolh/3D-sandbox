@@ -66,3 +66,23 @@ can only ever select one of two, and `SceneTree` renders duplicate React keys.
   a test to fail (or the rule to cover it automatically).
 - The tests fail if the new entries are removed — verify by mutation.
 - `npm run check` exits 0.
+
+## Outcome — 2026-10-01
+
+**Chose the generic walk.** The rule now walks the parsed document and claims
+every object below the root that has a string `id`, at its natural path
+(`subject.levels[0].rooms[1]`, `context.paving[1]`). The root's `id` (the
+scene name) is the only exclusion. A new id-bearing entity kind is claimed the
+day it is added, with no list to forget. The trade-off is in the comment:
+anything later given a field called `id` is treated as an entity id, which is
+the right default because references in this schema are named for what they
+point at (`level`, `target`, `material`).
+
+Tests: duplicate rooms, a room colliding with a wall, and duplicate paving,
+each asserting the reported path. Plus a sweep over Greenhollow, which carries
+**all 14 id-bearing kinds** (asserted). Each kind in turn is given another
+entity's id, and the collision must be reported. The sweep finds entities with
+its own traversal rather than the rule's. **Mutation:** restoring the original
+hand-listed rule fails exactly the room and paving tests, and the sweep names
+`subject.levels[].rooms[]` and `context.paving[]`. No shipped scene had a
+latent collision; the scenes still build.

@@ -78,3 +78,38 @@ This is *why* baking them would not have helped.
   `polyhaven/impostor` entry.
 - Baking two assets from the same source leaves both atlases intact.
 - `npm run check` exits 0.
+
+## Outcome — 2026-10-01
+
+**It was three defects, not one.** Baking would not have worked at all:
+
+1. **The server did not start.** `serve.ts` imported `./paths.js`, which Node's
+   type stripping does not remap to `.ts`. This is the same defect brief 60
+   fixed for the API, and `assets/` is under no tsconfig, so nothing caught it.
+   Now `./paths.ts`.
+2. **The page's upload was refused.** `impostor.js` POSTs the `asset` query
+   parameter, which is the **glTF path** (`polyhaven/pine_tree_01/…_2k.gltf`).
+   Brief 31 tightened `ASSET_ID` to exactly `<source>/<slug>`, so every real
+   upload got a 400. The page now sends the first two segments.
+3. **The write path**, as the brief says. Read against (2), `dirname` was
+   *correct* for the glTF path the page used to send, and became wrong when
+   brief 31 changed what the id had to be.
+
+The write is now `assets/bake/write.ts` (`impostorDir`, `writeImpostor`),
+testable without binding a port. `ASSET_ID` and `insideRoot` still guard the
+corrected path, and a bad id is a `BakeTargetError` → 400.
+
+Tests bake into a temp root and read it back with `readManifest`: the impostor
+is attached to the right asset, there is no phantom `polyhaven/impostor`, and
+two same-source bakes leave both atlases. Traversal ids are still refused.
+**Mutation:** restoring `dirname(asset)` fails 3 of 4.
+
+**Verified end to end against the real server.** It starts and serves the page
+(200), and answers a traversal id with 400. A POST for a throwaway
+`polyhaven/zz_bake_probe` wrote `…/zz_bake_probe/impostor/atlas.png`, which
+`readManifest` reported as that asset's impostor (the probe was then
+removed). A full GPU bake was not rerun.
+
+**No committed atlas is at the wrong path.** `tree_small_02`'s is at
+`polyhaven/tree_small_02/impostor/`, so it was evidently placed by hand.
+`open-questions.md`'s conifer entry is corrected.

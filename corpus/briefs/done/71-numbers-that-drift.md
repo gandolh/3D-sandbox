@@ -77,3 +77,38 @@ to apply the policy the README already wrote down.
 - The sweep for other drifting numbers is recorded, including the ones
   deliberately left.
 - `npm run check` exits 0.
+
+## Outcome — 2026-10-01
+
+**Removed rather than corrected:**
+
+- `AssetLoader.ts`: "17 assets are 135 MB" now points at `DOWNLOADS.md`, and
+  "all 273 MB" in the abort comment is now "every asset".
+- `Viewport.tsx`: "waiting on 135 MB of glTF", the same stale figure the brief
+  found, now has no number.
+- `corpus/wiki/assets.md`: "the other seventeen assets together are 88 MB" and
+  "`download.sh` fetches the 88 MB". Both were stale twice over (the real
+  figure is 187.8 MB across 18), and both are now pointers.
+- `corpus/wiki/status.md`: "459 tests pass" was a live count on a current-state
+  page and was already wrong this session (513). It now points at `npm run
+  check`.
+- `.github/workflows/check.yml`: already deleted in `c3c34b2` (2026-09-26),
+  so there was nothing to fix.
+
+**Deliberately left:** dated or historical measurements that record why a
+decision was made (`status.md`'s bundle KB and "255 → 389 tests", the
+`assets.md` table "Measured 2026-09-11", `vite.config.ts`'s source-map 11.2 MB
+vs 4.3 MB, the render-performance black-PNG 44 KB). Also properties of
+specific pinned or upstream files, which cannot drift without the file
+changing: Rapier's "~2 MB of WASM" under an exact pin, `pine_tree_01`'s 905 MB
+and 17.4 M triangles, the "1.5 GB" of heavy trees in `scenes/build.ts`,
+`tree_small_02`'s triangle count, and arithmetic facts like "a 2k RGBA texture
+is ~16 MB". No timing claims remained in live prose; the "9 s warm" left with
+the workflow.
+
+**No `corpus/lint.sh` check — a reasoned no.** Once these figures are gone,
+no live prose figure duplicates a generated one. A checker would have to parse
+English to find the next one, and the policy ("point, do not repeat") is
+cheaper to follow than to enforce. **The more useful finding was elsewhere:**
+the generated file itself was stale, because nothing verifies material slugs.
+That is filed as `todos/material-slugs-are-never-verified.md`, not built here.

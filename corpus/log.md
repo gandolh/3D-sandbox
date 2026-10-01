@@ -1121,3 +1121,37 @@ path-traces at 77 s per sample.
 
 **430 → 459 tests.** Greenhollow's edit path: 98 ms per *keystroke* → 5.8 ms
 per *committed edit*.
+
+## 2026-10-01 — Briefs 61–71: the 2026-09-20 audit, executed
+
+All eleven closed, each fix verified by mutation (revert the fix, watch the new
+test fail). **459 → 513 tests.** Three things are worth carrying forward.
+
+**A mutation can be impossible to catch the way it was asked for, and that is
+a design signal.** Brief 66 asked for tests that fail when the dropped body
+loses its rotation. With the probe's angle passed separately, they could not
+fail: the rays snapped the box onto the right surface whatever the body did.
+Reading the yaw off the body made the requirement testable and the code more
+honest. Brief 68 was the other kind of case: an identical copy of `wallAngle`
+cannot be told apart from a call, so the mutation was the real future instead,
+with the compass flipped and the copy left behind.
+
+**Briefs were wrong in both directions, and only running things showed it.**
+65 was filed as one wrong path; executing it found three defects in series (the
+server did not start, the page's upload was refused, then the path). Any one of
+them alone would have hidden the other two. 67's bug was live in Greenhollow's
+own plan (`w-e2`), under a test that counted it. 69 said the ARM file was
+fetched three times; Chrome's resource timing shows one request per file. What
+tripled was `Texture` objects and GPU uploads (36 → 26), and wall-clock did not
+move.
+
+**Generated files drift too, when nothing checks them.** Rerunning `npm run
+assets` for 62's before/after showed the committed `DOWNLOADS.md`,
+`download.sh` and `verified.json` all missing greenhollow's
+`PavingStones137`. Its material slug was never checked against anything,
+because `asset-resolves` covers models only. Filed as a todo rather than
+widening 71.
+
+Also found in passing: `apps/web` tests import packages from `dist/`, so a
+source mutation needs `tsc --build` before those tests can see it.
+`npm run check` already builds first.

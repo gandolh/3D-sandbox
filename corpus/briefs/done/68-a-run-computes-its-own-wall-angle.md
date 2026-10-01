@@ -80,3 +80,26 @@ exactly what brief 37 was for.
 - A test asserts run-segment rotation equals `wallAngle` for the same endpoints,
   and fails if the local formula is restored — verify by mutation.
 - `npm run check` exits 0.
+
+## Outcome — 2026-10-01
+
+`segments()` uses `wallAngle`, with the readonly `Plan` ends copied into fresh
+tuples at the call site; `wallAngle`'s type is unchanged. **Geometry
+unchanged:** a SHA-256 over every run's vertices and canopy transforms in all
+three scenes was identical before and after (temporary harness, deleted).
+
+The `sin`/`cos` offsets at the three named lines still agree with
+`(cos θ, −sin θ)`, and a test now holds them to it.
+
+**Sweep:** the only other `atan2` over a plan-space pair in `packages/`,
+`apps/`, `scenes/` and `assets/` is in `derive/walls.ts` itself (`wallAngle`,
+`wallBearing`). `physics/world.ts` has one from brief 66, but it converts a
+quaternion to a yaw, not a plan-space pair. There is no third copy.
+
+Agreement tests in `shared-primitives.test.ts`: a hedge along a skewed wall's
+line keeps every vertex within half the length along `wallAngle`'s direction
+and half the width across it. A colonnade's two rows are square across that
+line, `width` apart, and centred on the path start. **Mutation:** an identical
+local copy cannot be told apart from a call by behaviour, so I mutated the
+real scenario instead. With `wallAngle`'s sign flipped, the tests pass when
+runs follow `wallAngle` and both fail when `runs.ts` keeps its own `atan2`.

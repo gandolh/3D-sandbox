@@ -85,3 +85,27 @@ suite currently locks the bug in.
   same constant with no multiplier disagreement between them.
 - The test fails if the `2 *` is reintroduced — verify by mutation.
 - `npm run check` exits 0.
+
+## Outcome — 2026-10-01
+
+Renamed to `POST_WIDTH` (80 mm, the shipped section). The rule now warns at
+`run.width < POST_WIDTH`: rows sit at ±width/2, so the faces meet at exactly one
+post. The constant's comment records how the half/whole confusion arose.
+`runs.ts`'s comment said "narrower than two posts" and now says one. There are
+no other consumers.
+
+**Two tests asserted the bug, not one.** Besides `derive.test.ts`,
+`lint.test.ts` used `width: 0.1` (a 20 mm gap) as its "too narrow" case, and its
+fence/hedge exemption test at 0.1 would have passed trivially after the fix.
+All three now use absolute widths (0.12 quiet, 0.05 warns; exemptions at 0.05).
+
+**The geometric fact is asserted against the mesh.** In
+`apps/web/test/shared-primitives.test.ts`: a generated post's bounding box is
+exactly `POST_WIDTH` square, and for widths 0.05, 0.079, 0.081, 0.12, 0.159 and
+0.3 the rule fires **iff** the two rows' generated posts overlap. **Mutation:**
+reintroducing `2 *` fails the schema test and, after a rebuild, the agreement
+test at exactly 0.081, 0.12 and 0.159, which is the false-positive band.
+
+Note for anyone mutating cross-package code: `apps/web` tests import the
+packages' built `dist/`, so a source mutation is invisible to them until
+`tsc --build` runs. `npm run check` builds first, so the gate is sound.

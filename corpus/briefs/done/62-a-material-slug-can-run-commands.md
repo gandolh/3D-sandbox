@@ -92,3 +92,36 @@ with a space or a quote breaks `mkdir -p "${dir}"` and the single-quoted
 - The bundled scenes still build and `npm run assets` still produces the same
   download list as before.
 - `npm run check` exits 0.
+
+## Outcome — 2026-10-01
+
+**Schema.** `Material.slug` is now `^[A-Za-z0-9][A-Za-z0-9_.-]*$`, which is
+`AssetId`'s character class **without the `/`**. I went stricter than the brief
+suggested: a slug is one path segment, joined as `<source>/<slug>` into
+download paths, so a separator would let it name a directory outside its
+source. Additive with no default, so no `schemaVersion` bump. All bundled slugs
+pass.
+
+**Sink.** The script assembly moved out of the network-bound generator into
+`assets/download-script.ts` (pure, testable). Every interpolated argument goes
+through `shellQuote` (single quotes, `'\''` escaping) and every comment through
+`shellComment` (control characters → `?`), covering the `fetchable`, `missing`
+and `heavy` branches and both scripts. API-supplied URLs and filenames are
+quoted too: the slug was not the only untrusted input. Imported with a `.ts`
+specifier, because the file runs under `node` directly (brief 60's lesson).
+
+**Tests.** The schema rejects a newline/`$(`, both quote kinds, a space and
+`../`. The generated scripts are run under real `bash` in temp dirs with three
+hostile payloads per branch, and the test asserts that no marker file appears.
+A quoted slug containing both quote kinds still lands its file in the right
+directory. **Mutation:** going back to `"${…}"` quoting with raw comments fails
+4 tests; dropping the schema regex fails 5.
+
+**Same download list.** `npm run assets` was run before and after the change.
+`DOWNLOADS.md` and `verified.json` are identical, and both scripts differ only
+in quote characters (checked by diffing with `'`→`"` normalised; `bash -n`
+clean). That run also showed the **committed outputs were already stale**:
+`ambientcg/PavingStones137` (greenhollow) was missing, and the true total is
+187.8 MB across 18 assets, not 162.0 MB across 17. The regenerated files are
+kept. Why nothing caught it is captured in
+`todos/material-slugs-are-never-verified.md`.

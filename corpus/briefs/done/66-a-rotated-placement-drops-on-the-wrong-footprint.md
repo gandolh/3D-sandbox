@@ -80,3 +80,28 @@ beneath it does not do.
 - Both tests fail if the rotation is removed from the dropped body — verify by
   mutation.
 - `npm run check` exits 0.
+
+## Outcome — 2026-10-01
+
+`DropOptions.rotationY` (radians, matching a collider's) turns the dynamic body,
+which keeps `lockRotations()`. `Inspector.drop()` passes
+`degToRad(placement.rotationY)`. That is one line outside the owned files, but
+without it the document would still record the wrong height.
+
+**The probe reads its rotation off the body**, not from `options`, so the
+footprint probed is the footprint that fell. This also matters for testing:
+with the angle passed separately, removing the rotation from the body would
+still snap to the right surface and **no test could catch the brief's
+mutation**.
+
+**Five rays were not enough either.** A 3 m bench resting across a 1 m table
+has nothing under any corner or under its centre's neighbours. `surfaceBelow`
+now casts a grid of rays at most 0.25 m apart over the whole footprint, laid
+out in the box's frame and turned by its yaw. Comment rewritten to match.
+
+Tests in `world.test.ts` ("a rotated drop"): the brief's bench at x = 2.7
+lands on the table at 0° and on the floor at 90°. The mirror case lands on the
+floor at 0° and on the table at 90°, and a centred bench across a table finds
+the table under its middle. **Mutations:** an unrotated body fails 2; an
+unrotated probe grid fails 2; going back to corners only fails the straddle
+test and an existing wall-top test.

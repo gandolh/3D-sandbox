@@ -1,6 +1,6 @@
 ---
 summary: Dated snapshot of what is built, what is in flight, and what is next — the living dashboard.
-updated: 2026-09-13
+updated: 2026-10-01
 ---
 
 # Status
@@ -18,7 +18,8 @@ semantic linter), `@solstice/geometry` (document → three.js), `@solstice/solar
 drop-to-rest) and `@solstice/animation` (headless track evaluation).
 `apps/api` persists scenes over seven routes with files as truth and a
 rebuildable `node:sqlite` index, and `@solstice/drawing` renders a measured
-floor plan as SVG with no GPU. **459 tests pass.**
+floor plan as SVG with no GPU. `npm run check` runs the whole suite; the count
+is not repeated here, because a count in prose is the next number to drift.
 
 **The scenes.** `greenhollow` is a smallholding — porch, vine pergola, garage,
 hedges, walled front, kitchen garden, greenhouse, pond, orchard in rows.
@@ -45,10 +46,22 @@ An engineering audit on 2026-09-13 (performance, practices, structure) filed
 **briefs 50–59**: 18 raw findings, 10 vetted, plus **60** filed mid-run when
 `npm run api` turned out not to start at all. **All eleven are done.**
 
-The repo gained a lint and format gate (Biome), CI, a React testing
+The repo gained a lint and format gate (Biome), CI (since removed, 2026-09-26 —
+`npm run check` is now run by hand), a React testing
 environment, `erasableSyntaxOnly`, and a wall-geometry cache. Greenhollow's
 edit path went from **98 ms per keystroke** to **5.8 ms per committed edit**.
 Measurements and the drop list are in [log.md](../log.md).
+
+A further audit on 2026-09-20 filed **briefs 61–71**, closed on 2026-10-01, all
+eleven with every fix verified by mutation. Two were data-loss or security:
+`POST` could overwrite a hand-written scene (61), and a material slug could run
+shell commands from `download.sh` (62). Several briefs turned out bigger than
+filed: the impostor bake was broken three ways, not one (65); the plan bug was
+live in Greenhollow's own drawing (67); the drop probe needed a footprint grid,
+not just rotated corners (66). One finding was smaller than filed: Chrome
+already coalesced the ARM fetches, so what tripled was GPU uploads, not
+downloads (69). The committed download list was also stale, which led to a new
+todo: material slugs are never verified.
 
 A verification pass on 2026-09-13 re-read every acceptance criterion against the
 code rather than against the outcome notes, and found **two that were not
@@ -93,8 +106,8 @@ design rather than against the code.
 
 Still deliberately open, in [open-questions.md](open-questions.md): schema
 migrations, the two unbaked conifers that only the regression fixture uses, and
-the left-handed compass. Captured as a new todo: a drop reports *"settled on
-nothing"* when it settled on a slab.
+the left-handed compass. Open todo: material slugs are never checked against
+`assets/verified.json`.
 
 ## Briefs
 
@@ -157,6 +170,17 @@ nothing"* when it settled on a slab.
 | 58 | [Work repeated every frame that cannot change](../briefs/done/58-work-repeated-every-frame-that-cannot-change.md) | done |
 | 59 | [One wall moves and the whole scene is rebuilt](../briefs/done/59-one-wall-moves-and-the-whole-scene-is-rebuilt.md) | done |
 | 60 | [npm run api does not start](../briefs/done/60-npm-run-api-does-not-start.md) | done |
+| 61 | [POST checks the index, not the disk](../briefs/done/61-post-checks-the-index-not-the-disk.md) | done |
+| 62 | [A material slug can run commands](../briefs/done/62-a-material-slug-can-run-commands.md) | done |
+| 63 | [The post is half the width the linter thinks](../briefs/done/63-the-post-is-half-the-width-the-linter-thinks.md) | done |
+| 64 | [unique-ids does not claim rooms or paving](../briefs/done/64-unique-ids-does-not-claim-rooms-or-paving.md) | done |
+| 65 | [The bake writes the atlas where nothing looks](../briefs/done/65-the-bake-writes-the-atlas-where-nothing-looks.md) | done |
+| 66 | [A rotated placement drops on the wrong footprint](../briefs/done/66-a-rotated-placement-drops-on-the-wrong-footprint.md) | done |
+| 67 | [The plan draws a window through solid wall](../briefs/done/67-the-plan-draws-a-window-through-solid-wall.md) | done |
+| 68 | [A run computes its own wall angle](../briefs/done/68-a-run-computes-its-own-wall-angle.md) | done |
+| 69 | [Every ARM texture is loaded three times](../briefs/done/69-every-arm-texture-is-loaded-three-times.md) | done |
+| 70 | [ScatterInstance is declared twice](../briefs/done/70-scatterinstance-is-declared-twice.md) | done |
+| 71 | [Numbers that drift](../briefs/done/71-numbers-that-drift.md) | done |
 | 43 | [Impostor quads are the wrong shape](../briefs/done/43-impostor-quads-are-the-wrong-shape.md) | done |
 | 44 | [The dome and the render disagree after sunset](../briefs/done/44-the-dome-and-the-render-disagree-after-sunset.md) | done |
 | 45 | [Scatter counts and seeds](../briefs/done/45-scatter-counts-and-seeds.md) | done |

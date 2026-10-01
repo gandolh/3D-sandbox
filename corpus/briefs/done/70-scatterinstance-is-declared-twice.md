@@ -59,3 +59,18 @@ the repo where a type quietly meaning two things costs the most.
 - `ScatterInstance` is declared exactly once; no consumer changed.
 - No other duplicated type declaration exists in `packages/schema/src/derive/`.
 - `npm run check` exits 0 and the test count is unchanged.
+
+## Outcome — 2026-10-01
+
+Second declaration deleted; the one at the top of the file stays. No consumer
+changed. The gate passes, and the test count changed only by the other briefs'
+additions.
+
+**Where it came from:** commit `1167643` (2026-09-13) moved the placement half
+of `geometry/context/scatter.ts` into `derive/`, and the moved block brought its
+own copy of the interface. **The halves are one module:** the estimate walks the
+same lattice the generator samples, which was the whole point of that move, so
+I did not split them.
+
+Sweep: no other type, interface, class or enum is declared twice in
+`packages/schema/src/derive/`.

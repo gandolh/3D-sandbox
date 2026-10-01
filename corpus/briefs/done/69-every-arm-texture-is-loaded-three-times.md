@@ -86,3 +86,40 @@ this machine does not have), so the brief should report the real number.
   removed — verify by mutation.
 - The before/after measurement is recorded in the outcome.
 - `npm run check` exits 0.
+
+## Outcome — 2026-10-01
+
+`textureGroups(maps)` groups a material's roles by **path + colour space**.
+Each group is loaded once and filled into all its roles. Colour space is in
+the key so that a file mapped to both `map` and a data role gets two textures
+rather than sharing one decode. Wrapping is identical for every role, so it is
+not in the key. On abort a group's texture is disposed once.
+
+**Local, not `THREE.Cache`:** the cache is global and never evicts, and it
+dedupes bytes, not `Texture`s, so the uploads would still triple. Disposal: the
+library deliberately outlives documents (brief 39), and `material.dispose()`
+never frees maps, so the abort path is the only texture `dispose()`. It is
+tested to be called exactly once per texture.
+
+**Measured** in Chrome, cold session per run, calling `loadAssets()` directly
+through the dev server against the real `assets-src/`:
+
+| | before | after |
+|---|---|---|
+| material role references | 36 | 36 |
+| `Texture` objects created | **36** | **26** |
+| network requests for `_arm_` files | 5 | 5 |
+| `loadAssets()` wall-clock | 6.8 s, 7.0 s | 7.4 s, 7.0 s |
+
+**The audit's "fetched three times" was wrong at the network layer.** Chrome
+coalesces concurrent loads of one URL, so each ARM file was always one
+request. What tripled was the `Texture`s: five materials share now (the
+measurement names them), 10 fewer objects, and 10 fewer GPU uploads of a
+2048² RGBA image (~16 MB each, ~21 MB with mipmaps, so roughly 200 MB of GPU
+memory). Wall-clock is unchanged within noise, as expected: three.js uploads
+lazily at first render, and model loading dominates `loadAssets`.
+
+Tests: one ARM load fills three roles with the same `NoColorSpace` object; no
+sharing across a colour-space boundary; dispose exactly once on abort.
+**Mutations:** keying by role fails the dedup test; keying by path alone fails
+the colour-space test.
