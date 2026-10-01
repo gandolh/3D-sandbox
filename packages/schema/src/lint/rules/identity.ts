@@ -5,13 +5,23 @@ import type { RawFinding, Rule } from "../types.js";
  * Ids appear in linter messages and in the editor's selection state, so a
  * collision is not cosmetic — it makes one of the two entities unreachable.
  *
- * The list below is the claim, and it has to stay the whole list. It used to
- * say "every tier and entity kind" while omitting `subject.runs` and
- * `animation.tracks`, so two runs could share an id: `SceneTree` rendered
- * duplicate React keys, `findMesh` could only ever select one of them, and
- * `runs.ts` seeds each pergola's canopy from `run.id` — so two same-id
- * pergolas grew byte-identical foliage, which is the exact thing that seeding
- * exists to prevent.
+ * **Found by walking the document, not by listing entity kinds.** This rule
+ * used to enumerate them by hand, and the list went stale twice: first without
+ * `subject.runs` and `animation.tracks` (two same-id pergolas grew identical
+ * foliage, since `runs.ts` seeds each canopy from `run.id`), then without
+ * `level.rooms` and `context.paving`, which arrived after the list was written.
+ * Two rooms sharing a wall's id then had their findings attached to the wall,
+ * and were unreachable from the tree themselves.
+ *
+ * A hand-maintained enumeration fails silently — the same hazard as brief 24's
+ * hand-listed cache key — so there is no list. Every object below the root with
+ * a string `id` is an entity and is claimed at its own path, and a new entity
+ * kind participates the day it is added to the schema. The root's own `id` is
+ * the scene's name, not an entity, and is the one exclusion.
+ *
+ * The cost is that anything added later with a field called `id` is treated as
+ * an entity id. That is the right default: a reference to another entity is
+ * named for what it points at (`level`, `target`, `material`), never `id`.
  */
 export const uniqueIds: Rule = {
   name: "unique-ids",
@@ -33,23 +43,19 @@ export const uniqueIds: Rule = {
       });
     };
 
-    doc.subject.levels.forEach((level, li) => {
-      claim(level.id, `subject.levels[${li}]`);
-      level.walls.forEach((wall, wi) => {
-        const wp = `subject.levels[${li}].walls[${wi}]`;
-        claim(wall.id, wp);
-        wall.openings.forEach((o, oi) => claim(o.id, `${wp}.openings[${oi}]`));
-      });
-      level.slabs.forEach((s, si) => claim(s.id, `subject.levels[${li}].slabs[${si}]`));
-    });
-    doc.subject.roofs.forEach((r, i) => claim(r.id, `subject.roofs[${i}]`));
-    doc.subject.placements.forEach((p, i) => claim(p.id, `subject.placements[${i}]`));
-    doc.subject.runs.forEach((r, i) => claim(r.id, `subject.runs[${i}]`));
-    doc.context.scatter.forEach((s, i) => claim(s.id, `context.scatter[${i}]`));
-    doc.context.masses.forEach((m, i) => claim(m.id, `context.masses[${i}]`));
-    doc.context.roads.forEach((r, i) => claim(r.id, `context.roads[${i}]`));
-    doc.shots.forEach((s, i) => claim(s.id, `shots[${i}]`));
-    doc.animation?.tracks.forEach((t, i) => claim(t.id, `animation.tracks[${i}]`));
+    const walk = (value: unknown, path: string): void => {
+      if (Array.isArray(value)) {
+        value.forEach((item, i) => walk(item, `${path}[${i}]`));
+        return;
+      }
+      if (value === null || typeof value !== "object") return;
+      const entity = value as Record<string, unknown>;
+      // A parent is claimed before its children, so a level's id is "first
+      // used" at the level rather than at whichever wall repeats it.
+      if (path !== "" && typeof entity.id === "string") claim(entity.id, path);
+      for (const [key, child] of Object.entries(entity)) walk(child, path === "" ? key : `${path}.${key}`);
+    };
+    walk(doc, "");
 
     return out;
   },

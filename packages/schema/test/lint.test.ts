@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import {
   estimateScatterInstances,
@@ -101,6 +103,109 @@ describe("unique-ids covers the tiers its comment claims", () => {
     const found = lint(doc).filter((f) => f.rule === "unique-ids");
     expect(found).toHaveLength(1);
     expect(found[0]!.path).toBe("animation.tracks[1]");
+  });
+});
+
+describe("unique-ids claims rooms and paving", () => {
+  // The two kinds that arrived after the rule's hand-written list did, and so
+  // were never claimed: two rooms both id'd `W-03` — also a wall's id — and
+  // two paving areas both id'd `court` produced zero findings.
+  const room = (id: string) => ({
+    id,
+    name: "Bed",
+    use: "bed" as const,
+    polygon: [
+      [0.2, 0.2],
+      [2, 0.2],
+      [2, 2],
+      [0.2, 2],
+    ] as [number, number][],
+  });
+  const paving = (id: string) => ({
+    id,
+    polygon: [
+      [10, 10],
+      [14, 10],
+      [14, 14],
+      [10, 14],
+    ] as [number, number][],
+    material: "wall",
+  });
+  const idFindings = (doc: SceneDocumentInput) => lint(doc).filter((f) => f.rule === "unique-ids");
+
+  it("makes two rooms sharing an id an error", () => {
+    const doc = baseScene();
+    doc.subject!.levels![0]!.rooms = [room("bed"), room("bed")];
+    const found = idFindings(doc);
+    expect(found).toHaveLength(1);
+    expect(found[0]!.path).toBe("subject.levels[0].rooms[1]");
+    expect(found[0]!.message).toMatch(/already used at subject\.levels\[0\]\.rooms\[0\]/);
+  });
+
+  it("makes a room sharing a wall's id an error", () => {
+    const doc = baseScene();
+    const wallId = doc.subject!.levels![0]!.walls![0]!.id;
+    doc.subject!.levels![0]!.rooms = [room(wallId)];
+    const found = idFindings(doc);
+    expect(found).toHaveLength(1);
+    expect(found[0]!.path).toBe("subject.levels[0].rooms[0]");
+  });
+
+  it("makes two paving areas sharing an id an error", () => {
+    const doc = baseScene();
+    doc.context = { ...doc.context, paving: [paving("court"), paving("court")] };
+    const found = idFindings(doc);
+    expect(found).toHaveLength(1);
+    expect(found[0]!.path).toBe("context.paving[1]");
+  });
+});
+
+describe("unique-ids claims every entity kind there is", () => {
+  // The rule walks the document rather than listing kinds, so a new kind is
+  // claimed the day it exists. This holds it to that: every id-bearing object
+  // in the reference scene — which carries all fourteen kinds — is given the
+  // id of a *different* entity, and each collision must be reported at its
+  // own path. Revert the rule to a list that misses one and this names it.
+  const reference = JSON.parse(
+    readFileSync(fileURLToPath(new URL("../../../scenes/greenhollow.scene.json", import.meta.url)), "utf8"),
+  ) as SceneDocumentInput;
+
+  /** Every object below the root carrying an id — found independently of the rule. */
+  const entities = (doc: unknown): { path: string; target: { id: string } }[] => {
+    const out: { path: string; target: { id: string } }[] = [];
+    const visit = (value: unknown, path: string): void => {
+      if (Array.isArray(value)) {
+        value.forEach((v, i) => visit(v, `${path}[${i}]`));
+        return;
+      }
+      if (value === null || typeof value !== "object") return;
+      const record = value as Record<string, unknown>;
+      if (path !== "" && typeof record.id === "string") out.push({ path, target: record as { id: string } });
+      for (const [k, v] of Object.entries(record)) visit(v, path === "" ? k : `${path}.${k}`);
+    };
+    visit(doc, "");
+    return out;
+  };
+
+  const all = entities(reference);
+  const kinds = [...new Set(all.map((e) => e.path.replace(/\[\d+\]/g, "[]")))];
+
+  it("finds all fourteen kinds in the reference scene", () => {
+    expect(kinds).toHaveLength(14);
+  });
+
+  it.each(kinds)("reports a duplicate %s", (kind) => {
+    const doc = structuredClone(reference);
+    const list = entities(doc);
+    const victim = list.find((e) => e.path.replace(/\[\d+\]/g, "[]") === kind)!;
+    // Borrow the id of the last entity of a different kind, so the collision
+    // is with something already claimed whichever comes first in the walk.
+    const donor = list.findLast((e) => e.path !== victim.path && !e.path.startsWith(`${victim.path}.`))!;
+    victim.target.id = donor.target.id;
+    const found = lintScene(SceneDocument.parse(doc)).filter((f) => f.rule === "unique-ids");
+    expect(found.map((f) => f.path)).toContain(
+      list.indexOf(victim) < list.indexOf(donor) ? donor.path : victim.path,
+    );
   });
 });
 
