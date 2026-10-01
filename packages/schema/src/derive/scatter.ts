@@ -153,13 +153,6 @@ const MAX_INSTANCES = 200_000;
 /** And an absolute ceiling on the work spent trying to reach that. */
 const MAX_ATTEMPTS = 2_000_000;
 
-export interface ScatterInstance {
-  asset: string;
-  position: [number, number, number];
-  rotationY: number;
-  scale: number;
-}
-
 /**
  * Rejection-sample points inside the field's polygon, minus its exclusions.
  *
