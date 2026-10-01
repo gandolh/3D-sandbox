@@ -45,10 +45,14 @@ describe("the plan is a drawing", () => {
     expect(arcs).toHaveLength(doors.length);
   });
 
-  it("draws glazing in every window", () => {
-    const glazing = svg.match(/stroke="#7f9bb0"/g) ?? [];
-    expect(windows.length).toBeGreaterThan(5);
-    expect(glazing).toHaveLength(windows.length);
+  it("draws glazing in every window the plane cuts, and only those", () => {
+    // This used to assert one glazing line per window, and passed — while
+    // `w-e2`, a clerestory at sill 1.75, was drawn glazed across solid poché.
+    // A count that ignores the section asserts the bug along with the feature.
+    const cut = windows.filter((w) => w.sill < 1.2 && w.sill + w.height > 1.2);
+    expect(cut.length).toBeGreaterThan(5);
+    expect(cut.length).toBeLessThan(windows.length);
+    expect(svg.match(/stroke="#7f9bb0"/g) ?? []).toHaveLength(cut.length);
   });
 
   it("labels every room with its name and area", () => {
@@ -100,6 +104,57 @@ describe("the plan is a section, not a top view", () => {
     const high = cutAt(2.5);
     expect(high.match(/ A\d/g) ?? []).toHaveLength(0);
     expect(high).toContain("stroke-dasharray");
+  });
+});
+
+/**
+ * A window the plane does not cut is not drawn as one it does.
+ *
+ * The poché already knew: `solidSpans` only takes out an opening the plane
+ * passes through. The window symbol did not, and drew reveals and glazing
+ * across unbroken masonry — telling a builder there is an opening at cutting
+ * height where there is 300 mm of solid wall.
+ */
+describe("a window above the cut plane", () => {
+  const wallId = houseWalls.find((w) => w.openings.some((o) => o.kind === "window"))!.id;
+  /** Greenhollow with one house wall's openings replaced. */
+  const withOpenings = (openings: object[]): string => {
+    const doc = JSON.parse(JSON.stringify(greenhollow)) as SceneDocumentInput;
+    const wall = doc.subject!.levels![0]!.walls!.find((w) => w.id === wallId)!;
+    wall.openings = openings as typeof wall.openings;
+    return planSvg(SceneDocument.parse(doc));
+  };
+  const count = (text: string, pattern: RegExp): number => (text.match(pattern) ?? []).length;
+  const POCHE = /fill="#b8b4ad"/g;
+  const GLAZING = /stroke="#7f9bb0"/g;
+  const DASHED = /stroke-dasharray="1.4 1"/g;
+
+  const bare = withOpenings([]);
+  // Sill 1.8, head 2.4, in a 2.7 m storey: entirely above the 1.2 m plane.
+  const clerestory = withOpenings([
+    { id: "cl-1", kind: "window", offset: 0.6, width: 1.2, height: 0.6, sill: 1.8 },
+  ]);
+  const ordinary = withOpenings([
+    { id: "w-1", kind: "window", offset: 0.6, width: 1.2, height: 1.4, sill: 0.9 },
+  ]);
+
+  it("leaves the poché unbroken", () => {
+    expect(count(clerestory, POCHE)).toBe(count(bare, POCHE));
+  });
+
+  it("draws no glazing across the solid wall", () => {
+    expect(count(clerestory, GLAZING)).toBe(count(bare, GLAZING));
+  });
+
+  it("is drawn dashed, as an overhead element", () => {
+    expect(count(clerestory, DASHED)).toBe(count(bare, DASHED) + 1);
+  });
+
+  it("still draws a window the plane does cut, glazed and through a hole", () => {
+    // So the fix cannot have been "stop drawing glazing".
+    expect(count(ordinary, GLAZING)).toBe(count(bare, GLAZING) + 1);
+    expect(count(ordinary, POCHE)).toBe(count(bare, POCHE) + 1);
+    expect(count(ordinary, DASHED)).toBe(count(bare, DASHED));
   });
 });
 

@@ -232,10 +232,20 @@ type Project = (x: number, z: number) => readonly [number, number];
  * door opens, and what the door will hit — three facts a rectangle in a wall
  * cannot carry. It is the single most information-dense mark on a floor plan.
  *
- * **A window is the reveal with glazing across it.** The reveal lines close the
- * hole at the cut; the glazing line down the middle says it is glass rather
- * than a hole. Drawn lighter than the wall, because the wall is what the
- * section cuts and the glass is what it sees.
+ * **A window is the reveal with glazing across it.** The reveal lines are the
+ * faces of the hole the plane cuts; the glazing line down the middle says it is
+ * glass rather than a hole. Drawn lighter than the wall, because the wall is
+ * what the section cuts and the glass is what it sees.
+ *
+ * **Either kind, when the plane does not pass through it, is one dashed line
+ * along the wall** and nothing more. There is no hole to draw: `solidSpans`
+ * leaves the poché unbroken, and reveals and glazing across it would tell a
+ * builder there is an opening at cutting height where there is solid wall. A
+ * door below the plane (a hatch) is a threshold seen beneath it; a window above
+ * it (a clerestory) is the overhead element plans conventionally dash; a window
+ * below it is hidden within the wall, which is dashed too. One line covers all
+ * three because each says the same thing — "an opening here, not at this
+ * height".
  */
 function openingSymbol(wall: Wall, opening: Opening, cut: number, p: Project): string[] {
   const plan = openingPlan(wall, opening);
@@ -248,20 +258,20 @@ function openingSymbol(wall: Wall, opening: Opening, cut: number, p: Project): s
   const edge = (side: 1 | -1): string =>
     `M${pts(p(ax + nx * h * side, az + nz * h * side))} L${pts(p(bx + nx * h * side, bz + nz * h * side))}`;
 
+  // Before either kind is drawn as cut, because neither is unless the plane
+  // passes through it — see the doc comment.
+  if (!cutsThrough(opening, cut)) {
+    out.push(
+      `<path d="M${pts(p(ax, az))} L${pts(p(bx, bz))}" fill="none" stroke="${INK.line}" stroke-width="${WEIGHT.seen}" stroke-dasharray="1.4 1"/>`,
+    );
+    return out;
+  }
+
   if (opening.kind === "window") {
     // Both reveals, plus the glazing between them.
     out.push(
       `<path d="${edge(1)} ${edge(-1)}" fill="none" stroke="${INK.line}" stroke-width="${WEIGHT.seen}"/>`,
       `<path d="M${pts(p(ax, az))} L${pts(p(bx, bz))}" fill="none" stroke="${INK.glass}" stroke-width="${WEIGHT.symbol}"/>`,
-    );
-    return out;
-  }
-
-  // A door below the cut plane — a hatch, a low opening — is seen, not cut, so
-  // it is drawn as a threshold rather than given a swing.
-  if (!cutsThrough(opening, cut)) {
-    out.push(
-      `<path d="M${pts(p(ax, az))} L${pts(p(bx, bz))}" fill="none" stroke="${INK.line}" stroke-width="${WEIGHT.seen}" stroke-dasharray="1.4 1"/>`,
     );
     return out;
   }
