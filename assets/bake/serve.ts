@@ -11,11 +11,15 @@
  * channel as base64 is not.
  */
 import { createReadStream } from "node:fs";
-import { mkdir, stat, writeFile } from "node:fs/promises";
-import { dirname, extname, join, normalize, resolve } from "node:path";
+import { stat } from "node:fs/promises";
+import { dirname, extname, normalize, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createServer } from "vite";
-import { ASSET_ID, insideRoot } from "./paths.js";
+// `.ts`, not `.js`: this file is run by `node` directly, whose type-stripping
+// does not remap a `.js` specifier onto a `.ts` file — with `.js` the server
+// did not start at all. `assets/` is not compiled by any tsconfig.
+import { insideRoot } from "./paths.ts";
+import { BakeTargetError, writeImpostor } from "./write.ts";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const assetsRoot = resolve(here, "..", "..", "assets-src");
@@ -77,31 +81,25 @@ const server = await createServer({
                 const meta = String(form.get("meta"));
                 const atlas = form.get("atlas") as File;
 
-                if (!ASSET_ID.test(asset)) {
-                  res.statusCode = 400;
-                  res.end("asset must be <source>/<slug>");
-                  return;
-                }
-
-                // Beside the source, under `impostor/`, which is what the
-                // manifest scan will pick up and what gets committed.
-                const outDir = resolve(assetsRoot, dirname(asset), "impostor");
-                // Belt and braces: the pattern above already makes this
-                // unreachable, and it is one line to guarantee rather than
-                // argue that no future edit to the pattern reopens it.
-                if (!insideAssets(outDir)) {
-                  res.statusCode = 400;
-                  res.end("outside the assets root");
-                  return;
-                }
-                await mkdir(outDir, { recursive: true });
-                await writeFile(join(outDir, "atlas.png"), Buffer.from(await atlas.arrayBuffer()));
-                await writeFile(join(outDir, "impostor.json"), `${meta}\n`);
+                // Inside the asset's own directory, which is what the
+                // manifest scan picks up and what gets committed — see
+                // `impostorDir`.
+                const outDir = await writeImpostor(
+                  assetsRoot,
+                  asset,
+                  Buffer.from(await atlas.arrayBuffer()),
+                  meta,
+                );
 
                 console.log(`✓ ${asset} → ${outDir}`);
                 res.statusCode = 200;
                 res.end("ok");
               } catch (error) {
+                if (error instanceof BakeTargetError) {
+                  res.statusCode = 400;
+                  res.end(error.message);
+                  return;
+                }
                 console.error("✗ bake upload failed", error);
                 res.statusCode = 500;
                 res.end("failed");

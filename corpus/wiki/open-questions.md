@@ -1,6 +1,6 @@
 ---
 summary: Genuinely unresolved questions — deleted the moment they are answered.
-updated: 2026-09-13
+updated: 2026-10-01
 ---
 
 # Open questions
@@ -10,9 +10,12 @@ updated: 2026-09-13
   [decisions.md](decisions.md) — so this stays deferred deliberately rather than
   by accident, until a change actually removes or redefines a field.
 - **`pine_tree_01` and `fir_tree_01` are unbaked.** Villa's forest falls through
-  to `tree_small_02`'s atlas and renders as one species. The bake harness works
-  and the procedure is in [assets.md](assets.md); it is 1.4 GB of download and
-  two GPU bakes, deferred for machine time rather than for any unknown.
+  to `tree_small_02`'s atlas and renders as one species. Until brief 65 (2026-10-01)
+  baking them **would not have worked**: the server did not start, refused the
+  page's upload, and would have written the atlas where the manifest never looks.
+  All three are fixed and the upload path is verified end to end against the
+  real server; a full GPU bake has not been rerun since. The procedure is in
+  [assets.md](assets.md); it is 1.4 GB of download and two GPU bakes.
   Worth keeping in proportion: the only consumer is `villa-carpathia`, the
   regression fixture, so this is a flaw in a test file and not in anything
   anyone looks at. It gets baked if a scene ever wants conifers; otherwise the

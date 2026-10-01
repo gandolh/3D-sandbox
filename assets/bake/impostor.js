@@ -102,7 +102,10 @@ async function bake() {
 
   const blob = await new Promise((resolve) => atlas.toBlob(resolve, "image/png"));
   const form = new FormData();
-  form.append("asset", asset);
+  // The manifest id, not the glTF path the page was opened with: the server
+  // accepts exactly `<source>/<slug>` and writes beside that asset. Sending the
+  // path got every upload refused once the server's id check was tightened.
+  form.append("asset", asset.split("/").slice(0, 2).join("/"));
   form.append(
     "meta",
     JSON.stringify({
