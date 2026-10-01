@@ -285,3 +285,85 @@ describe("loadAssets, when the assets are there", () => {
     expect(impostor!.texture.wrapS).toBe(THREE.ClampToEdgeWrapping);
   });
 });
+
+/**
+ * One file, one texture — however many roles it fills.
+ *
+ * Poly Haven's `arm` image is occlusion, roughness and metalness at once, and
+ * the manifest maps all three roles to it. Loaded per role, each material paid
+ * for three `Texture` objects of the same 2k image: three decodes, three GPU
+ * uploads.
+ */
+describe("a texture shared between roles", () => {
+  const ARM = {
+    map: "p/clay_plaster_diff_2k.jpg",
+    normalMap: "p/clay_plaster_nor_gl_2k.jpg",
+    roughnessMap: "p/clay_plaster_arm_2k.jpg",
+    metalnessMap: "p/clay_plaster_arm_2k.jpg",
+    aoMap: "p/clay_plaster_arm_2k.jpg",
+  };
+
+  const libraryWith = (maps: Record<string, string>) =>
+    respondWith((url) =>
+      url.endsWith("index.json")
+        ? json({ materials: [{ id: "polyhaven/clay_plaster", maps }] })
+        : new Response("", { status: 404 }),
+    );
+
+  const wallMaps = async (signal?: AbortSignal) =>
+    (await loadAssets(signal))
+      .materialsFor({
+        materials: { wall: { label: "W", source: "polyhaven", slug: "clay_plaster" } },
+      } as never)
+      .maps("wall");
+
+  it("is loaded once and filled into all three ARM roles", async () => {
+    const load = vi
+      .spyOn(THREE.TextureLoader.prototype, "loadAsync")
+      .mockImplementation(async () => new THREE.Texture());
+    libraryWith(ARM);
+    const maps = await wallMaps();
+
+    const urls = load.mock.calls.map(([url]) => url);
+    expect(urls.filter((u) => u.includes("_arm_"))).toHaveLength(1);
+    expect(urls).toHaveLength(3);
+    expect(maps!.roughnessMap).toBeDefined();
+    expect(maps!.metalnessMap).toBe(maps!.roughnessMap);
+    expect(maps!.aoMap).toBe(maps!.roughnessMap);
+    expect(maps!.aoMap!.colorSpace).toBe(THREE.NoColorSpace);
+  });
+
+  it("is not shared across a colour-space boundary", async () => {
+    // If a pattern ever mapped one file to both the base colour and a data
+    // role, sharing would give one of them the other's decode.
+    vi.spyOn(THREE.TextureLoader.prototype, "loadAsync").mockImplementation(async () => new THREE.Texture());
+    libraryWith({ map: "p/one.jpg", roughnessMap: "p/one.jpg" });
+    const maps = await wallMaps();
+
+    expect(maps!.map).not.toBe(maps!.roughnessMap);
+    expect(maps!.map!.colorSpace).toBe(THREE.SRGBColorSpace);
+    expect(maps!.roughnessMap!.colorSpace).toBe(THREE.NoColorSpace);
+  });
+
+  it("is disposed exactly once when the load is abandoned", async () => {
+    // Three roles must not become three `dispose()` calls on one texture —
+    // nor zero.
+    const controller = new AbortController();
+    const made: THREE.Texture[] = [];
+    vi.spyOn(THREE.TextureLoader.prototype, "loadAsync").mockImplementation(async () => {
+      const texture = new THREE.Texture() as THREE.Texture<HTMLImageElement>;
+      made.push(texture);
+      controller.abort();
+      return texture;
+    });
+    libraryWith(ARM);
+    const disposals = new Map<THREE.Texture, number>();
+    vi.spyOn(THREE.Texture.prototype, "dispose").mockImplementation(function (this: THREE.Texture) {
+      disposals.set(this, (disposals.get(this) ?? 0) + 1);
+    });
+
+    expect(await wallMaps(controller.signal)).toBeUndefined();
+    expect(made.length).toBeGreaterThan(0);
+    for (const texture of made) expect(disposals.get(texture)).toBe(1);
+  });
+});

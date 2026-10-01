@@ -122,21 +122,19 @@ export async function loadAssets(signal?: AbortSignal): Promise<LoadedAssets> {
       if (stopped()) return;
       const maps: MaterialMaps = {};
       await Promise.all(
-        Object.entries(entry.maps).map(async ([role, path]) => {
+        textureGroups(entry.maps).map(async ({ path, colorSpace, roles }) => {
           if (stopped()) return;
           try {
             const texture = await textures.loadAsync(`/assets-src/${path}`);
             if (stopped()) {
+              // Once, however many roles it was going to fill.
               texture.dispose();
               return;
             }
-            // Only the base colour is colour. Normal, roughness, metalness and
-            // occlusion are data, and running them through sRGB decode makes
-            // surfaces subtly, unexplainably wrong.
-            texture.colorSpace = role === "map" ? THREE.SRGBColorSpace : THREE.NoColorSpace;
+            texture.colorSpace = colorSpace;
             texture.wrapS = THREE.RepeatWrapping;
             texture.wrapT = THREE.RepeatWrapping;
-            (maps as Record<string, THREE.Texture>)[role] = texture;
+            for (const role of roles) (maps as Record<string, THREE.Texture>)[role] = texture;
           } catch {
             // One missing map is not a missing material.
           }
@@ -147,6 +145,42 @@ export async function loadAssets(signal?: AbortSignal): Promise<LoadedAssets> {
   );
 
   return bundle(entries, impostors, libraryMaps);
+}
+
+/**
+ * A material's maps, grouped so that each file becomes **one** texture.
+ *
+ * Poly Haven packs occlusion, roughness and metalness into one `arm` image, and
+ * the manifest maps all three roles to it — which is how three.js wants it, one
+ * texture read through three channels. Loaded per role it became three
+ * `Texture` objects for the same file: three decodes and three GPU uploads of
+ * ~16 MB each, per material. (The browser coalesced the network request, so it
+ * was never three downloads — measured, brief 69.)
+ *
+ * The key is the path **and the colour space**, not the path alone. Only the
+ * base colour is colour; normal, roughness, metalness and occlusion are data,
+ * and running them through sRGB decode makes surfaces subtly, unexplainably
+ * wrong. Every ARM role is data, so today they share — but should a pattern
+ * ever map one file to both `map` and a data role, the two get separate
+ * textures rather than one of them silently taking the other's decode. Wrapping
+ * is the same for every role, so it does not need to be in the key.
+ *
+ * Local rather than `THREE.Cache.enabled`: the cache is global and never
+ * evicts, so it would hold every image ever loaded past any disposal, and it
+ * dedupes the *bytes*, not the `Texture` — the uploads would still triple.
+ */
+export function textureGroups(
+  maps: Readonly<Record<string, string>>,
+): { path: string; colorSpace: THREE.ColorSpace; roles: string[] }[] {
+  const groups = new Map<string, { path: string; colorSpace: THREE.ColorSpace; roles: string[] }>();
+  for (const [role, path] of Object.entries(maps)) {
+    const colorSpace = role === "map" ? THREE.SRGBColorSpace : THREE.NoColorSpace;
+    const key = `${colorSpace}\u0000${path}`;
+    const group = groups.get(key);
+    if (group === undefined) groups.set(key, { path, colorSpace, roles: [role] });
+    else group.roles.push(role);
+  }
+  return [...groups.values()];
 }
 
 function bundle(
