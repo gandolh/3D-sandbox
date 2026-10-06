@@ -1168,3 +1168,14 @@ The rule is in the `FIRES` map, so it cannot sit unarmed the way `asset-resolves
 once did. On the real case: removing `ambientcg/PavingStones137` from
 `verified.json` makes `npm run scenes` fail on greenhollow's `brick-paving`.
 `npm run check` is clean.
+
+## 2026-10-06 — Two open questions answered by the owner
+
+The compass: fix it, and mirror the three scenes so they look the same as
+before. Specified as brief 72 (+X east, −Z north; positions and Y rotations
+mirror, compass bearings and `northOffset` keep their values, footprints need
+their winding reversed).
+
+The conifers: dropped from `villa-carpathia`'s scatter rather than baked. The
+forest already rendered as `tree_small_02` alone. `npm run assets` no longer
+lists the 1.4 GB of pine and fir downloads. Tests pass (519).

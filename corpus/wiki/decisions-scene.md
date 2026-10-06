@@ -186,6 +186,18 @@ consumer adapts to it.
   square cell with the empty parts alpha-tested away. Same picture; no geometry
   below the terrain.
 
+## The compass is right-handed: +X east, −Z north (2026-10-06)
+
++Z north with +X east and Y up was a mirror of the world, so a plan copied from
+paper came out mirrored. Fixed by [brief 72](../briefs/todo/72-a-compass-that-matches-the-world.md),
+which also mirrors the three scenes so they look as before; bearings and
+`northOffset` keep their values. *Rejected*: documenting "x is west" forever.
+
+## Villa's forest is one species (2026-10-06)
+
+Only `tree_small_02` has a baked impostor, so pine and fir rendered as it anyway.
+The scatter lists only it. *Rejected*: 1.4 GB and two GPU bakes for a fixture.
+
 ---
 
 Decisions about **how much geometry a document may ask for** — the placement

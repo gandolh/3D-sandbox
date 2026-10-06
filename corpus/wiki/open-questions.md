@@ -1,6 +1,6 @@
 ---
 summary: Genuinely unresolved questions — deleted the moment they are answered.
-updated: 2026-10-01
+updated: 2026-10-06
 ---
 
 # Open questions
@@ -9,35 +9,6 @@ updated: 2026-10-01
   version to migrate from. What *counts* as a bump is now settled — see
   [decisions.md](decisions.md) — so this stays deferred deliberately rather than
   by accident, until a change actually removes or redefines a field.
-- **`pine_tree_01` and `fir_tree_01` are unbaked.** Villa's forest falls through
-  to `tree_small_02`'s atlas and renders as one species. Until brief 65 (2026-10-01)
-  baking them **would not have worked**: the server did not start, refused the
-  page's upload, and would have written the atlas where the manifest never looks.
-  All three are fixed and the upload path is verified end to end against the
-  real server; a full GPU bake has not been rerun since. The procedure is in
-  [assets.md](assets.md); it is 1.4 GB of download and two GPU bakes.
-  Worth keeping in proportion: the only consumer is `villa-carpathia`, the
-  regression fixture, so this is a flaw in a test file and not in anything
-  anyone looks at. It gets baked if a scene ever wants conifers; otherwise the
-  honest close is to delete the species claim from villa rather than leave a
-  standing question about a fixture.
-
-- **The scene's compass is left-handed.** `packages/solar/src/index.ts:86`
-  documents "+Z is north and +X is east". With +Y up, a right-handed frame makes
-  east **−X**: for a physical ENU frame `e × n = u`, but `X × Y = e × u = −n`.
-  Seen from above the scene's sun therefore sweeps **counter-clockwise** where the
-  real one sweeps clockwise. Everything downstream is internally consistent —
-  `wallBearing` (now `packages/schema/src/derive/walls.ts`) uses the same
-  `atan2(x, z)` — so shadows still land on the façade the document names, and no
-  scene is *wrong on its own terms*. The cost is that
-  a site plan transcribed from paper with x = east, z = north is built as its
-  **mirror image**, and a render will not match a photograph taken from the same
-  real-world spot. The fix is one sign, in `directionFrom` or in the north
-  convention, **not both** — but it silently changes what every existing scene
-  means, so it is a decision and not a bug fix. Raised by the 2026-09-12 audit.
-  Brief 37 made the eventual change cheaper without making it: `wallBearing` had
-  three copies and now has one, beside `wallAngle`, with the difference between
-  the two conventions written down where both are visible.
 
 _Vine density was brief 18. The denoiser closed on 2026-09-11: brief 16 measured
 the bundled pass as actively harmful, and the remaining thread — whether a
@@ -50,3 +21,8 @@ _Hip roofs and stairs were parked on 2026-09-11. The schema admits `hip` and the
 generator throws on it; stairs need a second storey. Nothing is blocked on
 either, and a page of things nothing is blocked on stops being read. They come
 back when a scene wants one._
+
+_The compass and the unbaked conifers were both decided by the owner on
+2026-10-06. The compass is [brief 72](../briefs/todo/72-a-compass-that-matches-the-world.md);
+villa-carpathia's forest is now one species. See
+[decisions-scene.md](decisions-scene.md)._
