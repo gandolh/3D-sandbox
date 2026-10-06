@@ -1,7 +1,7 @@
 ---
 title: Material slugs are never checked against verified.json
 created: 2026-10-01
-status: open
+status: done
 tags: [assets, linter, build]
 ---
 
@@ -33,3 +33,13 @@ Probably: have `asset-resolves` (or a sibling rule) check material slugs against
 a `knownMaterials` option, and pass `verified.materials` plus the downloaded
 manifest from `scenes/build.ts`, the same way assets are passed. The
 `procedural` source has no slug and is exempt.
+
+## Done (2026-10-06)
+
+A sibling rule, `material-slug-resolves` in
+`packages/schema/src/lint/rules/references.ts`, checks each textured material's
+`<source>/<slug>` against a `knownMaterials` option. Like `asset-resolves` it is
+skipped when no list is passed; `procedural` materials and materials with no slug
+are exempt. `scenes/build.ts` passes `verified.materials` plus the downloaded
+manifest. Proven on the real case: with `ambientcg/PavingStones137` taken out of
+`verified.json`, `npm run scenes` fails on greenhollow's `brick-paving`.

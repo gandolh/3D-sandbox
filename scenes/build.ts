@@ -48,6 +48,15 @@ console.log(
   `  manifest: ${downloaded.size} downloaded, ${verified.assets.length} verified — ${assets.size} known`,
 );
 
+/**
+ * The same, for `material-slug-resolves`. The manifest does not tell models from
+ * materials, so `downloaded` is shared; a material slug that only exists as a
+ * model directory is not a case worth a second scan. A scene that adds a
+ * material fails here until `npm run assets` has verified it, which is how
+ * `ambientcg/PavingStones137` went missing from `verified.json` unnoticed.
+ */
+const materials = new Set([...verified.materials, ...downloaded]);
+
 const here = dirname(fileURLToPath(import.meta.url));
 const srcDir = join(here, "src");
 
@@ -71,7 +80,7 @@ for (const entry of entries) {
   }
 
   try {
-    const { document, findings } = loadScene(mod.default, { knownAssets: assets });
+    const { document, findings } = loadScene(mod.default, { knownAssets: assets, knownMaterials: materials });
     const out = join(here, `${document.id}.scene.json`);
     await writeFile(out, serializeScene(document), "utf8");
 

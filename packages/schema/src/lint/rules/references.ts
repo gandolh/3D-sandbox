@@ -77,3 +77,33 @@ export const assetResolves: Rule = {
     return out;
   },
 };
+
+/**
+ * A textured material's `<source>/<slug>` must be a known material, checked only
+ * when a list is supplied, like `asset-resolves`.
+ *
+ * A separate rule because the failure is quieter than an invented model. An
+ * unknown slug downloads nothing, and the material renders as its `baseColor`
+ * stand-in with no error anywhere. `procedural` has no slug, and a material
+ * without one has nothing to look up, so both are skipped.
+ */
+export const materialSlugResolves: Rule = {
+  name: "material-slug-resolves",
+  run(doc, opts) {
+    const known = opts.knownMaterials;
+    if (known === undefined) return [];
+    const out: RawFinding[] = [];
+    for (const [id, material] of Object.entries(doc.materials)) {
+      if (material.source === "procedural" || material.slug === undefined) continue;
+      const ref = `${material.source}/${material.slug}`;
+      if (known.has(ref)) continue;
+      out.push({
+        rule: "material-slug-resolves",
+        severity: "error",
+        path: `materials.${id}`,
+        message: `material "${id}" names "${ref}", which is not a known material`,
+      });
+    }
+    return out;
+  },
+};

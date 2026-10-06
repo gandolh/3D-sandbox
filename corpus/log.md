@@ -1155,3 +1155,16 @@ widening 71.
 Also found in passing: `apps/web` tests import packages from `dist/`, so a
 source mutation needs `tsc --build` before those tests can see it.
 `npm run check` already builds first.
+
+## 2026-10-06 — Material slugs are checked
+
+Closed the todo filed during brief 62. The new lint rule `material-slug-resolves`
+checks each textured material's `<source>/<slug>` against `knownMaterials`, which
+`scenes/build.ts` fills from `verified.materials` plus the downloaded manifest.
+Before this, `verified.json`'s `materials` list was generated and read by nothing,
+and an invented material slug built clean and rendered as its `baseColor`.
+
+The rule is in the `FIRES` map, so it cannot sit unarmed the way `asset-resolves`
+once did. On the real case: removing `ambientcg/PavingStones137` from
+`verified.json` makes `npm run scenes` fail on greenhollow's `brick-paving`.
+`npm run check` is clean.

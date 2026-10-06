@@ -408,6 +408,43 @@ describe("references", () => {
   });
 });
 
+describe("material-slug-resolves", () => {
+  const textured = (slug: string): SceneDocumentInput => {
+    const doc = baseScene();
+    doc.materials!.wall = { label: "Wall", source: "ambientcg", slug, baseColor: "#C9C3B6" };
+    return doc;
+  };
+  const known = new Set(["ambientcg/Concrete034"]);
+
+  it("skips material checks when no list is supplied", () => {
+    expect(lint(textured("NotARealSlug001"))).toEqual([]);
+  });
+
+  it("accepts a slug on the list", () => {
+    expect(lint(textured("Concrete034"), { knownMaterials: known })).toEqual([]);
+  });
+
+  it("rejects an unknown slug once a list exists, naming the material", () => {
+    const found = lint(textured("NotARealSlug001"), { knownMaterials: known });
+    expect(found).toHaveLength(1);
+    expect(found[0]).toMatchObject({
+      rule: "material-slug-resolves",
+      severity: "error",
+      path: "materials.wall",
+    });
+    expect(found[0]!.message).toContain("ambientcg/NotARealSlug001");
+  });
+
+  it("matches source and slug together, not the slug alone", () => {
+    const found = lint(textured("Concrete034"), { knownMaterials: new Set(["polyhaven/Concrete034"]) });
+    expect(rules(found)).toContain("material-slug-resolves");
+  });
+
+  it("exempts procedural materials, which have no slug", () => {
+    expect(lint(baseScene(), { knownMaterials: new Set() })).toEqual([]);
+  });
+});
+
 describe("scatter-density-is-sane", () => {
   const withForest = (density: number): SceneDocumentInput => {
     const doc = baseScene();
@@ -987,6 +1024,16 @@ const FIRES: Record<string, () => LintFinding[]> = {
       placements: [{ id: "p-01", asset: "polyhaven/not_a_real_slug", position: [1, 0, 1], rotationY: 0 }],
     };
     return lint(doc, { knownAssets: new Set(["polyhaven/ArmChair_01"]) });
+  },
+  "material-slug-resolves": () => {
+    const doc = baseScene();
+    doc.materials!.wall = {
+      label: "Wall",
+      source: "polyhaven",
+      slug: "not_a_real_slug",
+      baseColor: "#C9C3B6",
+    };
+    return lint(doc, { knownMaterials: new Set(["polyhaven/clay_plaster"]) });
   },
   "scatter-density-is-sane": () => {
     const doc = baseScene();

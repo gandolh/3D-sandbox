@@ -1,6 +1,6 @@
 ---
 summary: Dated snapshot of what is built, what is in flight, and what is next — the living dashboard.
-updated: 2026-10-01
+updated: 2026-10-06
 ---
 
 # Status
@@ -60,8 +60,8 @@ filed: the impostor bake was broken three ways, not one (65); the plan bug was
 live in Greenhollow's own drawing (67); the drop probe needed a footprint grid,
 not just rotated corners (66). One finding was smaller than filed: Chrome
 already coalesced the ARM fetches, so what tripled was GPU uploads, not
-downloads (69). The committed download list was also stale, which led to a new
-todo: material slugs are never verified.
+downloads (69). The committed download list was also stale, because nothing
+checked material slugs; `material-slug-resolves` now does (2026-10-06).
 
 A verification pass on 2026-09-13 re-read every acceptance criterion against the
 code rather than against the outcome notes, and found **two that were not
@@ -106,8 +106,7 @@ design rather than against the code.
 
 Still deliberately open, in [open-questions.md](open-questions.md): schema
 migrations, the two unbaked conifers that only the regression fixture uses, and
-the left-handed compass. Open todo: material slugs are never checked against
-`assets/verified.json`.
+the left-handed compass.
 
 ## Briefs
 

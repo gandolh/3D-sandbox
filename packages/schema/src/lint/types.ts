@@ -28,6 +28,11 @@ export interface LintOptions {
    */
   knownAssets?: ReadonlySet<string>;
   /**
+   * Material `<source>/<slug>` pairs known to exist. When omitted, material
+   * slugs are not checked, for the same reason as `knownAssets`.
+   */
+  knownMaterials?: ReadonlySet<string>;
+  /**
    * Minimum distance from an opening's edge to the end of its host wall.
    * Below this there is not enough material left to carry the load.
    */
@@ -48,6 +53,7 @@ export interface LintOptions {
 
 export interface ResolvedOptions {
   knownAssets: ReadonlySet<string> | undefined;
+  knownMaterials: ReadonlySet<string> | undefined;
   minOpeningEdgeMargin: number;
   maxScatterInstances: number;
   scatterErrorMultiple: number;

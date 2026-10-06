@@ -2,7 +2,12 @@ import type { SceneDocument } from "../document.js";
 import { resolveEntities } from "./entities.js";
 import { polygonsHaveArea, scatterDensityIsSane, shotCameraIsValid } from "./rules/context.js";
 import { uniqueIds } from "./rules/identity.js";
-import { assetResolves, materialResolves, materialsAreUsed } from "./rules/references.js";
+import {
+  assetResolves,
+  materialResolves,
+  materialSlugResolves,
+  materialsAreUsed,
+} from "./rules/references.js";
 import { roofCoversWalls } from "./rules/roofs.js";
 import { roomsAreHabitable } from "./rules/rooms.js";
 import { runIsWellFormed } from "./rules/runs.js";
@@ -30,6 +35,7 @@ export const RULES: readonly Rule[] = [
   polygonsHaveArea,
   materialResolves,
   assetResolves,
+  materialSlugResolves,
   scatterDensityIsSane,
   shotCameraIsValid,
   materialsAreUsed,
@@ -46,6 +52,7 @@ export const RULES: readonly Rule[] = [
 export function lintScene(doc: SceneDocument, options: LintOptions = {}): LintFinding[] {
   const opts = {
     knownAssets: options.knownAssets,
+    knownMaterials: options.knownMaterials,
     minOpeningEdgeMargin: options.minOpeningEdgeMargin ?? DEFAULTS.minOpeningEdgeMargin,
     maxScatterInstances: options.maxScatterInstances ?? DEFAULTS.maxScatterInstances,
     scatterErrorMultiple: options.scatterErrorMultiple ?? DEFAULTS.scatterErrorMultiple,
