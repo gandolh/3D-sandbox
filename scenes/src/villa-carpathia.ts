@@ -181,7 +181,9 @@ const villa: SceneDocumentInput = {
     scatter: [
       {
         id: "forest",
-        assets: ["polyhaven/pine_tree_01", "polyhaven/fir_tree_01", "polyhaven/tree_small_02"],
+        // One species on purpose: pine_tree_01 and fir_tree_01 were never baked, so
+        // they rendered as tree_small_02 anyway (owner decision, 2026-10-06).
+        assets: ["polyhaven/tree_small_02"],
         area: rect(-60, -60, 120, 120),
         density: 2.1,
         seed: 20260621,

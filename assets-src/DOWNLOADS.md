@@ -18,11 +18,9 @@ Run `bash assets-src/download.sh` to fetch everything into place.
 | `polyhaven/ArmChair_01` | model | 5 file(s), 2.7 MB | greenhollow, villa-carpathia |
 | `polyhaven/clay_plaster` | material | 4 file(s), 7.1 MB | elmsgate, greenhollow, villa-carpathia |
 | `polyhaven/CoffeeTable_01` | model | 5 file(s), 2.1 MB | greenhollow, villa-carpathia |
-| `polyhaven/fir_tree_01` | model | **too heavy** — 486.6 MB | villa-carpathia |
 | `polyhaven/leafy_grass` | material | 4 file(s), 16.7 MB | greenhollow, villa-carpathia |
 | `polyhaven/outdoor_table_chair_set_01` | model | 8 file(s), 3.1 MB | elmsgate, greenhollow |
 | `polyhaven/painted_wooden_bench` | model | 5 file(s), 7.6 MB | elmsgate, greenhollow |
-| `polyhaven/pine_tree_01` | model | **too heavy** — 936.7 MB | villa-carpathia |
 | `polyhaven/planter_box_01` | model | 5 file(s), 7.6 MB | elmsgate, greenhollow |
 | `polyhaven/planter_box_02` | model | 5 file(s), 7.7 MB | greenhollow |
 | `polyhaven/planter_box_03` | model | 5 file(s), 7.8 MB | elmsgate, greenhollow |
@@ -41,8 +39,6 @@ Poly Haven's photoreal vegetation carries far more mesh than the two-tier
 decision anticipated — the wiki's "50–200k triangles for a photoreal tree" is out
 by about two orders of magnitude.
 
-- `polyhaven/fir_tree_01` — **486.6 MB**, of which 456.3 MB is mesh
-- `polyhaven/pine_tree_01` — **936.7 MB**, of which 904.9 MB is mesh
 - `polyhaven/tree_small_02` — **110.0 MB**, of which 90.7 MB is mesh
 
 Instancing does not help: a 905 MB mesh is 905 MB whether it appears once or 284

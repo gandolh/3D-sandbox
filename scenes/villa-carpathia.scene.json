@@ -277,8 +277,6 @@
       {
         "id": "forest",
         "assets": [
-          "polyhaven/pine_tree_01",
-          "polyhaven/fir_tree_01",
           "polyhaven/tree_small_02"
         ],
         "area": [

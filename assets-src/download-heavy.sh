@@ -33,64 +33,6 @@ fetch_one() {                                 # url target expected_bytes
 }
 
 
-echo '→ polyhaven/fir_tree_01  (486.6 MB)'
-mkdir -p 'polyhaven/fir_tree_01'
-fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/gltf/2k/fir_tree_01/fir_tree_01_2k.gltf' 'polyhaven/fir_tree_01/fir_tree_01_2k.gltf' 30279
-mkdir -p 'polyhaven/fir_tree_01/textures'
-fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/fir_tree_01/fir_tree_01_bark_nor_gl_2k.jpg' 'polyhaven/fir_tree_01/textures/fir_tree_01_bark_nor_gl_2k.jpg' 3920997
-mkdir -p 'polyhaven/fir_tree_01/textures'
-fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/fir_tree_01/fir_tree_01_bark_diff_2k.jpg' 'polyhaven/fir_tree_01/textures/fir_tree_01_bark_diff_2k.jpg' 2839282
-mkdir -p 'polyhaven/fir_tree_01/textures'
-fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/fir_tree_01/fir_tree_01_bark_arm_2k.jpg' 'polyhaven/fir_tree_01/textures/fir_tree_01_bark_arm_2k.jpg' 2783615
-mkdir -p 'polyhaven/fir_tree_01/textures'
-fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/fir_tree_01/fir_tree_01_trunk_a_nor_gl_2k.jpg' 'polyhaven/fir_tree_01/textures/fir_tree_01_trunk_a_nor_gl_2k.jpg' 3642074
-mkdir -p 'polyhaven/fir_tree_01/textures'
-fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/fir_tree_01/fir_tree_01_trunk_a_diff_2k.jpg' 'polyhaven/fir_tree_01/textures/fir_tree_01_trunk_a_diff_2k.jpg' 3028704
-mkdir -p 'polyhaven/fir_tree_01/textures'
-fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/fir_tree_01/fir_tree_01_trunk_a_arm_2k.jpg' 'polyhaven/fir_tree_01/textures/fir_tree_01_trunk_a_arm_2k.jpg' 2974686
-mkdir -p 'polyhaven/fir_tree_01/textures'
-fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/fir_tree_01/fir_tree_01_twig_nor_gl_2k.jpg' 'polyhaven/fir_tree_01/textures/fir_tree_01_twig_nor_gl_2k.jpg' 1611490
-mkdir -p 'polyhaven/fir_tree_01/textures'
-fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/fir_tree_01/fir_tree_01_twig_diff_2k.jpg' 'polyhaven/fir_tree_01/textures/fir_tree_01_twig_diff_2k.jpg' 1141996
-mkdir -p 'polyhaven/fir_tree_01/textures'
-fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/fir_tree_01/fir_tree_01_twig_arm_2k.jpg' 'polyhaven/fir_tree_01/textures/fir_tree_01_twig_arm_2k.jpg' 1271524
-mkdir -p 'polyhaven/fir_tree_01/textures'
-fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/fir_tree_01/fir_tree_01_trunk_b_nor_gl_2k.jpg' 'polyhaven/fir_tree_01/textures/fir_tree_01_trunk_b_nor_gl_2k.jpg' 3269280
-mkdir -p 'polyhaven/fir_tree_01/textures'
-fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/fir_tree_01/fir_tree_01_trunk_b_diff_2k.jpg' 'polyhaven/fir_tree_01/textures/fir_tree_01_trunk_b_diff_2k.jpg' 2548347
-mkdir -p 'polyhaven/fir_tree_01/textures'
-fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/fir_tree_01/fir_tree_01_trunk_b_arm_2k.jpg' 'polyhaven/fir_tree_01/textures/fir_tree_01_trunk_b_arm_2k.jpg' 2718246
-fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/fir_tree_01/fir_tree_01.bin' 'polyhaven/fir_tree_01/fir_tree_01.bin' 478462204
-
-echo '→ polyhaven/pine_tree_01  (936.7 MB)'
-mkdir -p 'polyhaven/pine_tree_01'
-fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/gltf/2k/pine_tree_01/pine_tree_01_2k.gltf' 'polyhaven/pine_tree_01/pine_tree_01_2k.gltf' 30596
-mkdir -p 'polyhaven/pine_tree_01/textures'
-fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/pine_tree_01/pine_tree_01_bark_nor_gl_2k.jpg' 'polyhaven/pine_tree_01/textures/pine_tree_01_bark_nor_gl_2k.jpg' 3373886
-mkdir -p 'polyhaven/pine_tree_01/textures'
-fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/pine_tree_01/pine_tree_01_bark_diff_2k.jpg' 'polyhaven/pine_tree_01/textures/pine_tree_01_bark_diff_2k.jpg' 2700448
-mkdir -p 'polyhaven/pine_tree_01/textures'
-fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/pine_tree_01/pine_tree_01_bark_arm_2k.jpg' 'polyhaven/pine_tree_01/textures/pine_tree_01_bark_arm_2k.jpg' 2941366
-mkdir -p 'polyhaven/pine_tree_01/textures'
-fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/pine_tree_01/pine_tree_01_trunk_a_nor_gl_2k.jpg' 'polyhaven/pine_tree_01/textures/pine_tree_01_trunk_a_nor_gl_2k.jpg' 3642074
-mkdir -p 'polyhaven/pine_tree_01/textures'
-fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/pine_tree_01/pine_tree_01_trunk_a_diff_2k.jpg' 'polyhaven/pine_tree_01/textures/pine_tree_01_trunk_a_diff_2k.jpg' 3028704
-mkdir -p 'polyhaven/pine_tree_01/textures'
-fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/pine_tree_01/pine_tree_01_trunk_a_arm_2k.jpg' 'polyhaven/pine_tree_01/textures/pine_tree_01_trunk_a_arm_2k.jpg' 2974686
-mkdir -p 'polyhaven/pine_tree_01/textures'
-fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/pine_tree_01/pine_tree_01_twig_nor_gl_2k.jpg' 'polyhaven/pine_tree_01/textures/pine_tree_01_twig_nor_gl_2k.jpg' 2924424
-mkdir -p 'polyhaven/pine_tree_01/textures'
-fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/pine_tree_01/pine_tree_01_twig_diff_2k.jpg' 'polyhaven/pine_tree_01/textures/pine_tree_01_twig_diff_2k.jpg' 1623201
-mkdir -p 'polyhaven/pine_tree_01/textures'
-fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/pine_tree_01/pine_tree_01_twig_arm_2k.jpg' 'polyhaven/pine_tree_01/textures/pine_tree_01_twig_arm_2k.jpg' 1524195
-mkdir -p 'polyhaven/pine_tree_01/textures'
-fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/pine_tree_01/pine_tree_01_trunk_b_nor_gl_2k.jpg' 'polyhaven/pine_tree_01/textures/pine_tree_01_trunk_b_nor_gl_2k.jpg' 3269280
-mkdir -p 'polyhaven/pine_tree_01/textures'
-fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/pine_tree_01/pine_tree_01_trunk_b_diff_2k.jpg' 'polyhaven/pine_tree_01/textures/pine_tree_01_trunk_b_diff_2k.jpg' 2548347
-mkdir -p 'polyhaven/pine_tree_01/textures'
-fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/pine_tree_01/pine_tree_01_trunk_b_arm_2k.jpg' 'polyhaven/pine_tree_01/textures/pine_tree_01_trunk_b_arm_2k.jpg' 2718246
-fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/gltf/8k/pine_tree_01/pine_tree_01.bin' 'polyhaven/pine_tree_01/pine_tree_01.bin' 948849556
-
 echo '→ polyhaven/tree_small_02  (110.0 MB)'
 mkdir -p 'polyhaven/tree_small_02'
 fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/gltf/2k/tree_small_02/tree_small_02_2k.gltf' 'polyhaven/tree_small_02/tree_small_02_2k.gltf' 9075

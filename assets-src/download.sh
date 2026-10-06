@@ -204,7 +204,5 @@ fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/shrub_04/shrub_
 mkdir -p 'polyhaven/shrub_04/textures'
 fetch_one 'https://dl.polyhaven.org/file/ph-assets/Models/jpg/2k/shrub_04/shrub_04_diff_2k.jpg' 'polyhaven/shrub_04/textures/shrub_04_diff_2k.jpg' 1202317
 
-# SKIPPED polyhaven/fir_tree_01 — 486.6 MB, see download-heavy.sh
-# SKIPPED polyhaven/pine_tree_01 — 936.7 MB, see download-heavy.sh
 # SKIPPED polyhaven/tree_small_02 — 110.0 MB, see download-heavy.sh
 echo "done — now run: npm run check"
