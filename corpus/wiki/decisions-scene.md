@@ -1,6 +1,6 @@
 ---
 summary: Locked calls about how a scene is modelled and authored — roof association, material colour, plot orientation, the asset manifest, and what counts as a schema bump.
-updated: 2026-09-11
+updated: 2026-10-07
 ---
 
 # Scene modelling decisions
@@ -41,7 +41,7 @@ can actually be composed.
 
 ## The plot is angled to the compass with `northOffset`, not re-authored (2026-09-11)
 
-Greenhollow's plot runs +Z into the site. Axis-aligned to true north that puts
+Greenhollow's plot runs −Z into the site. Axis-aligned to true north that puts
 the entire garden elevation in permanent shade at 45°N. Rather than rotate every
 coordinate, `site.northOffset` is set to 40° so the front faces south-west and
 takes the afternoon while the garden takes the morning.
@@ -186,12 +186,12 @@ consumer adapts to it.
   square cell with the empty parts alpha-tested away. Same picture; no geometry
   below the terrain.
 
-## The compass is right-handed: +X east, −Z north (2026-10-06)
+## The scenes were mirrored to keep their compass (2026-10-07)
 
-+Z north with +X east and Y up was a mirror of the world, so a plan copied from
-paper came out mirrored. Fixed by [brief 72](../briefs/todo/72-a-compass-that-matches-the-world.md),
-which also mirrors the three scenes so they look as before; bearings and
-`northOffset` keep their values. *Rejected*: documenting "x is west" forever.
+When north became −Z ([decisions.md](decisions.md)), [brief 72](../briefs/done/72-a-compass-that-matches-the-world.md)
+mirrored the three scenes: z → −z with point order kept, and yaw θ → 180° − θ,
+because the models are symmetric left to right but not front to back. Bearings
+and `northOffset` keep their values. Scatter draws from the south edge, `maxZ`.
 
 ## Villa's forest is one species (2026-10-06)
 

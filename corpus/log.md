@@ -1179,3 +1179,34 @@ their winding reversed).
 The conifers: dropped from `villa-carpathia`'s scatter rather than baked. The
 forest already rendered as `tree_small_02` alone. `npm run assets` no longer
 lists the 1.4 GB of pine and fir downloads. Tests pass (519).
+
+## 2026-10-07: Brief 72, the compass matches the world
+
+North is −Z and east is +X, so the sun now turns clockwise seen from above. The
+three scenes are mirrored in source and look as they did. **519 → 546 tests.**
+Three things are worth carrying forward.
+
+**A mirrored scene seen by a mirrored camera renders the mirrored picture.** So
+"the before and after renders match" means the after image matches the before
+image flipped left to right. Unflipped they differ by 50 to 66 RMS; flipped,
+they sit near the noise floor of two before renders. The old renders were the
+mirror images: a camera facing north had west on its right.
+
+**The brief's recipe was wrong twice for this code, and both were caught by
+asking what reads the data.** Reversing footprints would have renumbered walls
+and moved every opening, while nothing in 3D reads winding; the one reader was
+the plan's door swing. Negating yaw would have turned the hearth chairs away
+from the fire: the models are symmetric left to right, not front to back, so
+their mirror is a half turn, 180° − θ.
+
+**A sampler's anchor is a hidden convention.** Scatter drew from `minZ`, which
+silently meant "the south edge". After the mirror it meant the north edge, and
+the redraw put a tree in front of Villa Carpathia's main camera. Drawing from
+`maxZ` reproduces all 296 instances exactly. The pergola's vine has the same
+kind of anchor (its own left) and was left alone: its leaves come out reflected
+about the centreline, at the same density.
+
+The proof without pixels was stronger than the renders: the rebuilt JSON is
+the old JSON mirrored by rule, all 38 walls keep their bearings, and every plan
+SVG is byte-identical. The drawing, `setWallBearing` and `rect()` each carried
+the old sign. The path tracer, physics cache and viewport did not.

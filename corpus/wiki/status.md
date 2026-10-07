@@ -1,6 +1,6 @@
 ---
 summary: Dated snapshot of what is built, what is in flight, and what is next — the living dashboard.
-updated: 2026-10-06
+updated: 2026-10-07
 ---
 
 # Status
@@ -104,9 +104,15 @@ physics cache's claim that keying on the revision "makes both impossible". Each
 survived because a confident comment invites checking against your memory of the
 design rather than against the code.
 
+Brief 72 (2026-10-07) made the compass right-handed: north is −Z and east is
++X, so the sun turns clockwise seen from above. The three scenes were mirrored
+to keep their look, proven by renders, unchanged wall bearings and
+byte-identical plans. Renders of the scenes are now the mirror images of
+earlier ones, and the right way round.
+
 Still deliberately open, in [open-questions.md](open-questions.md): schema
-migrations, the two unbaked conifers that only the regression fixture uses, and
-the left-handed compass.
+migrations. The two unbaked conifers were dropped from villa's forest on
+2026-10-06.
 
 ## Briefs
 
@@ -180,6 +186,7 @@ the left-handed compass.
 | 69 | [Every ARM texture is loaded three times](../briefs/done/69-every-arm-texture-is-loaded-three-times.md) | done |
 | 70 | [ScatterInstance is declared twice](../briefs/done/70-scatterinstance-is-declared-twice.md) | done |
 | 71 | [Numbers that drift](../briefs/done/71-numbers-that-drift.md) | done |
+| 72 | [A compass that matches the world](../briefs/done/72-a-compass-that-matches-the-world.md) | done |
 | 43 | [Impostor quads are the wrong shape](../briefs/done/43-impostor-quads-are-the-wrong-shape.md) | done |
 | 44 | [The dome and the render disagree after sunset](../briefs/done/44-the-dome-and-the-render-disagree-after-sunset.md) | done |
 | 45 | [Scatter counts and seeds](../briefs/done/45-scatter-counts-and-seeds.md) | done |

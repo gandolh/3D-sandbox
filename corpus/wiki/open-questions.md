@@ -1,6 +1,6 @@
 ---
 summary: Genuinely unresolved questions — deleted the moment they are answered.
-updated: 2026-10-06
+updated: 2026-10-07
 ---
 
 # Open questions
@@ -22,7 +22,6 @@ generator throws on it; stairs need a second storey. Nothing is blocked on
 either, and a page of things nothing is blocked on stops being read. They come
 back when a scene wants one._
 
-_The compass and the unbaked conifers were both decided by the owner on
-2026-10-06. The compass is [brief 72](../briefs/todo/72-a-compass-that-matches-the-world.md);
+_The unbaked conifers were decided by the owner on 2026-10-06:
 villa-carpathia's forest is now one species. See
 [decisions-scene.md](decisions-scene.md)._

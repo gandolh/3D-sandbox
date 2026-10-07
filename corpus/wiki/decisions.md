@@ -1,6 +1,6 @@
 ---
 summary: Locked technical and design calls with the reasons behind them — read before proposing an alternative, so settled trade-offs are not relitigated.
-updated: 2026-09-11
+updated: 2026-10-07
 ---
 
 # Decisions
@@ -79,6 +79,19 @@ _2026-09-11_ — Angles are degrees on disk and on screen, radians past the sche
 boundary. Metres, Y-up, right-handed.
 **Why**: documents are written by hand. Y-up because fighting three.js's native
 axis means fighting every addon.
+
+## The compass: +X east, −Z north
+_2026-10-07_. With +Y up, north is −Z and east is +X. Azimuth and wall bearing
+0/90/180/270 point −Z/+X/+Z/−X, and seen from above the sun turns clockwise.
+`directionFrom` (solar) and `wallBearing` (schema) share it, and a solar test
+holds the two together. The plan drawing, `setWallBearing` and `rect()` follow
+it. Built by [brief 72](../briefs/done/72-a-compass-that-matches-the-world.md).
+Rejected: +Z north, the convention until then. With +X east and +Y up it is a
+mirror image: the sun swept anticlockwise and a plan copied from paper was
+built reversed. Also rejected: flipping east instead, which keeps the mirror,
+and documenting "x is west" forever.
+**Why**: one sign in one place, and a paper plan transcribes as x = east
+without thinking.
 
 ## Shared primitives live in `@solstice/schema/derive`, not a new package
 _2026-09-12_ — Any computation the **generator** and its **checker** both need

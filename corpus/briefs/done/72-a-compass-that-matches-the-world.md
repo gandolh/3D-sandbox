@@ -77,3 +77,72 @@ one place. Do not also flip east; changing both puts the mirror back.
 - Each existing scene's before/after render matches, and `wallBearing` names
   the same façade for every wall it did before.
 - `npm run check` exits 0.
+
+---
+
+## Outcome (2026-10-07)
+
+Shipped in `c739a96`. North is −Z and east is +X. `directionFrom` and
+`wallBearing` share the convention, a solar test holds them together, and the
+three scenes are mirrored in `scenes/src/*.ts` and rebuilt.
+
+**Three more places carried the old sign**, and changed with it. The plan
+drawing negated z and drew door swings to the old "left". The inspector's
+`setWallBearing` is `wallBearing`'s inverse. `rect()` now starts at the
+south-west corner, so `wallsFromFootprint` still numbers W-01 as the south
+wall. The path tracer, the physics cache and the viewport carry no copy: they
+read the sun vector and the document's coordinates.
+
+**Two departures from the brief's recipe, both to keep the scenes the same.**
+
+- *Point order is kept.* Nothing in 3D reads winding: `ExtrudeGeometry`
+  handles either, roofs and colliders use bounds, and roads use each segment's
+  own left. The one reader was the plan's door swing, fixed at the source.
+  Reversing would have swapped W-02 and W-04, moved every opening to the other
+  end of its wall, and turned every bearing by 180°.
+- *Yaw becomes 180° − θ, not −θ.* Measured on the glTF, `ArmChair_01` and
+  `painted_wooden_bench` are symmetric left to right but not front to back, so
+  a model's mirror image across the X axis is the model turned half a turn.
+  The armchair faces +Z, and −θ would have turned the hearth chairs away from
+  the chimney.
+
+**Scatter.** Anchored at `minZ`, the samplers drew a fresh forest after the
+mirror, with a tree in front of villa's `sw-threequarter` camera. They now start
+at the south edge (`maxZ`) and yaw by 180° − θ. All six fields reproduce their
+old 296 instances exactly, mirrored.
+
+**How the mirror was proven.**
+
+- The rebuilt JSON equals the old JSON mirrored by script (z → −z, yaw →
+  180° − θ), to 1e-9, for all three scenes.
+- All 38 walls give the same `wallBearing` as before.
+- At every scene time, the sun's new direction is the old one with z negated.
+- Every level's plan SVG is byte-identical before and after.
+- Renders, on the GPU via [running-on-a-gpu.md](../../wiki/running-on-a-gpu.md):
+  villa `sw-threequarter` at 17:42, elmsgate `row-oblique` at 11:30, greenhollow
+  `overview` at 17:20, each 960 × 540 at 64 samples. A mirrored scene seen by a
+  mirrored camera is the mirrored picture, so each after image is compared with
+  its before image flipped left to right. RMS over 8 × 8 blocks: 10.9, 3.5 and
+  3.9, against a noise floor of 5.7, 3.1 and 1.6 (two before renders), and 50 to
+  66 unflipped. The excess is in the trees. Every shadow lands on the same
+  facade: villa's west wall lit with its shadow thrown east, elmsgate's street
+  front lit, greenhollow's house and garage shadows where they were.
+
+**Asymmetric placements.** Moved and turned, not mirrored: `table-terrace`
+(elmsgate) and `table-garden` (greenhollow), both
+`outdoor_table_chair_set_01`, which is symmetric on neither axis. The planter
+boxes are symmetric to within a centimetre. Scattered `tree_small_02` and
+`shrub_01` to `04` stand where their mirrors stood but show their unmirrored
+selves.
+
+**The renders now show the world the right way round.** Before, a camera
+facing north had west on its right. Greenhollow's overview comment ("garage
+right, porch and greenhouse left") was false in the old render and is true
+now. The garden shot's "greenhouse to the left" now says right.
+
+**Left as they were.** The pergola's vine is drawn across the run in its own
+frame, so its leaves come out reflected about the centreline: same spread,
+different leaves. Two scene comments name the wrong side, before the mirror as
+well as after: villa's "W-01 faces the street" (W-03 does), and greenhollow's
+porch posts on "its open west and south edges" (the second leg is the north
+edge).

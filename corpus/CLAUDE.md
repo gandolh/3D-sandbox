@@ -28,7 +28,8 @@ Verify any path, symbol or command a page names before acting on it — pages dr
 - **Exact version pins.** No `^` or `~` anywhere. `.npmrc` sets `save-exact=true`.
 - **No `@anthropic-ai/sdk` in the app.** Authoring is a repo-time activity.
 - **Scene JSON files are truth**; SQLite is a derived, rebuildable index.
-- **Degrees in documents, radians internally.** Metres, Y-up, right-handed.
+- **Degrees in documents, radians internally.** Metres, Y-up, right-handed:
+  +X is east and −Z is north, so bearings turn clockwise seen from above.
 - **ESM everywhere**, `"type": "module"`, `.js` extensions in relative imports
   (NodeNext resolution).
 - **Zod: `.prefault()`, not `.default()`, for object defaults.** `.default({})`
