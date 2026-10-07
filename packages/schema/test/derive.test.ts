@@ -3,10 +3,13 @@ import {
   lintScene,
   MAX_COORDINATE,
   polygonNetArea,
+  rect,
   ScatterField,
   SceneDocument,
   scatterLattice,
   scatterSeed,
+  wallBearing,
+  wallsFromFootprint,
 } from "../src/index.js";
 import { baseScene } from "./fixtures.js";
 
@@ -41,6 +44,36 @@ const narrowFindings = (width: number) => {
     f.message.includes("narrower than its own posts"),
   );
 };
+
+/**
+ * The compass a wall is described by. North is −Z and east is +X, so with +Y up
+ * a bearing turns clockwise seen from above, as a real compass does. It was +Z
+ * north until 2026-10-07, which made every bearing a mirror image's.
+ */
+describe("wall bearing", () => {
+  it.each([
+    [[0, 3], [0, -1], 0],
+    [[0, 0], [4, 0], 90],
+    [[2, -1], [2, 5], 180],
+    [[0, 0], [-4, 0], 270],
+  ] as const)("names a wall from %j to %j as %i°", (start, end, bearing) => {
+    expect(wallBearing({ start: [start[0], start[1]], end: [end[0], end[1]] })).toBeCloseTo(bearing, 12);
+  });
+
+  it("numbers a rectangle's walls from the south side, anticlockwise seen from above", () => {
+    // x 1…5, z −6…−4: the south edge is z = −4, the larger z.
+    const footprint = rect(1, -6, 4, 2);
+    expect(footprint).toEqual([
+      [1, -4],
+      [5, -4],
+      [5, -6],
+      [1, -6],
+    ]);
+    // W-01 the south wall running east, then the east wall running north.
+    const walls = wallsFromFootprint(footprint, { material: "m" });
+    expect(walls.map((w) => wallBearing({ start: w.start, end: w.end }))).toEqual([90, 0, 270, 180]);
+  });
+});
 
 describe("post width", () => {
   // Absolute widths, not expressions of the constant: the previous version of
@@ -78,6 +111,15 @@ describe("scatter lattice", () => {
     const lattice = scatterLattice(field([3, 4], 40));
     expect(lattice.countX).toBe(13);
     expect(lattice.countZ).toBe(10);
+  });
+
+  it("starts in the south-west cell and steps north, toward −Z", () => {
+    // Rows were laid from the south edge while north was +Z, and still are.
+    // That is what let the scenes keep their orchards when they were mirrored.
+    const lattice = scatterLattice(field([3, 4], 40));
+    expect(lattice.originX).toBe(1.5);
+    expect(lattice.originZ).toBe(38);
+    expect(lattice.stepZ).toBe(-4);
   });
 
   it("terminates at the largest coordinate the schema admits", () => {

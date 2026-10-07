@@ -45,12 +45,12 @@ walls = withOpenings(walls, "W-03", [
  * rectangles is how they drift apart.
  */
 const NEIGHBOURS = [
-  { id: "n-01", footprint: rect(-46, 22, 11, 9), height: 6.2, material: "render-neighbour" },
-  { id: "n-02", footprint: rect(-30, 24, 10, 8), height: 5.8, material: "render-neighbour" },
-  { id: "n-03", footprint: rect(-13, 23, 12, 9), height: 6.6, material: "render-neighbour" },
-  { id: "n-04", footprint: rect(6, 24, 10, 8), height: 5.4, material: "render-neighbour" },
-  { id: "n-05", footprint: rect(23, 22, 11, 10), height: 7.1, material: "render-neighbour" },
-  { id: "n-06", footprint: rect(40, 25, 9, 8), height: 5.6, material: "render-neighbour" },
+  { id: "n-01", footprint: rect(-46, -31, 11, 9), height: 6.2, material: "render-neighbour" },
+  { id: "n-02", footprint: rect(-30, -32, 10, 8), height: 5.8, material: "render-neighbour" },
+  { id: "n-03", footprint: rect(-13, -32, 12, 9), height: 6.6, material: "render-neighbour" },
+  { id: "n-04", footprint: rect(6, -32, 10, 8), height: 5.4, material: "render-neighbour" },
+  { id: "n-05", footprint: rect(23, -32, 11, 10), height: 7.1, material: "render-neighbour" },
+  { id: "n-06", footprint: rect(40, -33, 9, 8), height: 5.6, material: "render-neighbour" },
 ];
 
 /** A rectangle grown by `margin` on every side. */
@@ -162,13 +162,13 @@ const villa: SceneDocumentInput = {
     // settle them, and a scene where everything is already at y = 0 proves
     // nothing.
     placements: [
-      { id: "chair-01", asset: "polyhaven/ArmChair_01", position: [-1.6, 1.4, 2.2], rotationY: 24 },
-      { id: "chair-02", asset: "polyhaven/ArmChair_01", position: [1.5, 0.9, 2.6], rotationY: -140 },
+      { id: "chair-01", asset: "polyhaven/ArmChair_01", position: [-1.6, 1.4, -2.2], rotationY: 156 },
+      { id: "chair-02", asset: "polyhaven/ArmChair_01", position: [1.5, 0.9, -2.6], rotationY: -40 },
       {
         id: "table-01",
         asset: "polyhaven/CoffeeTable_01",
-        position: [0, 2.1, 1.1],
-        rotationY: 0,
+        position: [0, 2.1, -1.1],
+        rotationY: 180,
         scale: 1.2,
       },
     ],
@@ -200,10 +200,10 @@ const villa: SceneDocumentInput = {
       {
         id: "street",
         path: [
-          [-60, 17],
-          [-20, 17.4],
-          [20, 17.2],
-          [60, 17.6],
+          [-60, -17],
+          [-20, -17.4],
+          [20, -17.2],
+          [60, -17.6],
         ],
         width: 6,
         material: "asphalt-road",
@@ -215,13 +215,13 @@ const villa: SceneDocumentInput = {
     {
       id: "sw-threequarter",
       name: "South-west",
-      camera: { position: [-14.5, 6.2, -12.8], target: [0, 2.4, 0], focalLength: 35 },
+      camera: { position: [-14.5, 6.2, 12.8], target: [0, 2.4, 0], focalLength: 35 },
       render: { width: 1920, height: 1080, samples: 600 },
     },
     {
       id: "garden-elevation",
       name: "Garden elevation",
-      camera: { position: [0, 3.2, 22], target: [0, 2.6, 0], focalLength: 85 },
+      camera: { position: [0, 3.2, -22], target: [0, 2.6, 0], focalLength: 85 },
       solar: { date: "2026-06-21", time: "07:15", hdri: "kloppenheim_02" },
       render: { width: 2560, height: 1440, samples: 600 },
     },

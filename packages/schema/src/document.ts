@@ -175,7 +175,7 @@ export const Roof = z.strictObject({
    * in the footprint.
    */
   overhang: Meters.min(0).default(0.4),
-  /** Ridge direction for `gable`, in plan degrees clockwise from +Z (north). */
+  /** Ridge direction for `gable`, in plan degrees clockwise from −Z (north). */
   ridgeBearing: Degrees.optional(),
   material: MaterialId,
 });
@@ -289,7 +289,7 @@ export const BuildingMass = z.strictObject({
   roofKind: z.enum(["gable", "hip", "flat"]).default("gable"),
   pitch: Degrees.min(0).max(85).default(30),
   /**
-   * Ridge direction, in plan degrees clockwise from +Z — the same meaning as
+   * Ridge direction, in plan degrees clockwise from −Z — the same meaning as
    * `Roof.ridgeBearing`, and omitted the same way to mean "along the long axis".
    *
    * A context mass could declare that it was gabled but not which way it ran,
@@ -366,7 +366,7 @@ export const Site = z.strictObject({
   longitude: z.number().min(-180).max(180),
   /** IANA zone, used to resolve local clock time to a sun position. */
   timezone: z.string().min(1),
-  /** Scene +Z is true north rotated by this many degrees. */
+  /** Scene north (−Z) points this many degrees clockwise of true north. */
   northOffset: Degrees.default(0),
   terrain: Terrain,
 });

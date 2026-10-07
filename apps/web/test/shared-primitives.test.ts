@@ -12,9 +12,12 @@ import {
   SceneDocument,
   type Wall,
   wallAngle,
+  wallBearing,
+  wallLength,
 } from "@solstice/schema";
 import * as THREE from "three";
 import { describe, expect, it } from "vitest";
+import { setWallBearing } from "../src/lib/entities.js";
 
 /**
  * The drift guards for brief 37.
@@ -91,12 +94,12 @@ describe("wall orientation", () => {
 /**
  * A run stands against the walls, so it has to turn the way they do.
  *
- * `runs.ts` used to carry its own copy of `wallAngle`'s `atan2`. Identical
- * today, which is why nothing failed — and `open-questions.md` records that the
- * compass may yet change "by one sign", at which point a copy keeps the old one
- * and every pergola, fence, hedge and colonnade turns out of line with the walls
- * beside it. These read the run's direction out of its vertices and hold it to
- * `wallAngle`'s, so a run that stops following the walls fails here.
+ * `runs.ts` used to carry its own copy of `wallAngle`'s `atan2`. It was
+ * identical, which is why nothing failed. But the day a sign changes, a copy
+ * keeps the old one and every pergola, fence, hedge and colonnade turns out of
+ * line with the walls beside it. These read the run's direction out of its
+ * vertices and hold it to `wallAngle`'s, so a run that stops following the
+ * walls fails here.
  */
 describe("run orientation", () => {
   const run = (kind: Run["kind"], width: number): Run => ({
@@ -278,5 +281,26 @@ describe("post width", () => {
 
   it.each([0.05, 0.079, 0.081, 0.12, 0.159, 0.3])("warns at %f m exactly when the rows overlap", (width) => {
     expect(warns(width)).toBe(gap(width) < 0);
+  });
+});
+
+/**
+ * The inspector's Bearing field writes through `setWallBearing` and reads back
+ * through `wallBearing`. The two live in different workspaces, so a compass
+ * change that reaches one and not the other turns a typed 90° into 270°.
+ */
+describe("setWallBearing", () => {
+  it.each([0, 37, 90, 180, 251, 270])("is wallBearing's inverse at %i°", (bearing) => {
+    const turned = structuredClone(wall);
+    setWallBearing(turned, bearing);
+    expect(wallBearing(turned)).toBeCloseTo(bearing, 9);
+    expect(wallLength(turned)).toBeCloseTo(wallLength(wall), 9);
+  });
+
+  it("turns bearing 0 toward −Z, which is north", () => {
+    const turned = structuredClone(wall);
+    setWallBearing(turned, 0);
+    expect(turned.end[0]).toBeCloseTo(turned.start[0], 9);
+    expect(turned.end[1]).toBeLessThan(turned.start[1]);
   });
 });

@@ -13,8 +13,9 @@
  * scene had ever put two things in it.** Every level in the project until now
  * sat at elevation 0.
  *
- * The street is to the south (−Z) and the plot runs north. Left and right are
- * the visitor's, standing on the pavement facing the front door — so left is −X.
+ * The street is to the south (+Z) and the plot runs north, toward −Z. Left and
+ * right are the visitor's, standing on the pavement facing the front door — so
+ * left is −X.
  */
 import {
   doorOpening,
@@ -29,12 +30,14 @@ import {
 
 /** Half the lot width. A terrace is defined by this number being small. */
 const HALF_WIDTH = 3.25;
-/** Front of the house. The gap between it and z = 0 is the railed forecourt. */
-const FRONT = 1.4;
+/** The railed forecourt, between the pavement line at z = 0 and the house. */
+const FORECOURT = 1.4;
+/** Front of the house: the forecourt's depth north of z = 0, so negative. */
+const FRONT = -FORECOURT;
 const HOUSE_DEPTH = 9.2;
-const BACK = FRONT + HOUSE_DEPTH;
+const BACK = FRONT - HOUSE_DEPTH;
 /** Rear boundary wall. */
-const YARD_END = 24;
+const YARD_END = -24;
 
 const GROUND_HEIGHT = 3.0;
 const FIRST_HEIGHT = 2.8;
@@ -42,7 +45,7 @@ const FIRST_HEIGHT = 2.8;
 const EAVE = GROUND_HEIGHT + FIRST_HEIGHT;
 
 const WALL_THICKNESS = 0.34;
-const HOUSE = rect(-HALF_WIDTH, FRONT, HALF_WIDTH * 2, HOUSE_DEPTH);
+const HOUSE = rect(-HALF_WIDTH, BACK, HALF_WIDTH * 2, HOUSE_DEPTH);
 
 /**
  * The inside face of the walls.
@@ -54,7 +57,7 @@ const HOUSE = rect(-HALF_WIDTH, FRONT, HALF_WIDTH * 2, HOUSE_DEPTH);
  */
 const INSIDE = rect(
   -HALF_WIDTH + WALL_THICKNESS / 2,
-  FRONT + WALL_THICKNESS / 2,
+  BACK + WALL_THICKNESS / 2,
   HALF_WIDTH * 2 - WALL_THICKNESS,
   HOUSE_DEPTH - WALL_THICKNESS,
 );
@@ -253,13 +256,13 @@ const elmsgate: SceneDocumentInput = {
           { id: "slab-house", polygon: HOUSE, thickness: 0.25, material: "paving-yard" },
           {
             id: "slab-forecourt",
-            polygon: rect(-HALF_WIDTH, 0, HALF_WIDTH * 2, FRONT),
+            polygon: rect(-HALF_WIDTH, FRONT, HALF_WIDTH * 2, FORECOURT),
             thickness: 0.15,
             material: "pavement-stone",
           },
           {
             id: "slab-terrace",
-            polygon: rect(-HALF_WIDTH, BACK, HALF_WIDTH * 2, 4),
+            polygon: rect(-HALF_WIDTH, BACK - 4, HALF_WIDTH * 2, 4),
             thickness: 0.15,
             material: "paving-yard",
           },
@@ -285,7 +288,7 @@ const elmsgate: SceneDocumentInput = {
         // where an overhang would poke through the neighbour's roof. The
         // footprint used to be `HOUSE` exactly, which is no eave anywhere — on
         // the two elevations two of the three shots are of.
-        footprint: rect(-HALF_WIDTH, FRONT - 0.15, HALF_WIDTH * 2, HOUSE_DEPTH + 0.3),
+        footprint: rect(-HALF_WIDTH, BACK - 0.15, HALF_WIDTH * 2, HOUSE_DEPTH + 0.3),
         baseElevation: EAVE,
         pitch: 38,
         // Zero, because `overhang` is the *least* the roof oversails its walls
@@ -301,15 +304,15 @@ const elmsgate: SceneDocumentInput = {
     ],
 
     placements: [
-      { id: "bench-yard", asset: "polyhaven/painted_wooden_bench", position: [1.9, 0, 16.4], rotationY: 180 },
+      { id: "bench-yard", asset: "polyhaven/painted_wooden_bench", position: [1.9, 0, -16.4], rotationY: 0 },
       {
         id: "table-terrace",
         asset: "polyhaven/outdoor_table_chair_set_01",
-        position: [-1.1, 0, 12.4],
-        rotationY: 25,
+        position: [-1.1, 0, -12.4],
+        rotationY: 155,
       },
-      { id: "planter-door", asset: "polyhaven/planter_box_01", position: [-1.9, 0, 0.75], rotationY: 0 },
-      { id: "planter-bay", asset: "polyhaven/planter_box_03", position: [1.9, 0, 0.75], rotationY: 0 },
+      { id: "planter-door", asset: "polyhaven/planter_box_01", position: [-1.9, 0, -0.75], rotationY: 180 },
+      { id: "planter-bay", asset: "polyhaven/planter_box_03", position: [1.9, 0, -0.75], rotationY: 180 },
     ],
 
     runs: [
@@ -321,8 +324,8 @@ const elmsgate: SceneDocumentInput = {
         id: "rail-west",
         kind: "fence",
         path: [
-          [-HALF_WIDTH, 0.05],
-          [-0.85, 0.05],
+          [-HALF_WIDTH, -0.05],
+          [-0.85, -0.05],
         ],
         // A fence's `width` is its thickness — it stands on one line of posts,
         // unlike a pergola where the number is the span between two rows.
@@ -335,8 +338,8 @@ const elmsgate: SceneDocumentInput = {
         id: "rail-east",
         kind: "fence",
         path: [
-          [0.85, 0.05],
-          [HALF_WIDTH, 0.05],
+          [0.85, -0.05],
+          [HALF_WIDTH, -0.05],
         ],
         width: 0.07,
         height: 1.05,
@@ -352,7 +355,7 @@ const elmsgate: SceneDocumentInput = {
       // what makes this a terrace rather than a detached house on a thin plot.
       {
         id: "nb-w1",
-        footprint: rect(-HALF_WIDTH - 6.5, FRONT, 6.5, HOUSE_DEPTH),
+        footprint: rect(-HALF_WIDTH - 6.5, BACK, 6.5, HOUSE_DEPTH),
         height: EAVE,
         roofKind: "gable",
         pitch: 38,
@@ -361,7 +364,7 @@ const elmsgate: SceneDocumentInput = {
       },
       {
         id: "nb-w2",
-        footprint: rect(-HALF_WIDTH - 13, FRONT, 6.5, HOUSE_DEPTH),
+        footprint: rect(-HALF_WIDTH - 13, BACK, 6.5, HOUSE_DEPTH),
         height: EAVE,
         roofKind: "gable",
         pitch: 38,
@@ -370,7 +373,7 @@ const elmsgate: SceneDocumentInput = {
       },
       {
         id: "nb-e1",
-        footprint: rect(HALF_WIDTH, FRONT, 6.5, HOUSE_DEPTH),
+        footprint: rect(HALF_WIDTH, BACK, 6.5, HOUSE_DEPTH),
         height: EAVE,
         roofKind: "gable",
         pitch: 38,
@@ -379,7 +382,7 @@ const elmsgate: SceneDocumentInput = {
       },
       {
         id: "nb-e2",
-        footprint: rect(HALF_WIDTH + 6.5, FRONT, 6.5, HOUSE_DEPTH),
+        footprint: rect(HALF_WIDTH + 6.5, BACK, 6.5, HOUSE_DEPTH),
         height: EAVE,
         roofKind: "gable",
         pitch: 38,
@@ -390,7 +393,7 @@ const elmsgate: SceneDocumentInput = {
       // looks out at.
       {
         id: "nb-rear",
-        footprint: rect(-16, YARD_END + 6, 32, 9),
+        footprint: rect(-16, YARD_END - 6 - 9, 32, 9),
         height: EAVE,
         roofKind: "gable",
         pitch: 38,
@@ -403,8 +406,8 @@ const elmsgate: SceneDocumentInput = {
       {
         id: "street",
         path: [
-          [-45, -5.5],
-          [45, -5.5],
+          [-45, 5.5],
+          [45, 5.5],
         ],
         width: 7,
         material: "asphalt-road",
@@ -412,8 +415,8 @@ const elmsgate: SceneDocumentInput = {
       {
         id: "pavement",
         path: [
-          [-45, -1.2],
-          [45, -1.2],
+          [-45, 1.2],
+          [45, 1.2],
         ],
         width: 3.4,
         material: "pavement-stone",
@@ -421,8 +424,8 @@ const elmsgate: SceneDocumentInput = {
       {
         id: "pavement-far",
         path: [
-          [-45, -10.7],
-          [45, -10.7],
+          [-45, 10.7],
+          [45, 10.7],
         ],
         width: 3.4,
         material: "pavement-stone",
@@ -433,7 +436,7 @@ const elmsgate: SceneDocumentInput = {
       {
         id: "yard-planting",
         assets: ["polyhaven/tree_small_02", "polyhaven/shrub_01", "polyhaven/shrub_02", "polyhaven/shrub_04"],
-        area: rect(-2.9, 17, 5.8, 6.4),
+        area: rect(-2.9, -23.4, 5.8, 6.4),
         density: 12,
         seed: 7,
         material: "planting-green",
@@ -466,7 +469,7 @@ const elmsgate: SceneDocumentInput = {
       // Straight on from across the road. A terrace only reads as a terrace when
       // the neighbours are in frame, so this is framed wide enough to catch one
       // either side rather than tight on our own facade.
-      camera: { position: [0, 3.4, -12.5], target: [0, 4.6, 4.5], focalLength: 35 },
+      camera: { position: [0, 3.4, 12.5], target: [0, 4.6, -4.5], focalLength: 35 },
       render: { width: 1920, height: 1080, samples: 600 },
     },
     {
@@ -475,7 +478,7 @@ const elmsgate: SceneDocumentInput = {
       // From up the street, looking along the frontages. This is the shot that
       // shows the party-wall junction and the continuous roofline — the two
       // things that are structurally different from every scene before this one.
-      camera: { position: [-17, 2.9, -8.5], target: [9, 3.6, 4.5], focalLength: 45 },
+      camera: { position: [-17, 2.9, 8.5], target: [9, 3.6, -4.5], focalLength: 45 },
       render: { width: 1920, height: 1080, samples: 600 },
     },
     {
@@ -484,7 +487,7 @@ const elmsgate: SceneDocumentInput = {
       // From the back of the yard looking at the rear elevation, both storeys in
       // frame. The yard faces north, so this is flat light by definition and the
       // shot has to work on form rather than on sun.
-      camera: { position: [2.4, 1.85, 21.5], target: [-0.6, 3.2, 11.2], focalLength: 32 },
+      camera: { position: [2.4, 1.85, -21.5], target: [-0.6, 3.2, -11.2], focalLength: 32 },
       solar: { date: "2026-09-15", time: "12:40", hdri: "kloppenheim_02" },
       render: { width: 1920, height: 1080, samples: 600 },
     },

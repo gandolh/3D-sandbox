@@ -10,7 +10,12 @@ export type Polygon = readonly Plan[];
 export const sub = (a: Plan, b: Plan): Plan => [a[0] - b[0], a[1] - b[1]];
 export const length = (a: Plan, b: Plan): M => Math.hypot(b[0] - a[0], b[1] - a[1]);
 
-/** Signed area via the shoelace formula. Positive is counter-clockwise. */
+/**
+ * Signed area via the shoelace formula, in raw `(x, z)` terms.
+ *
+ * Positive when the points turn from +X toward +Z. With −Z north, that is
+ * **clockwise** seen from above. Only its magnitude is used.
+ */
 export function signedArea(poly: Polygon): number {
   let sum = 0;
   for (let i = 0; i < poly.length; i++) {

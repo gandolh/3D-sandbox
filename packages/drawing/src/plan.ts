@@ -131,7 +131,7 @@ const pts = ([x, y]: readonly [number, number]): string => `${n(x)},${n(y)}`;
  * Two steps, because one is not enough and the first version proved it.
  * Connectivity alone finds the **envelopes**: each building's walls share
  * corners and form a loop. But a partition shares corners with nothing —
- * `P-hall-w` runs from (−0.6, 20.3) to (−0.6, 27.4) and neither end touches an
+ * `P-hall-w` runs from (−0.6, −20.3) to (−0.6, −27.4) and neither end touches an
  * external wall's corner — so grouping by connectivity put every partition in
  * its own group and drew the house as four blank walls with three doors in
  * them. Six of its ten doors were simply missing.
@@ -348,9 +348,10 @@ function dimensionStrings(extent: ReturnType<typeof bounds>, p: Project, sheet: 
   };
 
   const mm = (m: number): string => `${Math.round(m * 1000)}`;
-  const sw = p(extent.minX, extent.minZ);
-  const se = p(extent.maxX, extent.minZ);
-  const nw = p(extent.minX, extent.maxZ);
+  // −Z is north, so the south edge is the one at `maxZ`.
+  const sw = p(extent.minX, extent.maxZ);
+  const se = p(extent.maxX, extent.maxZ);
+  const nw = p(extent.minX, extent.minZ);
 
   run(nw, sw, mm(extent.maxZ - extent.minZ), -off, 0);
   run(sw, se, mm(extent.maxX - extent.minX), 0, off);

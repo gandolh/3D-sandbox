@@ -80,9 +80,19 @@ export function sunPosition(site: Site, solar: SolarTime): SunPosition {
 /**
  * Altitude and scene azimuth to a unit vector.
  *
- * Scene +Z is north and +X is east, so a sun in the west (azimuth 270°) gives a
- * negative x — and therefore shadows that fall east. That relationship is the
- * cheapest way to sanity-check a render.
+ * Scene −Z is north and +X is east. With +Y up that is the right-handed pair:
+ * looking down from above with east to the right, north is up the screen and
+ * the sun sweeps clockwise, as a real one does. Azimuth 0/90/180/270 gives
+ * −Z/+X/+Z/−X.
+ *
+ * It used to be +Z north, which with +X east is a mirror image: the sun swept
+ * anticlockwise, and a site plan transcribed from paper was built reversed.
+ * `wallBearing` in `@solstice/schema` uses the same convention, and a test in
+ * this package holds the two together.
+ *
+ * A sun in the west (azimuth 270°) gives a negative x, so shadows fall east. A
+ * noon sun in the south gives a positive z, so shadows fall toward −Z, north.
+ * Those two facts are the cheapest way to sanity-check a render.
  */
 export function directionFrom(altitude: number, sceneAzimuth: number): SunVector {
   const alt = (altitude * Math.PI) / 180;
@@ -91,7 +101,7 @@ export function directionFrom(altitude: number, sceneAzimuth: number): SunVector
   return {
     x: horizontal * Math.sin(az),
     y: Math.sin(alt),
-    z: horizontal * Math.cos(az),
+    z: -horizontal * Math.cos(az),
   };
 }
 

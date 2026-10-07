@@ -35,13 +35,22 @@ export type WallSpec = NonNullable<WallInput>[number];
  */
 export type PlanInput = [number, number];
 
-/** An axis-aligned rectangle in plan space, given by its corner and extent. */
+/**
+ * An axis-aligned rectangle in plan space, given by its minimum corner and
+ * extent.
+ *
+ * The points start at the south-west corner and run east, then north:
+ * anticlockwise seen from above. With −Z north the minimum corner is the
+ * north-west one, so the first point is `[x, z + depth]`. The order matters for
+ * one thing: `wallsFromFootprint` numbers walls in it, so `W-01` is the south
+ * wall and a door on it swings to its left, into the building.
+ */
 export function rect(x: number, z: number, width: number, depth: number): PlanInput[] {
   return [
-    [x, z],
-    [x + width, z],
-    [x + width, z + depth],
     [x, z + depth],
+    [x + width, z + depth],
+    [x + width, z],
+    [x, z],
   ];
 }
 

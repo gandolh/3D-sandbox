@@ -7,7 +7,7 @@
  * kitchen garden, a greenhouse, a pond, and an orchard planted in rows at the
  * far end. Hedges down both flanks, a concrete wall and a metal gate at the road.
  *
- * The plot runs north from the road: +Z is north, the road is to the south, and
+ * The plot runs north from the road: −Z is north, the road is to the south, and
  * the front boundary is z = 0. Left and right are the visitor's, entering the
  * gate and facing the house — so left is −X.
  *
@@ -46,7 +46,7 @@ const PORCH_EAVE = 2.7;
  * toward the road, is the only direction available: the porch holds the west,
  * the garage the east, and the kitchen garden and the pond the north.
  */
-const HOUSE = rect(-5.5, 20, 11, 12);
+const HOUSE = rect(-5.5, -32, 11, 12);
 
 /**
  * Where the internal walls run, in metres.
@@ -67,14 +67,14 @@ const HOUSE = rect(-5.5, 20, 11, 12);
  */
 const SPINE_W = -0.6; // hall's west wall
 const SPINE_E = 1.2; // hall's east wall
-const BED_1_2 = 23.9; // between the two west bedrooms
-const WET = 24.3; // kitchen | bathroom, the one plumbing wall
-const DAY = 27.4; // the sleeping/serving half | the living room
+const BED_1_2 = -23.9; // between the two west bedrooms
+const WET = -24.3; // kitchen | bathroom, the one plumbing wall
+const DAY = -27.4; // the sleeping/serving half | the living room
 const BED_3_W = 2.0; // living room | north-east bedroom
-const LARDER = 26.2; // bathroom | larder, on the servant side
-const PORCH = rect(-9.5, 23, 4, 8);
-const GARAGE = rect(7, 20, 7, 7);
-const GREENHOUSE = rect(-10, 36, 5, 6);
+const LARDER = -26.2; // bathroom | larder, on the servant side
+const PORCH = rect(-9.5, -31, 4, 8);
+const GARAGE = rect(7, -27, 7, 7);
+const GREENHOUSE = rect(-10, -42, 5, 6);
 
 /* ── walls ─────────────────────────────────────────────────────── */
 
@@ -109,7 +109,7 @@ houseWalls = withOpenings(houseWalls, "W-01", [
  * The working side of the house, so the openings answer to the rooms behind
  * them rather than to a rhythm: a wide kitchen window over where a sink goes, a
  * small high one to the bathroom for privacy, and a full window to the
- * north-east bedroom. Offsets from z = 20.
+ * north-east bedroom. Offsets from z = −20.
  */
 houseWalls = withOpenings(houseWalls, "W-02", [
   windowOpening("w-e1", 1.9, 1.6, 1.3, 0.95), // kitchen
@@ -141,7 +141,7 @@ houseWalls = withOpenings(houseWalls, "W-03", [
  * summer. So it gets a second door: you step off the porch straight into the
  * living room, which is the move the whole type is built around. The two
  * bedroom windows below it are small and high-silled, facing the afternoon sun.
- * Offsets from z = 32 running south.
+ * Offsets from z = −32 running south.
  */
 houseWalls = withOpenings(houseWalls, "W-04", [
   doorOpening("d-porch", 1.8, 1.1, 2.3), // living room, off the porch
@@ -180,14 +180,14 @@ const houseInternals: WallSpec[] = [
   // The spine: hall's west wall, with the two bedroom doors off it.
   partition(
     "P-hall-w",
-    [SPINE_W, 20.3],
+    [SPINE_W, -20.3],
     [SPINE_W, DAY],
     [doorOpening("d-bed1", 1.6, 0.9, 2.1), doorOpening("d-bed2", 5.2, 0.9, 2.1)],
   ),
   // The spine's east wall, with the kitchen and bathroom doors.
   partition(
     "P-hall-e",
-    [SPINE_E, 20.3],
+    [SPINE_E, -20.3],
     [SPINE_E, DAY],
     [
       doorOpening("d-kitchen", 1.3, 0.9, 2.1),
@@ -220,8 +220,8 @@ const houseInternals: WallSpec[] = [
   partition("P-day-hall", [SPINE_W, DAY], [SPINE_E, DAY], [doorOpening("d-living", 0.3, 1.2, 2.3)]),
   partition("P-day-e", [SPINE_E, DAY], [5.2, DAY]),
   // Living room | bedroom 3. Runs the full depth to the north wall's inner
-  // face: stopping at 31.7 left a 150 mm slot joining the two rooms.
-  partition("P-bed3", [BED_3_W, DAY], [BED_3_W, 31.85], [doorOpening("d-bed3", 0.6, 0.9, 2.1)]),
+  // face: stopping at −31.7 left a 150 mm slot joining the two rooms.
+  partition("P-bed3", [BED_3_W, DAY], [BED_3_W, -31.85], [doorOpening("d-bed3", 0.6, 0.9, 2.1)]),
   /**
    * The chimney: 1.4 × 0.7 of masonry, carried to 8.4 m — clear of a ridge
    * that stands at 7.69.
@@ -341,18 +341,19 @@ const PART = 0.06; // half a partition
 /** Inner faces of the external envelope. */
 const IN_W = -5.5 + EXT;
 const IN_E = 5.5 - EXT;
-const IN_S = 20 + EXT;
-const IN_N = 32 - EXT;
+const IN_S = -20 - EXT;
+const IN_N = -32 + EXT;
 
+/** A rectangular room by its four inner faces. North is the smaller z. */
 const room = (
   id: string,
   name: string,
   use: "living" | "bed" | "kitchen" | "bath" | "hall" | "store" | "utility",
-  x1: number,
-  z1: number,
-  x2: number,
-  z2: number,
-) => ({ id, name, use, polygon: rect(x1, z1, x2 - x1, z2 - z1) as [number, number][] });
+  west: number,
+  south: number,
+  east: number,
+  north: number,
+) => ({ id, name, use, polygon: rect(west, north, east - west, south - north) as [number, number][] });
 
 const houseRooms = [
   /**
@@ -362,17 +363,17 @@ const houseRooms = [
    * takes is one a room does not get. It reaches all six other spaces, so no
    * room is entered through another.
    */
-  room("r-hall", "Hall", "hall", SPINE_W + PART, IN_S, SPINE_E - PART, DAY - PART),
+  room("r-hall", "Hall", "hall", SPINE_W + PART, IN_S, SPINE_E - PART, DAY + PART),
 
   // The quiet west side, both bedrooms off the hall.
-  room("r-bed-1", "Bedroom 1", "bed", IN_W, IN_S, SPINE_W - PART, BED_1_2 - PART),
-  room("r-bed-2", "Bedroom 2", "bed", IN_W, BED_1_2 + PART, SPINE_W - PART, DAY - PART),
+  room("r-bed-1", "Bedroom 1", "bed", IN_W, IN_S, SPINE_W - PART, BED_1_2 + PART),
+  room("r-bed-2", "Bedroom 2", "bed", IN_W, BED_1_2 - PART, SPINE_W - PART, DAY + PART),
 
   // The servant side: kitchen and bathroom back to back across the one
   // plumbing wall, so a single stack of pipes serves both.
-  room("r-kitchen", "Kitchen", "kitchen", SPINE_E + PART, IN_S, IN_E, WET - PART),
-  room("r-bath", "Bathroom", "bath", SPINE_E + PART, WET + PART, IN_E, LARDER - PART),
-  room("r-larder", "Larder", "store", SPINE_E + PART, LARDER + PART, IN_E, DAY - PART),
+  room("r-kitchen", "Kitchen", "kitchen", SPINE_E + PART, IN_S, IN_E, WET + PART),
+  room("r-bath", "Bathroom", "bath", SPINE_E + PART, WET - PART, IN_E, LARDER + PART),
+  room("r-larder", "Larder", "store", SPINE_E + PART, LARDER - PART, IN_E, DAY + PART),
 
   /**
    * The living room, with the chimney breast cut out of its south wall.
@@ -387,19 +388,19 @@ const houseRooms = [
     name: "Living Room",
     use: "living" as const,
     polygon: [
-      [IN_W, DAY + PART],
-      [-3.6 - 0.05, DAY + PART],
-      [-3.6 - 0.05, DAY + 0.35],
-      [-2.2 + 0.05, DAY + 0.35],
-      [-2.2 + 0.05, DAY + PART],
-      [BED_3_W - PART, DAY + PART],
+      [IN_W, DAY - PART],
+      [-3.6 - 0.05, DAY - PART],
+      [-3.6 - 0.05, DAY - 0.35],
+      [-2.2 + 0.05, DAY - 0.35],
+      [-2.2 + 0.05, DAY - PART],
+      [BED_3_W - PART, DAY - PART],
       [BED_3_W - PART, IN_N],
       [IN_W, IN_N],
     ] as [number, number][],
   },
 
   // The third bedroom takes the north-east corner, off the living room.
-  room("r-bed-3", "Bedroom 3", "bed", BED_3_W + PART, DAY + PART, IN_E, IN_N),
+  room("r-bed-3", "Bedroom 3", "bed", BED_3_W + PART, DAY - PART, IN_E, IN_N),
 ];
 
 /* ── the ground between the buildings ──────────────────────────── */
@@ -413,11 +414,11 @@ const houseRooms = [
  *
  * | z | zone | what it is for |
  * |---|---|---|
- * | −5 … 0 | street | the road and the boundary wall; nothing of ours |
- * | 0 … 20 | **service yard** | arriving, parking, unloading, the vine walk |
- * | 20 … 32 | **the house** and its porch | living, and the one private outdoor room |
- * | 32 … 44 | **productive garden** | kitchen beds, greenhouse, pond |
- * | 44 … 62 | **orchard** | the long crop, furthest from the gate |
+ * | 5 … 0 | street | the road and the boundary wall; nothing of ours |
+ * | 0 … −20 | **service yard** | arriving, parking, unloading, the vine walk |
+ * | −20 … −32 | **the house** and its porch | living, and the one private outdoor room |
+ * | −32 … −44 | **productive garden** | kitchen beds, greenhouse, pond |
+ * | −44 … −62 | **orchard** | the long crop, furthest from the gate |
  *
  * The ordering is not arbitrary. The noisy, dirty, wheeled half sits between
  * the street and the house, because that is where it arrives and because it
@@ -470,7 +471,7 @@ const paving: { id: string; polygon: [number, number][]; material: string }[] = 
    * there is nowhere under the vine where you step off paving, which was the
    * entire complaint: a covered walk over grass is a covered mud strip.
    */
-  { id: "pave-court", polygon: between(COURT_W, 0.6, COURT_E, 20), material: "brick-paving" },
+  { id: "pave-court", polygon: between(COURT_W, -0.6, COURT_E, -20), material: "brick-paving" },
 
   /**
    * The threshold outside the wicket, through the wall's own thickness.
@@ -481,7 +482,7 @@ const paving: { id: string; polygon: [number, number][]; material: string }[] = 
    */
   {
     id: "pave-wicket",
-    polygon: between(WICKET_X - 0.9, -1.2, WICKET_X + 0.9, 0.6),
+    polygon: between(WICKET_X - 0.9, 1.2, WICKET_X + 0.9, -0.6),
     material: "brick-paving",
   },
 
@@ -493,7 +494,7 @@ const paving: { id: string; polygon: [number, number][]; material: string }[] = 
    * and it comes indoors on your shoes — so the apron is brick where the track
    * that reaches it is not.
    */
-  { id: "pave-garage-apron", polygon: between(7.4, 15.0, 14.0, 20.0), material: "brick-paving" },
+  { id: "pave-garage-apron", polygon: between(7.4, -15.0, 14.0, -20.0), material: "brick-paving" },
 
   /**
    * The footpath linking the two halves of the yard.
@@ -503,7 +504,7 @@ const paving: { id: string; polygon: [number, number][]; material: string }[] = 
    * should not walk back down the drive. 1.1 m: two people cannot pass, and
    * two people do not need to.
    */
-  { id: "pave-link", polygon: between(COURT_E, 16.4, 7.4, 17.5), material: "brick-paving" },
+  { id: "pave-link", polygon: between(COURT_E, -16.4, 7.4, -17.5), material: "brick-paving" },
 
   /**
    * Round the west of the house to the porch, and on to the greenhouse.
@@ -512,14 +513,14 @@ const paving: { id: string; polygon: [number, number][]; material: string }[] = 
    * reaching it meant crossing the lawn. Narrower than the courtyard because
    * this is a garden path — one person, carrying something, in the rain.
    */
-  { id: "pave-porch", polygon: between(-10.2, 22.6, -5.5, 31.4), material: "brick-paving" },
+  { id: "pave-porch", polygon: between(-10.2, -22.6, -5.5, -31.4), material: "brick-paving" },
   {
     id: "pave-garden-path",
-    polygon: between(-8.3, 31.4, -7.2, 36.0),
+    polygon: between(-8.3, -31.4, -7.2, -36.0),
     material: "brick-paving",
   },
-  /** The step out of the greenhouse door, which is at x −7.55 on z = 36. */
-  { id: "pave-glass-apron", polygon: between(-8.6, 35.2, -6.5, 36.2), material: "brick-paving" },
+  /** The step out of the greenhouse door, which is at x −7.55 on z = −36. */
+  { id: "pave-glass-apron", polygon: between(-8.6, -35.2, -6.5, -36.2), material: "brick-paving" },
 
   /**
    * The kitchen garden's working path.
@@ -527,7 +528,7 @@ const paving: { id: string; polygon: [number, number][]; material: string }[] = 
    * A bed you cannot reach without standing in it is a bed you do not weed.
    * This is the one surface here that exists for a tool rather than a shoe.
    */
-  { id: "pave-kitchen-path", polygon: between(-5.4, 33.6, -4.3, 41.0), material: "brick-paving" },
+  { id: "pave-kitchen-path", polygon: between(-5.4, -33.6, -4.3, -41.0), material: "brick-paving" },
 ];
 
 /**
@@ -557,7 +558,7 @@ const greenhollow: SceneDocumentInput = {
     latitude: 45.7489,
     longitude: 21.2087,
     timezone: "Europe/Bucharest",
-    // The plot's +Z — the deep end, where the orchard is — points north-east, so
+    // The plot's −Z — the deep end, where the orchard is — points north-east, so
     // the front of the house faces south-west and takes the afternoon sun while
     // the garden side takes the morning. Axis-aligned to true north would put
     // the whole garden elevation in permanent shade, which is a fine thing for a
@@ -730,13 +731,13 @@ const greenhollow: SceneDocumentInput = {
           {
             id: "pond",
             polygon: [
-              [4.2, 35.4],
-              [7.4, 34.8],
-              [9.8, 36.6],
-              [10.1, 39.4],
-              [8.0, 41.2],
-              [5.1, 40.6],
-              [3.8, 38.2],
+              [4.2, -35.4],
+              [7.4, -34.8],
+              [9.8, -36.6],
+              [10.1, -39.4],
+              [8.0, -41.2],
+              [5.1, -40.6],
+              [3.8, -38.2],
             ],
             thickness: 0.12,
             material: "water-pond",
@@ -767,7 +768,7 @@ const greenhollow: SceneDocumentInput = {
          * Slopes now span the 12 m width, so the ridge stands at 3.0 + 12/2 ×
          * tan 38° = 7.69 m. The chimney is carried to 8.4.
          */
-        footprint: rect(-6.0, 19.5, 12, 13),
+        footprint: rect(-6.0, -32.5, 12, 13),
         baseElevation: HOUSE_EAVE,
         pitch: 38,
         overhang: 0.5,
@@ -777,7 +778,7 @@ const greenhollow: SceneDocumentInput = {
       {
         id: "roof-porch",
         kind: "flat",
-        footprint: rect(-9.9, 22.6, 4.6, 8.8),
+        footprint: rect(-9.9, -31.4, 4.6, 8.8),
         baseElevation: PORCH_EAVE,
         pitch: 0,
         overhang: 0.3,
@@ -786,7 +787,7 @@ const greenhollow: SceneDocumentInput = {
       {
         id: "roof-garage",
         kind: "gable",
-        footprint: rect(6.6, 19.6, 7.8, 7.8),
+        footprint: rect(6.6, -27.4, 7.8, 7.8),
         baseElevation: GARAGE_EAVE,
         pitch: 30,
         overhang: 0.4,
@@ -796,7 +797,7 @@ const greenhollow: SceneDocumentInput = {
       {
         id: "roof-greenhouse",
         kind: "gable",
-        footprint: rect(-10.3, 35.7, 5.6, 6.6),
+        footprint: rect(-10.3, -42.3, 5.6, 6.6),
         baseElevation: GREENHOUSE_EAVE,
         pitch: 26,
         // 0.3, matching the footprint, which oversails the 5 × 6 m glasshouse
@@ -815,8 +816,8 @@ const greenhollow: SceneDocumentInput = {
         id: "pergola-vine",
         kind: "pergola",
         path: [
-          [1.2, 2],
-          [1.2, 19.4],
+          [1.2, -2],
+          [1.2, -19.4],
         ],
         width: 3.6,
         height: 2.6,
@@ -834,9 +835,9 @@ const greenhollow: SceneDocumentInput = {
         id: "porch-posts",
         kind: "colonnade",
         path: [
-          [-9.5, 23],
-          [-9.5, 31],
-          [-5.5, 31],
+          [-9.5, -23],
+          [-9.5, -31],
+          [-5.5, -31],
         ],
         width: 0.3,
         height: PORCH_EAVE,
@@ -847,8 +848,8 @@ const greenhollow: SceneDocumentInput = {
         id: "hedge-west",
         kind: "hedge",
         path: [
-          [-PLOT_HALF_WIDTH, 0.4],
-          [-PLOT_HALF_WIDTH, PLOT_DEPTH],
+          [-PLOT_HALF_WIDTH, -0.4],
+          [-PLOT_HALF_WIDTH, -PLOT_DEPTH],
         ],
         width: 0.9,
         height: 1.7,
@@ -858,8 +859,8 @@ const greenhollow: SceneDocumentInput = {
         id: "hedge-east",
         kind: "hedge",
         path: [
-          [PLOT_HALF_WIDTH, 0.4],
-          [PLOT_HALF_WIDTH, PLOT_DEPTH],
+          [PLOT_HALF_WIDTH, -0.4],
+          [PLOT_HALF_WIDTH, -PLOT_DEPTH],
         ],
         width: 0.9,
         height: 1.7,
@@ -882,25 +883,25 @@ const greenhollow: SceneDocumentInput = {
       // a table addressing the breast — because a masonry mass with nothing
       // facing it reads as a pier rather than as a fireplace.
       // 1.45 m either side of the table, not 1.05. An armchair is 0.78 × 0.83
-      // but it is turned 152°, and a rotated box has a wider footprint than
+      // but it is turned 28°, and a rotated box has a wider footprint than
       // its own sides — about 1.08 m across here. At 1.05 the chairs reached
       // *under* the table, which drop-to-floor duly reported by settling the
       // table on one of them.
-      { id: "chair-hearth-w", asset: "polyhaven/ArmChair_01", position: [-4.35, 0, 29.5], rotationY: 152 },
-      { id: "chair-hearth-e", asset: "polyhaven/ArmChair_01", position: [-1.45, 0, 29.5], rotationY: 208 },
-      { id: "table-hearth", asset: "polyhaven/CoffeeTable_01", position: [-2.9, 0, 29.1], rotationY: 0 },
+      { id: "chair-hearth-w", asset: "polyhaven/ArmChair_01", position: [-4.35, 0, -29.5], rotationY: 28 },
+      { id: "chair-hearth-e", asset: "polyhaven/ArmChair_01", position: [-1.45, 0, -29.5], rotationY: -28 },
+      { id: "table-hearth", asset: "polyhaven/CoffeeTable_01", position: [-2.9, 0, -29.1], rotationY: 180 },
       // A bench under the vine and a table out on the grass. Deliberately a
       // little above the ground — drop-to-floor is what settles them.
       //
       // There is no fountain: Poly Haven has none, and the pond reads perfectly
       // well on its own. A proxy box in the middle of the water read worse than
       // nothing at all.
-      { id: "bench-vine", asset: "polyhaven/painted_wooden_bench", position: [0, 0.5, 12.0], rotationY: 90 },
+      { id: "bench-vine", asset: "polyhaven/painted_wooden_bench", position: [0, 0.5, -12.0], rotationY: 90 },
       {
         id: "table-garden",
         asset: "polyhaven/outdoor_table_chair_set_01",
-        position: [2.4, 0.7, 33.8],
-        rotationY: 15,
+        position: [2.4, 0.7, -33.8],
+        rotationY: 165,
       },
     ],
   },
@@ -913,7 +914,7 @@ const greenhollow: SceneDocumentInput = {
         // Poly Haven has no roses. `shrub_01`–`04` are temperate and read as a
         // clipped flowering border at the scale the alley is viewed from.
         assets: ["polyhaven/shrub_01", "polyhaven/shrub_02", "polyhaven/shrub_03"],
-        area: rect(-4.2, 2, 1.8, 19),
+        area: rect(-4.2, -21, 1.8, 19),
         density: 26,
         seed: 11,
         height: 0.9,
@@ -929,7 +930,7 @@ const greenhollow: SceneDocumentInput = {
         // border against open lawn: 1 m of planting is what fits between
         // COURT_E at 3.2 and the drive's western edge at 4.5, and a bed squeezed
         // thinner than that reads as a weed strip.
-        area: rect(3.4, 2, 1.0, 14),
+        area: rect(3.4, -16, 1.0, 14),
         density: 26,
         seed: 12,
         height: 0.9,
@@ -941,13 +942,13 @@ const greenhollow: SceneDocumentInput = {
       {
         id: "kitchen-garden",
         assets: ["polyhaven/planter_box_01", "polyhaven/planter_box_02", "polyhaven/planter_box_03"],
-        area: rect(-13, 34, 9, 10),
+        area: rect(-13, -44, 9, 10),
         density: 9,
         seed: 21,
         height: 0.5,
         scaleRange: [0.95, 1.05],
         material: "vegetable-green",
-        exclude: keepOff(rect(-10.5, 35.4, 6, 7.2) as [number, number][]),
+        exclude: keepOff(rect(-10.5, -42.6, 6, 7.2) as [number, number][]),
       },
       // The orchard, planted in rows — which is the whole reason rows exist.
       {
@@ -955,7 +956,7 @@ const greenhollow: SceneDocumentInput = {
         // Poly Haven has no fruit trees at all. What makes this read as an
         // orchard is the row spacing, not the species.
         assets: ["polyhaven/tree_small_02"],
-        area: rect(-14, 46, 28, 14),
+        area: rect(-14, -60, 28, 14),
         density: 1,
         seed: 31,
         height: 4.2,
@@ -972,20 +973,20 @@ const greenhollow: SceneDocumentInput = {
     masses: [
       // Neighbours across the road, to give the front elevation something to
       // sit against.
-      { id: "n-01", footprint: rect(-34, -24, 11, 9), height: 6.0, material: "render-neighbour" },
-      { id: "n-02", footprint: rect(-16, -23, 10, 8), height: 5.6, material: "render-neighbour" },
-      { id: "n-03", footprint: rect(4, -24, 12, 9), height: 6.4, material: "render-neighbour" },
-      { id: "n-04", footprint: rect(24, -23, 10, 8), height: 5.8, material: "render-neighbour" },
+      { id: "n-01", footprint: rect(-34, 15, 11, 9), height: 6.0, material: "render-neighbour" },
+      { id: "n-02", footprint: rect(-16, 15, 10, 8), height: 5.6, material: "render-neighbour" },
+      { id: "n-03", footprint: rect(4, 15, 12, 9), height: 6.4, material: "render-neighbour" },
+      { id: "n-04", footprint: rect(24, 15, 10, 8), height: 5.8, material: "render-neighbour" },
     ],
 
     roads: [
       {
         id: "road",
         path: [
-          [-70, -5],
-          [-20, -4.8],
-          [20, -5.1],
-          [70, -4.9],
+          [-70, 5],
+          [-20, 4.8],
+          [20, 5.1],
+          [70, 4.9],
         ],
         width: 6,
         material: "asphalt-road",
@@ -1000,17 +1001,17 @@ const greenhollow: SceneDocumentInput = {
        * on the brick apron at the garage door. A person walking from the wicket
        * to the front door never sets foot on it.
        *
-       * It stops at z 15 because the apron takes over there: gravel under a
+       * It stops at z −15 because the apron takes over there: gravel under a
        * turning wheel migrates, and gravel where you stand to unload comes
        * indoors on your shoes.
        */
       {
         id: "drive",
         path: [
-          [CARRIAGE_X, -1.5],
-          [CARRIAGE_X, 6],
-          [7.4, 11],
-          [10.5, 15.2],
+          [CARRIAGE_X, 1.5],
+          [CARRIAGE_X, -6],
+          [7.4, -11],
+          [10.5, -15.2],
         ],
         width: DRIVE_W,
         material: "gravel-alley",
@@ -1053,7 +1054,7 @@ const greenhollow: SceneDocumentInput = {
       // The whole plot from above the road: gate and wall at the front, the
       // pergola running up the middle, garage right, porch and greenhouse left,
       // orchard at the back.
-      camera: { position: [40, 34, -22], target: [0, 0, 26], focalLength: 30 },
+      camera: { position: [40, 34, 22], target: [0, 0, -26], focalLength: 30 },
       render: { width: 1920, height: 1080, samples: 600 },
     },
     {
@@ -1067,17 +1068,17 @@ const greenhollow: SceneDocumentInput = {
       // front door.
       // Re-aimed when the house grew 2 m south and the door moved east with
       // the plan: the pergola, the camera and the vanishing point all sit on
-      // x = 1.2 now, and the target is the gable end at z = 20 rather than a
+      // x = 1.2 now, and the target is the gable end at z = −20 rather than a
       // point 3 m inside the living room.
-      camera: { position: [1.2, 1.72, 0.8], target: [1.2, 1.6, 20], focalLength: 35 },
+      camera: { position: [1.2, 1.72, -0.8], target: [1.2, 1.6, -20], focalLength: 35 },
       render: { width: 1920, height: 1080, samples: 600 },
     },
     {
       id: "garden-threequarter",
       name: "Garden three-quarter",
       // From behind the pond, looking back at the garden elevation with the
-      // greenhouse to the left and the orchard out of frame behind.
-      camera: { position: [13.5, 4.4, 41.5], target: [-1.8, 2.4, 30.6], focalLength: 40 },
+      // greenhouse to the right and the orchard out of frame behind.
+      camera: { position: [13.5, 4.4, -41.5], target: [-1.8, 2.4, -30.6], focalLength: 40 },
       // The garden side faces north-east, so it is a morning elevation or it is
       // nothing.
       solar: { date: "2026-09-12", time: "08:40", hdri: "kloppenheim_02" },
@@ -1086,7 +1087,7 @@ const greenhollow: SceneDocumentInput = {
     {
       id: "porch-evening",
       name: "Porch, evening",
-      camera: { position: [-16.5, 2.6, 19.5], target: [-7.5, 2.1, 27], focalLength: 50 },
+      camera: { position: [-16.5, 2.6, -19.5], target: [-7.5, 2.1, -27], focalLength: 50 },
       // The porch faces north-west: its light is the last hour of the day.
       solar: { date: "2026-09-12", time: "18:35", hdri: "kloppenheim_02" },
       render: { width: 1920, height: 1080, samples: 600 },

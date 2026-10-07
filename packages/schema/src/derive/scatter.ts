@@ -32,10 +32,10 @@ export interface ScatterEstimate {
  * lattice actually lands on the bounds, and the two disagreed outright.
  */
 export interface ScatterLattice {
-  /** Centre of the first cell. */
+  /** Centre of the first cell: the south-west one. */
   originX: M;
   originZ: M;
-  /** Cell pitch. */
+  /** Cell pitch. `stepZ` is negative, because rows are laid from the south. */
   stepX: M;
   stepZ: M;
   /** Cells along each axis — always integers, computed up front. */
@@ -43,18 +43,31 @@ export interface ScatterLattice {
   countZ: number;
 }
 
+/*
+ * Both samplers start at the south edge, `maxZ`, and work north.
+ *
+ * Until 2026-10-07 north was +Z, and they started at `minZ`, which was then
+ * the south edge. When north became −Z the three scenes were mirrored across
+ * the X axis to keep their compass. A sampler anchored at `minZ` would then
+ * have started from the *north* edge of every mirrored field: a fresh random
+ * draw, which put a tree in front of Villa Carpathia's main camera. Anchored
+ * at the south edge, a mirrored field reproduces its old instances exactly,
+ * mirrored. Yaw follows the rule placements were mirrored by, `180 − θ`, so a
+ * scattered model faces where its old self did.
+ */
 export function scatterLattice(field: ScatterField): ScatterLattice {
   const [along, across] = field.rowSpacing;
   const b = bounds(field.area);
   const originX = b.minX + along / 2;
-  const originZ = b.minZ + across / 2;
+  // From the south edge, which is the larger z.
+  const originZ = b.maxZ - across / 2;
   return {
     originX,
     originZ,
     stepX: along,
-    stepZ: across,
+    stepZ: -across,
     countX: cellCount(originX, b.maxX, along),
-    countZ: cellCount(originZ, b.maxZ, across),
+    countZ: cellCount(-originZ, -b.minZ, across),
   };
 }
 
@@ -186,14 +199,15 @@ export function scatterInstances(field: ScatterField): ScatterInstance[] {
   while (out.length < target && attempts < maxAttempts) {
     attempts++;
     const x = randomBetween(rng, b.minX, b.maxX);
-    const z = randomBetween(rng, b.minZ, b.maxZ);
+    // From the south edge; see the note above `scatterLattice`.
+    const z = randomBetween(rng, b.maxZ, b.minZ);
     if (!pointInPolygon([x, z], field.area)) continue;
     if (field.exclude.some((poly) => pointInPolygon([x, z], poly))) continue;
 
     out.push({
       asset: pick(rng, field.assets),
       position: [x, 0, z],
-      rotationY: rng() * 360,
+      rotationY: 180 - rng() * 360,
       scale: randomBetween(rng, field.scaleRange[0], field.scaleRange[1]),
     });
   }
@@ -239,8 +253,9 @@ function rowInstances(field: ScatterField): ScatterInstance[] {
     for (let ix = 0; ix < lattice.countX; ix++) {
       const x = lattice.originX + ix * lattice.stepX;
       const px = x + randomBetween(rng, -jitterX, jitterX);
+      // `jitterZ` carries `stepZ`'s sign, so this too is drawn from the south.
       const pz = z + randomBetween(rng, -jitterZ, jitterZ);
-      const rotation = rng() * 360;
+      const rotation = 180 - rng() * 360;
       const scale = randomBetween(rng, field.scaleRange[0], field.scaleRange[1]);
       const asset = pick(rng, field.assets);
 

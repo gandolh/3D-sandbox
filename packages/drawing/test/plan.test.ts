@@ -1,6 +1,13 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { SceneDocument, type SceneDocumentInput } from "@solstice/schema";
+import {
+  doorOpening,
+  rect,
+  SceneDocument,
+  type SceneDocumentInput,
+  wallsFromFootprint,
+  withOpenings,
+} from "@solstice/schema";
 import { describe, expect, it } from "vitest";
 import { planSvg } from "../src/plan.js";
 import { WEIGHT } from "../src/style.js";
@@ -160,8 +167,9 @@ describe("a window above the cut plane", () => {
 
 describe("the north point", () => {
   it("turns with the site's own rotation", () => {
-    // `site.northOffset` is "scene +Z is true north rotated by this many
-    // degrees", so true north on a sheet where +Z is up sits at −northOffset.
+    // `site.northOffset` is "scene north (−Z) points this many degrees
+    // clockwise of true north", so true north on a sheet where −Z is up sits
+    // at −northOffset.
     // A north point that ignores the site's rotation is worse than none.
     expect(greenhollow.site.northOffset).toBe(40);
     expect(svg).toContain("rotate(-40)");
@@ -196,5 +204,40 @@ describe("which building the plan is of", () => {
     expect(partitions.length).toBeGreaterThan(5);
     const internalDoors = partitions.flatMap((w) => w.openings.filter((o) => o.kind === "door"));
     expect((svg.match(/ A\d/g) ?? []).length).toBeGreaterThan(internalDoors.length);
+  });
+});
+
+/**
+ * The sheet is the building seen from above, north up.
+ *
+ * The plan is the one place the compass meets paper, and both of its signs
+ * can be wrong while every count above still passes: negate z and the house is
+ * drawn upside down; take the wrong perpendicular and every door swings out of
+ * its room. A 6 × 4 m box with one door in its south wall pins both.
+ */
+describe("which way the sheet faces", () => {
+  const box = (): string => {
+    const doc = JSON.parse(JSON.stringify(greenhollow)) as SceneDocumentInput;
+    // x 0…6, z −4…0. North is −Z, so the south wall, W-01, is the one at z = 0.
+    const walls = withOpenings(wallsFromFootprint(rect(0, -4, 6, 4), { material: "plaster-lime" }), "W-01", [
+      doorOpening("d-1", 2.5, 0.9, 2.1),
+    ]);
+    doc.subject = { levels: [{ id: "g", name: "Ground", elevation: 0, height: 2.7, walls }] };
+    return planSvg(SceneDocument.parse(doc));
+  };
+  const svg = box();
+  const height = Number(/viewBox="0 0 [\d.]+ ([\d.]+)"/.exec(svg)![1]);
+  // The swing arc runs from the open leaf round to the shut position on the wall.
+  const arc = / A[\d.]+ [\d.]+ 0 0 [01] ([\d.]+),([\d.]+)"/.exec(svg)!;
+  const leaf = /<path d="M([\d.]+),([\d.]+) A/.exec(svg)!;
+  const shutY = Number(arc[2]);
+  const leafY = Number(leaf[2]);
+
+  it("draws the south wall at the bottom", () => {
+    expect(shutY).toBeGreaterThan(height / 2);
+  });
+
+  it("swings the south door up the sheet, north into the room", () => {
+    expect(leafY).toBeLessThan(shutY);
   });
 });

@@ -43,23 +43,27 @@ export function wallMidpoint(wall: Segment): Plan {
 }
 
 /**
- * The direction a wall runs, in **degrees clockwise from +Z**, which the scene
- * calls north.
+ * The direction a wall runs, in **degrees clockwise from −Z**, which the scene
+ * calls north. +X is east, so a wall running −Z/+X/+Z/−X has bearing
+ * 0/90/180/270, and the compass turns clockwise seen from above, as a real one
+ * does.
  *
  * A second angle for the same line, and deliberately so: `wallAngle` is a
  * three.js Y rotation in radians for putting geometry in the right place, and
  * this is a compass bearing in degrees for showing a person. Note that the two
- * are not the same convention — `atan2(dx, dz)` here versus `atan2(-dz, dx)`
+ * are not the same convention — `atan2(dx, -dz)` here versus `atan2(-dz, dx)`
  * there — which is exactly why both belong in one file where the difference is
  * visible, rather than in three files where it is not.
  *
  * There were three copies: one in `geometry`, one in the web app's entity
- * helpers, and the inspector importing the app's. The `northOffset` question —
- * whether this compass turns the way a real one does — is still open; see
- * `corpus/wiki/open-questions.md`. It is now open in one place.
+ * helpers, and the inspector importing the app's. The compass itself was a
+ * mirror until 2026-10-07: +Z north with +X east turned anticlockwise seen from
+ * above. It is now right-handed, and `directionFrom` in `@solstice/solar`
+ * shares it; a test there fails if the two drift. `setWallBearing` in the web
+ * app is this function's inverse.
  */
 export function wallBearing(wall: Segment): number {
   const [x1, z1] = wall.start;
   const [x2, z2] = wall.end;
-  return ((Math.atan2(x2 - x1, z2 - z1) * 180) / Math.PI + 360) % 360;
+  return ((Math.atan2(x2 - x1, -(z2 - z1)) * 180) / Math.PI + 360) % 360;
 }

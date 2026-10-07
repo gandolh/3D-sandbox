@@ -26,10 +26,9 @@ function segments(path: readonly Plan[]): Segment[] {
     const length = Math.hypot(to[0] - from[0], to[1] - from[1]);
     if (length < 1e-6) continue;
     // `wallAngle`, not a local `atan2`: a run stands against the walls, and the
-    // day the compass convention changes (see open-questions.md) a copy here
-    // would keep the old sign and turn every pergola and fence out of line with
-    // them, with nothing failing. `apps/web/test/shared-primitives.test.ts`
-    // holds the two together.
+    // day that convention changes a copy here would keep the old sign and turn
+    // every pergola and fence out of line with them, with nothing failing.
+    // `apps/web/test/shared-primitives.test.ts` holds the two together.
     // Copied into fresh tuples because `Plan` is readonly and a wall's ends are
     // not; the adaptation belongs here rather than in `wallAngle`'s type.
     const angle = wallAngle({ start: [from[0], from[1]], end: [to[0], to[1]] });

@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { loadScene, type Site, type SolarTime } from "@solstice/schema";
+import { loadScene, type Site, type SolarTime, wallBearing } from "@solstice/schema";
 import { describe, expect, it } from "vitest";
 import {
   dayBounds,
@@ -7,6 +7,7 @@ import {
   hexToRgb,
   localToUtc,
   resolveSolar,
+  type SunVector,
   skyRadianceMap,
   sunLighting,
   sunPosition,
@@ -78,7 +79,7 @@ describe("the reference sun position", () => {
   it("points west, so shadows fall east", () => {
     expect(position.direction.x).toBeLessThan(-0.8);
     expect(position.direction.y).toBeGreaterThan(0);
-    expect(position.direction.z).toBeGreaterThan(0); // a touch north of west
+    expect(position.direction.z).toBeLessThan(0); // a touch north of west, and north is −Z
   });
 });
 
@@ -89,11 +90,27 @@ describe("direction vectors", () => {
     expect(Math.hypot(d.x, d.z)).toBeCloseTo(0);
   });
 
-  it("puts due south at +Z-negative and due east at +X", () => {
-    const south = directionFrom(0, 180);
-    expect(south.z).toBeCloseTo(-1);
-    const east = directionFrom(0, 90);
-    expect(east.x).toBeCloseTo(1);
+  // The compass, pinned. North is −Z and east is +X, which with +Y up is the
+  // right-handed pair. +Z north with +X east was a mirror image, and every
+  // scene built on it was its own reflection.
+  it.each([
+    [0, 0, -1],
+    [90, 1, 0],
+    [180, 0, 1],
+    [270, -1, 0],
+  ])("puts azimuth %i at (%i, 0, %i)", (azimuth, x, z) => {
+    const d = directionFrom(0, azimuth);
+    expect(d.x).toBeCloseTo(x, 12);
+    expect(d.y).toBeCloseTo(0, 12);
+    expect(d.z).toBeCloseTo(z, 12);
+  });
+
+  it("throws a southern noon sun's shadows north, toward −Z", () => {
+    const noon = directionFrom(60, 180);
+    // A shadow falls away from the sun.
+    const shadow = { x: -noon.x, z: -noon.z };
+    expect(shadow.z).toBeLessThan(0);
+    expect(shadow.x).toBeCloseTo(0, 12);
   });
 
   it("always returns a unit vector", () => {
@@ -105,6 +122,81 @@ describe("direction vectors", () => {
       const d = directionFrom(alt, az);
       expect(Math.hypot(d.x, d.y, d.z)).toBeCloseTo(1, 6);
     }
+  });
+});
+
+/**
+ * The compass as a person sees it: from above, east to the right, north up.
+ *
+ * The screen's up is derived, not assumed. A camera looking straight down has
+ * +X to its right and +Y coming back toward it; in a right-handed frame its up
+ * is `back × right`. If the scene's compass were a mirror image, north would
+ * come out *down* this screen and the sun would turn the wrong way.
+ */
+describe("seen from above", () => {
+  type V = readonly [number, number, number];
+  const cross = (a: V, b: V): V => [
+    a[1] * b[2] - a[2] * b[1],
+    a[2] * b[0] - a[0] * b[2],
+    a[0] * b[1] - a[1] * b[0],
+  ];
+  const right: V = [1, 0, 0];
+  const back: V = [0, 1, 0];
+  const up = cross(back, right);
+  const onScreen = (d: SunVector): [number, number] => [
+    d.x * right[0] + d.y * right[1] + d.z * right[2],
+    d.x * up[0] + d.y * up[1] + d.z * up[2],
+  ];
+
+  it("has north up the screen and east to the right", () => {
+    const [nx, ny] = onScreen(directionFrom(0, 0));
+    expect(nx).toBeCloseTo(0, 12);
+    expect(ny).toBeCloseTo(1, 12);
+    const [ex, ey] = onScreen(directionFrom(0, 90));
+    expect(ex).toBeCloseTo(1, 12);
+    expect(ey).toBeCloseTo(0, 12);
+  });
+
+  it("watches the sun sweep clockwise over a day", () => {
+    const points: [number, number][] = [];
+    for (let minutes = 4 * 60; minutes <= 22 * 60; minutes += 30) {
+      const time = `${String(Math.floor(minutes / 60)).padStart(2, "0")}:${String(minutes % 60).padStart(2, "0")}`;
+      const position = sunPosition(bucharest, at("2026-06-21", time));
+      if (position.isDaylight) points.push(onScreen(position.direction));
+    }
+    expect(points.length).toBeGreaterThan(25);
+    for (let i = 1; i < points.length; i++) {
+      const [ax, ay] = points[i - 1]!;
+      const [bx, by] = points[i]!;
+      // Negative z-component of the 2-D cross product: a clockwise turn.
+      expect(ax * by - ay * bx).toBeLessThan(0);
+    }
+  });
+});
+
+/**
+ * One compass, two functions. `wallBearing` (in `@solstice/schema`) names the
+ * way a wall runs; `directionFrom` turns a bearing back into a vector. They
+ * used to share `atan2(x, z)` by agreement alone. Here, a wall's bearing fed
+ * back through `directionFrom` has to point along the wall.
+ */
+describe("wallBearing and directionFrom", () => {
+  const walls: [number, number, number, number, number | null][] = [
+    [0, 0, 0, -4, 0], // runs north
+    [0, 0, 3, 0, 90], // east
+    [0, 0, 0, 2, 180], // south
+    [0, 0, -5, 0, 270], // west
+    [1, -2, 5, 3, null], // neither axis-aligned nor 45°
+    [2, 7, -1.5, 4.2, null],
+  ];
+
+  it.each(walls)("agree on a wall from (%d, %d) to (%d, %d)", (x1, z1, x2, z2, expected) => {
+    const bearing = wallBearing({ start: [x1, z1], end: [x2, z2] });
+    if (expected !== null) expect(bearing).toBeCloseTo(expected, 9);
+    const d = directionFrom(0, bearing);
+    const length = Math.hypot(x2 - x1, z2 - z1);
+    expect(d.x).toBeCloseTo((x2 - x1) / length, 9);
+    expect(d.z).toBeCloseTo((z2 - z1) / length, 9);
   });
 });
 

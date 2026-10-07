@@ -67,11 +67,16 @@ export function setWallLength(wall: Wall, length: number): void {
   wall.end = [wall.start[0] + ux * length, wall.start[1] + uz * length];
 }
 
-/** Rotate a wall about its start point to the given compass bearing. */
+/**
+ * Rotate a wall about its start point to the given compass bearing.
+ *
+ * The inverse of `wallBearing`: bearing 0 runs toward −Z, which is north, and
+ * 90 toward +X, east.
+ */
 export function setWallBearing(wall: Wall, bearing: number): void {
   const length = wallLength(wall);
   const rad = (bearing * Math.PI) / 180;
-  wall.end = [wall.start[0] + Math.sin(rad) * length, wall.start[1] + Math.cos(rad) * length];
+  wall.end = [wall.start[0] + Math.sin(rad) * length, wall.start[1] - Math.cos(rad) * length];
 }
 
 /** Translate both endpoints — what the gizmo does when dragging a wall. */
