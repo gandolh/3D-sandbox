@@ -40,3 +40,8 @@ Verify any path, symbol or command a page names before acting on it — pages dr
 Capture → `todos/`. Promote → `briefs/todo/NN-slug.md`. Build → move verbatim to
 `briefs/done/`, append a `log.md` entry, fold durable findings into `wiki/`.
 Never commit corpus changes unless asked.
+
+## brief-board
+
+Brief progress goes on brief-board. Run `brief-board guide` before you
+start or resume a brief, and follow it.
