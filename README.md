@@ -1,100 +1,70 @@
 # Solstice
 
-A parametric architectural scene editor and path-traced renderer, in the browser.
+A browser editor and path-traced renderer for one house and its plot, for anyone who wants to see a design under the sun it would really get, on a real date at a real place.
 
-You describe a house, its yard and its surroundings as a typed JSON document.
-The app derives geometry from it, lights it by real sun position for a real date
-and place, and path-traces photoreal stills.
+<p align="center">
+  <img src="docs/images/sun-path.gif" width="100%" alt="Solstice showing the Greenhollow smallholding from above while the solar clock runs from 07:30 to 19:30: shadows of the house, pergola and hedges swing round the plot as the timeline's playhead moves across the day">
+</p>
 
-Scenes are authored **in the repo**, in TypeScript — there is deliberately no LLM
-inside the running app. The browser's job is to tweak, light and look.
+**Status:** Personal project in active development. All 72 planned tasks in the [project wiki](corpus/wiki/status.md) are done, the latest on 2026-10-07. It runs locally only, with no hosted copy. The editor works in any WebGL2 browser. The path tracer needs a real GPU, and a headless browser under WSL2 falls back to software and cannot finish a render.
 
-Needs **Node 22.12 or newer** — the build scripts are run by Node directly and
-rely on its native TypeScript stripping.
+## What it does
+
+- Opens a house and its plot in a WebGL2 viewport where you orbit, select and edit walls, their openings and placements, and drop furniture onto the floor below it. Three scenes come bundled: a smallholding, a two-storey town house and a test fixture.
+- Puts the sun where it would be for the scene's latitude, longitude, date and time, and plays a keyframed sun-path study across the day on a timeline.
+- Path-traces a named shot, or the whole shot list unattended, at each shot's own camera, clock and resolution, and saves the stills to your machine.
+- Draws a measured floor plan as SVG from the same document, with room names, areas and door swings.
+- Lints every scene for mistakes a schema cannot catch, such as a window on a wall that does not exist or two openings that overlap.
+
+Scenes are TypeScript modules in the repo, written by a person working with an AI assistant, and they compile to JSON documents the linter checks. A design is therefore a text file you can diff and review, which a SketchUp or Blender file is not. The browser only tweaks, lights and looks. It has no LLM inside, no freehand CAD drawing, and it renders stills, never an animated sequence.
+
+## Screenshots
+
+| A wall selected: its size, bearing and windows, editable in the inspector | The plan view, drawn from the same document |
+|---|---|
+| ![Greenhollow's garden side at 10:15 in the real-time viewport: a lime-plastered house with a tiled roof, window openings and a table with chairs on the porch. Wall W-02 is selected in the scene tree, and the inspector lists its length, height, thickness and bearing and the offset, width, height and sill of its three windows](docs/images/wall-inspector.webp) | ![Greenhollow's ground-floor plan at 1:100: living room, three bedrooms, hall, larder, bathroom and kitchen, each with its area, plus door swings, overall dimensions of 11300 by 12300 mm, a scale bar and a north arrow](docs/images/plan.webp) |
+
+## How it works
+
+`scenes/src/*.ts` emit `scenes/*.scene.json`, and that JSON is the only source of truth. `@solstice/schema` parses a document with Zod and lints it. `geometry` turns it into three.js meshes on the CPU, `solar` works out the sun and sky, `physics` derives colliders, `drawing` renders the plan and `animation` evaluates the timeline. `apps/web` puts them together in a WebGL2 viewport, with React for the panels and `three-gpu-pathtracer` for final stills. `apps/api` is an optional Fastify server that writes edits back to the JSON files. More in [docs/architecture.md](docs/architecture.md).
+
+## Run it locally
+
+Requires Node 22.12 or later. The build scripts rely on Node's built-in TypeScript stripping, and `.npmrc` makes npm refuse older versions.
 
 ```bash
 npm install
-npm run build        # required: the workspaces resolve through dist/, which is not committed
-npm run dev          # the editor, on :5173
-npm run api          # the persistence API, on :5174 — optional
-npm run check        # typecheck, tests, scene build, corpus lint
+npm run build        # required: every workspace package resolves through its dist/
+npm run dev          # the editor on http://localhost:5173
+npm run check        # lint, typechecks, tests, scene build, web build, corpus lint
 ```
 
-**`npm run build` is not optional on a fresh clone.** Every workspace package's
-only entry point is `./dist/index.js` and `dist/` is gitignored, so without it
-`npm run dev` and `npm run api` both die on
-`ERR_MODULE_NOT_FOUND: @solstice/schema`.
+Then open <http://localhost:5173>. Greenhollow opens first. Until you fetch the CC0 models and textures with `bash assets-src/download.sh`, materials show as flat colours and models as proxy shapes.
 
-`npm run dev` is then enough to open a scene and render it. Without the API,
-**Save** downloads the canonical JSON instead of writing through it.
+Editing a scene, the optional API, assets, GPU flags and env vars: [docs/getting-started.md](docs/getting-started.md).
 
-### Editing a scene
+## Project layout
 
-Scenes are TypeScript in `scenes/src/`, compiled to the `*.scene.json` the app
-imports. **Nothing watches them**, so the loop is three steps:
-
-```bash
-$EDITOR scenes/src/greenhollow.ts
-npm run scenes       # rebuilds and lints all three scene documents
-# reload the browser
-```
-
-Editing the `.ts` with the dev server running and expecting the viewport to
-change is the first thing everyone tries; it does nothing, and this is why.
-
-## Assets
-
-The scenes name CC0 models and textures from Poly Haven and ambientCG. The
-binaries are not committed, so fetch them:
-
-```bash
-npm run assets                      # regenerate the download list from the scenes
-bash assets-src/download.sh         # models and textures
-bash assets-src/download-heavy.sh   # only if you are re-baking tree impostors
-```
-
-**Sizes are in [`assets-src/DOWNLOADS.md`](assets-src/DOWNLOADS.md)**, which
-`npm run assets` regenerates from the scenes themselves. They are not repeated
-here on purpose: this file said 135 MB in one paragraph and 88 MB five lines
-later, and both were wrong. A number that drifts is worse than a pointer to the
-one that cannot.
-
-Everything works without this: materials fall back to their declared colour and
-models to proxy geometry. It just looks like a diagram rather than a place.
-
-## Rendering on a GPU
-
-Under WSL2 a **headless** browser silently falls back to SwiftShader and renders
-about a thousand times slower, because Chromium enumerates GPUs through
-`/dev/dri`, which WSL2 does not have. A headed browser on WSLg's X server reaches
-the real GPU:
-
-```
---ozone-platform=x11 --use-gl=angle --use-angle=gl --ignore-gpu-blocklist
-```
-
-Check `WEBGL_debug_renderer_info` before trusting any render timing —
-`SwiftShader` in the string means you are measuring software. Details in
-[corpus/wiki/running-on-a-gpu.md](corpus/wiki/running-on-a-gpu.md).
-
-## Layout
-
-| Path | What it is |
+| Path | What lives there |
 |---|---|
-| `packages/schema` | The scene document, Zod validation, and the semantic linter |
-| `packages/geometry` | Document → three.js meshes. Pure CPU, no WebGL |
-| `packages/solar` | Site + clock → sun position, sky, lighting |
-| `packages/physics` | Colliders derived from the document; drop-to-rest |
-| `apps/web` | The editor and renderer |
-| `apps/api` | Fastify persistence. Files are truth; SQLite is a rebuildable index |
-| `scenes` | Authored scenes: TypeScript sources, generated `.scene.json` |
-| `assets` | Manifest, download-list generator, impostor bake harness |
-| `corpus` | The project wiki — decisions, status, and why things are as they are |
+| `packages/schema` | The scene document types, Zod parsing, the linter and shared derived values |
+| `packages/geometry` | Document to three.js meshes, CPU only, no WebGL |
+| `packages/solar` | Site and clock to sun position, sky and light |
+| `packages/physics` | Colliders derived from the document, and drop-to-rest |
+| `packages/drawing` | Document to an SVG floor plan, with no GPU or DOM |
+| `packages/animation` | Timeline tracks, evaluated headlessly |
+| `apps/web` | The editor and renderer: Vite, React and three.js |
+| `apps/api` | Optional Fastify API; scene files are the truth, SQLite only indexes them |
+| `scenes` | The three scenes: TypeScript sources and the generated `.scene.json` |
+| `assets` | Asset manifest, download-list generator and the impostor bake harness |
+| `assets-src` | Download scripts and list; the downloads themselves are gitignored |
+| `corpus` | The project wiki: decisions, status and the briefs that built it |
 
-Start with [corpus/wiki/overview.md](corpus/wiki/overview.md), then
-[decisions.md](corpus/wiki/decisions.md) before changing anything structural.
+## Docs
 
-## Licence
+- [docs/](docs/README.md): setup, architecture and the images used here
+- [Project wiki](corpus/index.md): start with [overview.md](corpus/wiki/overview.md), and read [decisions.md](corpus/wiki/decisions.md) before changing anything structural
 
-Assets are CC0 from their respective sources. The code has no licence declared
-yet.
+## License
+
+No license yet; all rights reserved. The models and textures the scenes use are CC0, from Poly Haven and ambientCG.
