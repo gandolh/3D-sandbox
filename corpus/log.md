@@ -1210,3 +1210,12 @@ The proof without pixels was stronger than the renders: the rebuilt JSON is
 the old JSON mirrored by rule, all 38 walls keep their bearings, and every plan
 SVG is byte-identical. The drawing, `setWallBearing` and `rect()` each carried
 the old sign. The path tracer, physics cache and viewport did not.
+
+## 2026-10-09: Brief 73 filed, and one unconfirmed finding captured
+
+Found during the README refresh; nothing fixed. [Brief 73](briefs/todo/73-plan-view-draws-over-the-timeline.md):
+at 1440×900 the plan sheet overruns its pane and paints over the timeline, because `PlanView`'s outer div
+is not a flex column, so `Scroll`'s `min-h-0 flex-1` never bounds it. Captured as a todo, not a brief:
+[the scene staying on proxy shapes after an early solar seek](todos/scene-stays-on-proxy-shapes-after-early-solar-seek.md)
+was seen once under SwiftShader (12,354 triangles, fixed by reload) and has no confirmed cause, so
+reproducing it is its first step.

@@ -187,6 +187,7 @@ migrations. The two unbaked conifers were dropped from villa's forest on
 | 70 | [ScatterInstance is declared twice](../briefs/done/70-scatterinstance-is-declared-twice.md) | done |
 | 71 | [Numbers that drift](../briefs/done/71-numbers-that-drift.md) | done |
 | 72 | [A compass that matches the world](../briefs/done/72-a-compass-that-matches-the-world.md) | done |
+| 73 | [Plan view draws over the timeline](../briefs/todo/73-plan-view-draws-over-the-timeline.md) | todo |
 | 43 | [Impostor quads are the wrong shape](../briefs/done/43-impostor-quads-are-the-wrong-shape.md) | done |
 | 44 | [The dome and the render disagree after sunset](../briefs/done/44-the-dome-and-the-render-disagree-after-sunset.md) | done |
 | 45 | [Scatter counts and seeds](../briefs/done/45-scatter-counts-and-seeds.md) | done |
