@@ -46,8 +46,11 @@ export function PlanView() {
     );
   }
 
+  // A column, so `Scroll`'s `min-h-0 flex-1` has a flex parent to act in: as a
+  // plain block the scroll root took the sheet's full height, never scrolled,
+  // and painted the bottom of a large plan over the timeline (brief 73).
   return (
-    <div className="min-w-0 flex-1 bg-viewport">
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col bg-viewport">
       <Scroll>
         <div className="flex justify-center p-6">
           <div
