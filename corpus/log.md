@@ -1213,9 +1213,26 @@ the old sign. The path tracer, physics cache and viewport did not.
 
 ## 2026-10-09: Brief 73 filed, and one unconfirmed finding captured
 
-Found during the README refresh; nothing fixed. [Brief 73](briefs/todo/73-plan-view-draws-over-the-timeline.md):
+Found during the README refresh; nothing fixed. [Brief 73](briefs/done/73-plan-view-draws-over-the-timeline.md):
 at 1440×900 the plan sheet overruns its pane and paints over the timeline, because `PlanView`'s outer div
 is not a flex column, so `Scroll`'s `min-h-0 flex-1` never bounds it. Captured as a todo, not a brief:
 [the scene staying on proxy shapes after an early solar seek](todos/scene-stays-on-proxy-shapes-after-early-solar-seek.md)
 was seen once under SwiftShader (12,354 triangles, fixed by reload) and has no confirmed cause, so
 reproducing it is its first step.
+
+## 2026-10-19: Brief 73 done, the plan pane scrolls
+
+[Brief 73](briefs/done/73-plan-view-draws-over-the-timeline.md): `PlanView`'s outer div is now a
+shrinkable flex column (`flex min-h-0 flex-col`), so `Scroll`'s `min-h-0 flex-1` bounds the sheet to the
+pane and the wheel scrolls it. Before the fix, at 1440×900, Elmsgate's 1176 px sheet grew its scroll
+root to 1224 px and covered the timeline at every sampled point; after, the root is the pane's 713 px and
+the timeline and footer are clear.
+
+**The brief named the wrong scene.** Villa Carpathia's plan is wide, so `max-w-full` scales it below the
+pane height and it does not overflow at 1440×900. Elmsgate, long and narrow on a 6.5 m lot, is the one that
+reproduces the bug; Villa was checked at 1440×640, where it does overflow and now scrolls.
+
+**agent-browser's `mouse wheel` ignores the pointer.** Every wheel event arrived at (0, 0), on the
+header, after `mouse move` and after `hover`, so the wheel looked broken in every panel. The wheel and
+the scrollbar drag were checked with Playwright's `page.mouse` instead, which aims the wheel where the
+pointer is.

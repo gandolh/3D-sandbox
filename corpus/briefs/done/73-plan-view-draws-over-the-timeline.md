@@ -52,3 +52,30 @@ Check the viewport pane is not affected: it is a separate `hidden`/`flex` wrappe
 - The sheet scrolls vertically inside its pane (wheel and scrollbar), on the three scenes.
 - Toggling Plan off and on still keeps the viewport canvas mounted (no engine reload).
 - `npm run check` passes.
+
+## Outcome (2026-10-19)
+
+Done as filed: `PlanView`'s outer div is now `flex min-h-0 min-w-0 flex-1 flex-col`. `Scroll.tsx`,
+`App.tsx` and `packages/drawing` are untouched.
+
+**Measured at 1440×900 in headless Chromium**, with `elementFromPoint` sampled across the timeline and
+footer rows at three points along the pane:
+
+| Scene | Sheet height | Pane | Before | After |
+| --- | --- | --- | --- | --- |
+| elmsgate | 1176 px | 713 px | scroll root 1224 px tall, timeline covered at all 12 samples, wheel does nothing | scroll root 713 px, 12/12 samples hit the timeline or footer, wheel scrolls 300 px |
+| greenhollow | 776 px | 713 px | (same bug) | wheel scrolls the full 111 px overflow |
+| villa-carpathia | 683 px | 742 px | fits | fits, nothing to scroll |
+
+**Villa Carpathia does not overflow at 1440×900.** Its plan is wide, so `max-w-full` scales it down
+until it is shorter than the pane. Elmsgate is the scene that reproduces the bug at this size, because
+its ground floor is long and narrow on a 6.5 m lot. Villa was checked at 1440×640 instead, where it overflows by
+249 px: the wheel and the scrollbar both scroll it, and the timeline stays clear.
+
+**The scrollbar** was dragged by its thumb on each overflowing scene and moved the sheet (93, 138 and
+122 px for an 80 px drag). **The viewport canvas** is the same element before and after Plan off and
+on, on all three scenes, so the engine is not reloaded.
+
+**The test** (`apps/web/test/plan-view.test.tsx`) can only pin the classes, because happy-dom does no
+layout: the pane must be a shrinkable flex column, with the `Scroll` root as a `min-h-0 flex-1` child.
+All three cases fail with the fix reverted. `npm run check` passes (549 tests).
