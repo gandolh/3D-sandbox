@@ -1236,3 +1236,13 @@ reproduces the bug; Villa was checked at 1440×640, where it does overflow and n
 header, after `mouse move` and after `hover`, so the wheel looked broken in every panel. The wheel and
 the scrollbar drag were checked with Playwright's `page.mouse` instead, which aims the wheel where the
 pointer is.
+
+## 2026-10-19: Brief 74 filed, a decision on CADCraft
+
+The owner asked whether to fork CADCraft (storytold/cadcraft) and build house drawing in it, or take
+what we need from it. A read-only clone showed a 2D AutoCAD clone in Rust and egui: about 194k lines,
+MIT OR Apache-2.0, no 3D (2% on its own roadmap), no walls or openings, and growing 3.4x in nine days
+with 311 open PRs. [Brief 74](briefs/todo/74-a-cad-familiar-way-to-draw-the-house.md) compares four
+routes: fork it, use it beside Solstice through DXF, lift its small crates, or build the CAD
+conventions into our own editor. It recommends the last, with a DXF import later. The owner decides;
+the last route needs the "no freehand CAD drawing tools" line revisited. Nothing was built.
