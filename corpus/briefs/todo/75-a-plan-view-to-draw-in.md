@@ -48,7 +48,8 @@ Build order for the drawing work: 75, then 76 (undo), 77 (walls), 78 (openings, 
 4. **Selection.** Clicking a wall, an opening or a room selects it through the store's `select`, so
    the Inspector and the scene tree follow, and a selection made elsewhere is highlighted here.
 5. **The sheet stays.** A Sheet toggle inside the plan view shows today's 1:100 `planSvg` drawing,
-   scrollable as brief 73 left it. The toolbar's Plan button still opens the plan view.
+   scrollable as brief 73 left it. The toolbar's Plan button still opens the plan view. The owner
+   confirmed this split (Plan opens the editable view, the drawing moves behind Sheet) on 2026-10-21.
 
 ## Files you OWN
 
