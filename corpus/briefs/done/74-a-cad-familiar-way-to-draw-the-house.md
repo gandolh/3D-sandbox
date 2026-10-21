@@ -131,3 +131,34 @@ written into its outcome. If the choice needs a design session first, routing.md
 - Any revisited decision is in `decisions.md` with its date, what it replaced and why, plus a
   `log.md` note.
 - The follow-up build brief exists in `briefs/todo/`.
+
+## Outcome (2026-10-21)
+
+The owner chose **D only**: build the CAD habits into Solstice's own editor. No fork, and no DXF
+import, not even as a later step. Asked what architects actually use, the answer was Revit and
+ArchiCAD, which draw with building parts rather than lines. That is the model Solstice already has,
+so the feel copies them: pick a tool, click points in a plan view, type a length or an angle while
+drawing. AutoCAD's command line is not copied.
+
+Both revisits this brief asked about were approved and are recorded in
+[decisions.md](../../wiki/decisions.md#the-browser-draws-building-parts-never-free-geometry):
+
+- The browser may draw walls, openings, rooms, slabs and roofs. It never draws free geometry.
+- A house started in the browser is a `*.scene.json` with no TypeScript builder, created and saved
+  through `apps/api`. Drawing in a scene that has a builder is allowed, but the browser warns first,
+  because the next `npm run scenes` erases it.
+
+[overview.md](../../wiki/overview.md) no longer says the browser does not originate scenes.
+
+Two facts found while writing the follow-ups changed their shape. The web app opens only the three
+scenes bundled at build time (`apps/web/src/scenes.ts`), so a drawn house also needs the scene picker
+to read from the API. And `planSvg` throws on a level with no walls and fits its sheet to the walls
+on every call, so the plan you draw in is a new surface in world metres, with the 1:100 sheet kept
+beside it.
+
+Follow-ups: [75](../todo/75-a-plan-view-to-draw-in.md) (the plan view),
+[76](../todo/76-undo-and-redo.md) (undo and redo),
+[77](../todo/77-the-wall-tool.md) (the Wall tool),
+[78](../todo/78-doors-windows-and-rooms.md) (doors, windows, rooms and floors), and
+[79](../todo/79-a-new-house-and-scenes-from-the-api.md) (a new house, and scenes from the API).
+Roofs are a later brief.

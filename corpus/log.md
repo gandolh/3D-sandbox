@@ -1256,3 +1256,21 @@ recorded in [decisions.md](wiki/decisions.md#the-browser-draws-building-parts-ne
 the browser may now draw walls, openings, rooms, slabs and roofs but never free geometry, and a house
 started in the browser lives only as its scene JSON, saved through `apps/api`.
 [overview.md](wiki/overview.md) no longer says the browser does not originate scenes.
+
+## 2026-10-21: briefs | 75–79 filed, drawing the house in the plan view
+
+[Brief 74](briefs/done/74-a-cad-familiar-way-to-draw-the-house.md) moved to `done/` with the owner's
+choice in its outcome. Five build briefs follow it, in build order:
+[75](briefs/todo/75-a-plan-view-to-draw-in.md) a plan view in world metres to draw in,
+[76](briefs/todo/76-undo-and-redo.md) undo and redo over whole-document snapshots,
+[77](briefs/todo/77-the-wall-tool.md) the Wall tool with snapping and typed lengths,
+[78](briefs/todo/78-doors-windows-and-rooms.md) doors, windows, rooms and floors, and
+[79](briefs/todo/79-a-new-house-and-scenes-from-the-api.md) New house plus a scene picker that reads
+the API. Roofs are left for a later brief.
+
+Two facts from the code shaped them. The web app opens only the three scenes bundled at build time,
+so 79 has to teach the picker to read `GET /api/scenes` before a drawn house can be reopened.
+And `planSvg` throws on a level with no walls and refits its sheet to the walls on every call, so 75
+builds a new surface and keeps the 1:100 drawing beside it as the sheet. The glossary gained
+builder, drawn scene, plan view, sheet, tool and free geometry, and now says that "plan" has three
+meanings.

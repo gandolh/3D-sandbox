@@ -1,6 +1,6 @@
 ---
 summary: Dated snapshot of what is built, what is in flight, and what is next — the living dashboard.
-updated: 2026-10-07
+updated: 2026-10-21
 ---
 
 # Status
@@ -110,6 +110,9 @@ to keep their look, proven by renders, unchanged wall bearings and
 byte-identical plans. Renders of the scenes are now the mirror images of
 earlier ones, and the right way round.
 
+Brief 74 (2026-10-21): the house is drawn in Solstice, Revit-style, with
+building parts only. Briefs **75–79** build it; roofs come later.
+
 Still deliberately open, in [open-questions.md](open-questions.md): schema
 migrations. The two unbaked conifers were dropped from villa's forest on
 2026-10-06.
@@ -188,7 +191,12 @@ migrations. The two unbaked conifers were dropped from villa's forest on
 | 71 | [Numbers that drift](../briefs/done/71-numbers-that-drift.md) | done |
 | 72 | [A compass that matches the world](../briefs/done/72-a-compass-that-matches-the-world.md) | done |
 | 73 | [Plan view draws over the timeline](../briefs/done/73-plan-view-draws-over-the-timeline.md) | done |
-| 74 | [A CAD-familiar way to draw the house](../briefs/todo/74-a-cad-familiar-way-to-draw-the-house.md) | todo: the owner picks fork, interop or build |
+| 74 | [A CAD-familiar way to draw the house](../briefs/done/74-a-cad-familiar-way-to-draw-the-house.md) | done: the owner chose to build the CAD habits into Solstice |
+| 75 | [A plan view to draw in](../briefs/todo/75-a-plan-view-to-draw-in.md) | todo |
+| 76 | [Undo and redo](../briefs/todo/76-undo-and-redo.md) | todo |
+| 77 | [The Wall tool](../briefs/todo/77-the-wall-tool.md) | todo (needs 75, 76) |
+| 78 | [Doors, windows, rooms and floors](../briefs/todo/78-doors-windows-and-rooms.md) | todo (needs 77) |
+| 79 | [A new house, and scenes from the API](../briefs/todo/79-a-new-house-and-scenes-from-the-api.md) | todo (needs 75) |
 | 43 | [Impostor quads are the wrong shape](../briefs/done/43-impostor-quads-are-the-wrong-shape.md) | done |
 | 44 | [The dome and the render disagree after sunset](../briefs/done/44-the-dome-and-the-render-disagree-after-sunset.md) | done |
 | 45 | [Scatter counts and seeds](../briefs/done/45-scatter-counts-and-seeds.md) | done |
