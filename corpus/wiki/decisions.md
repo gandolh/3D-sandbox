@@ -1,6 +1,6 @@
 ---
 summary: Locked technical and design calls with the reasons behind them — read before proposing an alternative, so settled trade-offs are not relitigated.
-updated: 2026-10-07
+updated: 2026-10-21
 ---
 
 # Decisions
@@ -73,6 +73,28 @@ _2026-09-11_ — Builders are TypeScript modules; a build step emits canonical J
 **Why**: hand-authoring a picket fence as forty literals is untenable, so authoring
 needs loops and helpers. Shipping a TypeScript evaluator into the runtime would be
 absurd, and the API must store inert data.
+
+## The browser draws building parts, never free geometry
+_2026-10-21_ — The browser may draw walls, openings, rooms, slabs and roofs into
+a scene, with CAD habits (plan view, snapping, typed lengths, undo). It never
+draws loose lines, shapes or meshes. A house started in the browser is a
+`*.scene.json` with no TypeScript source, created and saved through `apps/api`.
+Replaces: "the browser does not originate scenes, and there are no freehand CAD
+drawing tools" ([overview.md](overview.md), 2026-09-11).
+Rejected: forking CADCraft (a 2D Rust AutoCAD clone with no building parts, no
+3D, and upstream growing by tens of thousands of lines a week); drawing in
+CADCraft and importing DXF (two apps, and DXF has no levels or roofs); free
+geometry in the browser; saving drawings as generated TypeScript.
+**Why**: the owner wants to draw a house in a program that feels like CAD
+(brief 74). Architects' house tools (Revit, ArchiCAD) already work on building
+parts, which is the model "Parametric-semantic document" chose, so the CAD
+feel is interaction on top of it, not a new kernel. Drawing only parts keeps
+the linter, the plan, colliders and the sun working on everything drawn.
+- *Consequence*: the feel copies Revit and ArchiCAD (pick a tool, click points,
+  type a length or angle), not AutoCAD's command line.
+- *Consequence*: "TypeScript authors, JSON ships" has an exception: a drawn
+  scene's JSON is its only source, and `npm run scenes` never touches it.
+  Drawing in a scene with a builder is allowed, but the browser warns first.
 
 ## Degrees in documents, radians internally
 _2026-09-11_ — Angles are degrees on disk and on screen, radians past the schema

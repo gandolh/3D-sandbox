@@ -1246,3 +1246,13 @@ with 311 open PRs. [Brief 74](briefs/todo/74-a-cad-familiar-way-to-draw-the-hous
 routes: fork it, use it beside Solstice through DXF, lift its small crates, or build the CAD
 conventions into our own editor. It recommends the last, with a DXF import later. The owner decides;
 the last route needs the "no freehand CAD drawing tools" line revisited. Nothing was built.
+
+## 2026-10-21: decision | Brief 74 settled, the browser draws building parts
+
+The owner picked route D only: build the CAD habits into Solstice's own editor, no fork and no DXF
+import. Asked what architects actually use, the answer was Revit and ArchiCAD, which draw with
+building parts rather than lines, the same model Solstice already has. Two lines were revisited and
+recorded in [decisions.md](wiki/decisions.md#the-browser-draws-building-parts-never-free-geometry):
+the browser may now draw walls, openings, rooms, slabs and roofs but never free geometry, and a house
+started in the browser lives only as its scene JSON, saved through `apps/api`.
+[overview.md](wiki/overview.md) no longer says the browser does not originate scenes.

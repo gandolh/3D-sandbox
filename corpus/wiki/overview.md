@@ -1,6 +1,6 @@
 ---
 summary: What Solstice is, who authors what, and the top-level layout — read this first if you have never seen the project.
-updated: 2026-09-11
+updated: 2026-10-21
 ---
 
 # Overview
@@ -15,8 +15,11 @@ by real sun position, and renders photoreal stills.
 Authoring is a **repo-time activity**. Scene documents are written here, in
 TypeScript, by a human and Claude working together — there is deliberately **no
 LLM inside the running app**. The browser's job is to *tweak, light and look*: a
-transform gizmo, an inspector, parametric sliders, and a render button. It does
-not originate scenes, and there are no freehand CAD drawing tools.
+transform gizmo, an inspector, parametric sliders, and a render button. Since
+2026-10-21 it can also *draw building parts* (walls, openings, rooms, slabs,
+roofs) with CAD habits, and a house started that way lives only as its scene
+JSON. It never draws free geometry. See
+[decisions.md](decisions.md#the-browser-draws-building-parts-never-free-geometry).
 
 That constraint is what makes the document format load-bearing. It has to be
 hand-authorable, diffable, and strictly validated, because the thing writing it is
