@@ -1,5 +1,9 @@
 # Unconfirmed: the scene stays on proxy shapes after an early solar seek
 
+**Dropped 2026-10-23 by the owner**, unreproduced: it was seen once and never
+again, and nobody tried the steps below. If it shows up again, start a new todo from
+this one's steps and leads.
+
 Captured 2026-10-09 during the README refresh. **Seen once; not reproduced.** Captured as a todo and
 not a brief because there is no confirmed cause or fix to spec yet. Promote it to `briefs/todo/` once it
 reproduces.
@@ -26,12 +30,12 @@ the order of those two events.
 
 ## Leads (hypotheses, not findings)
 
-- [`Viewport.tsx:245-253`](../../apps/web/src/ui/Viewport.tsx#L245-L253): `seek` calls `commit()`, which runs
+- [`Viewport.tsx:245-253`](../../../apps/web/src/ui/Viewport.tsx#L245-L253): `seek` calls `commit()`, which runs
   `editDocument`, which changes the document and re-fires the effect at
-  [`Viewport.tsx:293-295`](../../apps/web/src/ui/Viewport.tsx#L293-L295) (`engine.setDocument`).
-- [`Viewport.tsx:264-274`](../../apps/web/src/ui/Viewport.tsx#L264-L274): the load promise calls
+  [`Viewport.tsx:293-295`](../../../apps/web/src/ui/Viewport.tsx#L293-L295) (`engine.setDocument`).
+- [`Viewport.tsx:264-274`](../../../apps/web/src/ui/Viewport.tsx#L264-L274): the load promise calls
   `engine.setAssets(...)`, and then only sets the status if `loaded.sizes.size > 0`.
-- [`SandboxEngine.ts:179-217`](../../apps/web/src/engine/SandboxEngine.ts#L179-L217): `setAssets` stores the
+- [`SandboxEngine.ts:179-217`](../../../apps/web/src/engine/SandboxEngine.ts#L179-L217): `setAssets` stores the
   library and regenerates from `lastDocument`. `setDocument` builds with a shared `geometryCache`; if
   that cache keys on the document and not on the library, a regenerate with assets could serve the
   proxy geometry cached just before. Check this first, and check whether a seek during load puts a
@@ -42,7 +46,7 @@ the order of those two events.
 ## Out of scope
 
 - Fixing it: this note is for confirming it. Do not change the cache or load order on a guess.
-- The SwiftShader speed itself (see [running-on-a-gpu.md](../wiki/running-on-a-gpu.md)).
+- The SwiftShader speed itself (see [running-on-a-gpu.md](../../wiki/running-on-a-gpu.md)).
 
 ## Acceptance (once it reproduces and is briefed)
 

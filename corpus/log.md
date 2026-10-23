@@ -1216,7 +1216,7 @@ the old sign. The path tracer, physics cache and viewport did not.
 Found during the README refresh; nothing fixed. [Brief 73](briefs/done/73-plan-view-draws-over-the-timeline.md):
 at 1440×900 the plan sheet overruns its pane and paints over the timeline, because `PlanView`'s outer div
 is not a flex column, so `Scroll`'s `min-h-0 flex-1` never bounds it. Captured as a todo, not a brief:
-[the scene staying on proxy shapes after an early solar seek](todos/scene-stays-on-proxy-shapes-after-early-solar-seek.md)
+[the scene staying on proxy shapes after an early solar seek](todos/done/scene-stays-on-proxy-shapes-after-early-solar-seek.md)
 was seen once under SwiftShader (12,354 triangles, fixed by reload) and has no confirmed cause, so
 reproducing it is its first step.
 
@@ -1274,3 +1274,9 @@ And `planSvg` throws on a level with no walls and refits its sheet to the walls 
 builds a new surface and keeps the 1:100 drawing beside it as the sheet. The glossary gained
 builder, drawn scene, plan view, sheet, tool and free geometry, and now says that "plan" has three
 meanings.
+
+## [2026-10-23] maintenance | The proxy-shapes todo is dropped, unreproduced
+
+The owner dropped [the scene staying on proxy shapes after an early solar seek](todos/done/scene-stays-on-proxy-shapes-after-early-solar-seek.md),
+seen once on 2026-10-09 and never reproduced. It moved to `todos/done/` with a note; its
+steps and leads stay there in case it comes back.
