@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="124.4mm" height="306.8mm" viewBox="0 0 124.4 306.8" font-family="Helvetica, Arial, sans-serif">
+<rect width="124.4" height="306.8" fill="#ffffff"/>
+<path d="M29.7,253.4 L36.7,253.4 L36.7,256.8 L29.7,256.8 Z" fill="#b8b4ad" stroke="#111111" stroke-width="0.7" stroke-linejoin="miter"/>
+<path d="M46.7,253.4 L54.7,253.4 L54.7,256.8 L46.7,256.8 Z" fill="#b8b4ad" stroke="#111111" stroke-width="0.7" stroke-linejoin="miter"/>
+<path d="M82.7,253.4 L94.7,253.4 L94.7,256.8 L82.7,256.8 Z" fill="#b8b4ad" stroke="#111111" stroke-width="0.7" stroke-linejoin="miter"/>
+<path d="M93,255.1 L93,163.1 L96.4,163.1 L96.4,255.1 Z" fill="#b8b4ad" stroke="#111111" stroke-width="0.7" stroke-linejoin="miter"/>
+<path d="M94.7,164.8 L83.7,164.8 L83.7,161.4 L94.7,161.4 Z" fill="#b8b4ad" stroke="#111111" stroke-width="0.7" stroke-linejoin="miter"/>
+<path d="M65.7,164.8 L57.7,164.8 L57.7,161.4 L65.7,161.4 Z" fill="#b8b4ad" stroke="#111111" stroke-width="0.7" stroke-linejoin="miter"/>
+<path d="M41.7,164.8 L29.7,164.8 L29.7,161.4 L41.7,161.4 Z" fill="#b8b4ad" stroke="#111111" stroke-width="0.7" stroke-linejoin="miter"/>
+<path d="M31.4,163.1 L31.4,255.1 L28,255.1 L28,163.1 Z" fill="#b8b4ad" stroke="#111111" stroke-width="0.7" stroke-linejoin="miter"/>
+<path d="M28.6,163.1 L28.6,29.1 L30.8,29.1 L30.8,163.1 Z" fill="#b8b4ad" stroke="#111111" stroke-width="0.7" stroke-linejoin="miter"/>
+<path d="M93.6,163.1 L93.6,29.1 L95.8,29.1 L95.8,163.1 Z" fill="#b8b4ad" stroke="#111111" stroke-width="0.7" stroke-linejoin="miter"/>
+<path d="M94.7,30.2 L29.7,30.2 L29.7,28 L94.7,28 Z" fill="#b8b4ad" stroke="#111111" stroke-width="0.7" stroke-linejoin="miter"/>
+<path d="M36.7,253.4 L36.7,256.8 M46.7,253.4 L46.7,256.8" fill="none" stroke="#111111" stroke-width="0.35"/>
+<path d="M36.7,255.1 L36.7,245.1" fill="none" stroke="#111111" stroke-width="0.25"/>
+<path d="M36.7,245.1 A10 10 0 0 1 46.7,255.1" fill="none" stroke="#111111" stroke-width="0.18" stroke-dasharray="none"/>
+<path d="M54.7,253.4 L82.7,253.4 M54.7,256.8 L82.7,256.8" fill="none" stroke="#111111" stroke-width="0.35"/>
+<path d="M54.7,255.1 L82.7,255.1" fill="none" stroke="#7f9bb0" stroke-width="0.25"/>
+<path d="M83.7,164.8 L83.7,161.4 M65.7,164.8 L65.7,161.4" fill="none" stroke="#111111" stroke-width="0.35"/>
+<path d="M83.7,163.1 L83.7,181.1" fill="none" stroke="#111111" stroke-width="0.25"/>
+<path d="M83.7,181.1 A18 18 0 0 1 65.7,163.1" fill="none" stroke="#111111" stroke-width="0.18" stroke-dasharray="none"/>
+<path d="M57.7,164.8 L41.7,164.8 M57.7,161.4 L41.7,161.4" fill="none" stroke="#111111" stroke-width="0.35"/>
+<path d="M57.7,163.1 L41.7,163.1" fill="none" stroke="#7f9bb0" stroke-width="0.25"/>
+<path d="M19,28 L19,256.8" stroke="#111111" stroke-width="0.18"/>
+<path d="M28,28 L19,28 M28,256.8 L19,256.8" stroke="#8a8a8a" stroke-width="0.18"/>
+<path d="M17.4,26.4 L20.6,29.6 M17.4,255.2 L20.6,258.4" stroke="#111111" stroke-width="0.18"/>
+<text x="19" y="141" text-anchor="middle" font-size="2.6" fill="#111111">22880</text>
+<path d="M28,265.8 L96.4,265.8" stroke="#111111" stroke-width="0.18"/>
+<path d="M28,256.8 L28,265.8 M96.4,256.8 L96.4,265.8" stroke="#8a8a8a" stroke-width="0.18"/>
+<path d="M26.4,264.2 L29.6,267.4 M94.8,264.2 L98,267.4" stroke="#111111" stroke-width="0.18"/>
+<text x="62.2" y="264.4" text-anchor="middle" font-size="2.6" fill="#111111">6840</text>
+<g transform="translate(90.4 24) rotate(-12)">
+<path d="M0,6 L0,-2" stroke="#111111" stroke-width="0.25" fill="none"/>
+<path d="M0,-7 L2,-1.5 L-2,-1.5 Z" fill="#111111"/>
+<text x="0" y="-8.4" text-anchor="middle" font-size="2.8" fill="#111111">N</text>
+</g>
+<path d="M28,294.8 L78,294.8" stroke="#111111" stroke-width="0.35"/>
+<path d="M28,293.4 L28,296.2" stroke="#111111" stroke-width="0.18"/>
+<path d="M38,293.4 L38,296.2" stroke="#111111" stroke-width="0.18"/>
+<path d="M48,293.4 L48,296.2" stroke="#111111" stroke-width="0.18"/>
+<path d="M58,293.4 L58,296.2" stroke="#111111" stroke-width="0.18"/>
+<path d="M68,293.4 L68,296.2" stroke="#111111" stroke-width="0.18"/>
+<path d="M78,293.4 L78,296.2" stroke="#111111" stroke-width="0.18"/>
+<text x="80" y="295.8" font-size="2.6" fill="#111111">5 m</text>
+<text x="28" y="302.8" font-size="3" fill="#111111">Elmsgate — Ground floor · 1:100</text>
+</svg>

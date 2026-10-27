@@ -1,5 +1,6 @@
 import { type LintFinding, lintScene, SceneDocument, type SolarTime } from "@solstice/schema";
 import { useSyncExternalStore } from "react";
+import type { ViewTransform } from "../lib/plan-view.js";
 import { DEFAULT_SCENE_ID } from "../scenes.js";
 
 /**
@@ -58,8 +59,32 @@ export interface AppState {
    * channel with a sighted equivalent that says something different.
    */
   alert: string | null;
-  /** Is the floor plan showing instead of the viewport? */
+  /** Is the plan view showing instead of the viewport? */
   showPlan: boolean;
+  /**
+   * Which level the plan view shows, by id. Null means the first.
+   *
+   * An id rather than an index so a level added or removed above it does not
+   * silently move the view to a different floor. When the id names nothing —
+   * the level was deleted — the plan view falls back to the first.
+   */
+  planLevelId: string | null;
+  /**
+   * The plan view's pan and zoom. Null until the surface has a size to fit to.
+   *
+   * Here rather than in the component because the plan view unmounts when Plan
+   * is toggled off, and coming back to a different zoom than you left is the
+   * kind of small betrayal that makes a drawing tool feel untrustworthy.
+   */
+  planView: ViewTransform | null;
+  /** Is the plan view showing the 1:100 sheet rather than the editable view? */
+  planSheet: boolean;
+  /**
+   * The world point under the pointer in the plan view, `[x, z]` metres, or
+   * null when the pointer is elsewhere. Moves at pointer rate; only the plan
+   * view's readout subscribes to it.
+   */
+  planPointer: readonly [number, number] | null;
   /**
    * Whether a path trace owns the GPU right now.
    *
@@ -89,6 +114,10 @@ let state: AppState = {
   loadError: null,
   alert: null,
   showPlan: false,
+  planLevelId: null,
+  planView: null,
+  planSheet: false,
+  planPointer: null,
   rendering: false,
 };
 
@@ -128,6 +157,11 @@ export function loadDocument(document: SceneDocument, sceneId?: string): void {
     shotId: null,
     playhead: 0,
     playing: false,
+    // The plan view's level and framing are about this document too: a level
+    // id from Elmsgate names nothing in Greenhollow, and a zoom that fit one
+    // site shows empty ground on another. Null refits on the next paint.
+    planLevelId: null,
+    planView: null,
     ...(sceneId === undefined ? {} : { sceneId }),
     status: `${document.title} loaded`,
     loadError: null,
@@ -158,6 +192,12 @@ export const setShowContext = (showContext: boolean): void =>
   set({ showContext, revision: state.revision + 1 });
 
 export const setShowPlan = (showPlan: boolean): void => set({ showPlan });
+
+export const setPlanLevelId = (planLevelId: string | null): void => set({ planLevelId });
+export const setPlanView = (planView: ViewTransform | null): void => set({ planView });
+export const setPlanSheet = (planSheet: boolean): void => set({ planSheet });
+/** Pointer rate, like `setPlayhead`: cheap because only the readout selects it. */
+export const setPlanPointer = (planPointer: readonly [number, number] | null): void => set({ planPointer });
 
 /** The ordinary channel: polite, and it clears any standing alert. */
 export const setStatus = (status: string): void => set({ status, alert: null });

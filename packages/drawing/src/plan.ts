@@ -1,5 +1,6 @@
 import { area, bounds, type Level, type Opening, type SceneDocument, type Wall } from "@solstice/schema";
-import { cutsThrough, openingPlan, project, type Sheet, wallCorners, wallSpan } from "./geometry.js";
+import { project, type Sheet, wallCorners } from "./geometry.js";
+import { openingMark, sweepFlag, wallSolids } from "./linework.js";
 import { CUT_HEIGHT, INK, WEIGHT } from "./style.js";
 
 export interface PlanOptions {
@@ -83,7 +84,7 @@ export function planSvg(doc: SceneDocument, options: PlanOptions = {}): string {
     // create. Capping the stroke keeps poché visible at every wall thickness.
     const drawn = wall.thickness * mmPerM;
     const stroke = Math.min(WEIGHT.cut, drawn / 3);
-    for (const piece of solidSpans(wall, cut)) {
+    for (const piece of wallSolids(wall, cut)) {
       const d = piece.map((c, i) => `${i === 0 ? "M" : "L"}${pts(p(c[0], c[1]))}`).join(" ");
       out.push(
         `<path d="${d} Z" fill="${INK.poche}" stroke="${INK.line}" stroke-width="${n(stroke)}" stroke-linejoin="miter"/>`,
@@ -188,40 +189,6 @@ function subjectWalls(level: Level): Wall[] {
   return level.walls.filter((w) => envelope.includes(w) || (inside(w.start) && inside(w.end)));
 }
 
-/** The solid stretches of a wall: everything the section cuts that is not a hole. */
-function solidSpans(wall: Wall, cut: number): [number, number][][] {
-  const length = wallSpan(wall);
-  const holes = wall.openings
-    .filter((o) => cutsThrough(o, cut))
-    .map((o) => [o.offset, o.offset + o.width] as const)
-    .sort((a, b) => a[0] - b[0]);
-
-  const spans: [number, number][] = [];
-  let cursor = 0;
-  for (const [from, to] of holes) {
-    if (from > cursor) spans.push([cursor, from]);
-    cursor = Math.max(cursor, to);
-  }
-  if (cursor < length) spans.push([cursor, length]);
-
-  return spans.map(([from, to]) => sliceCorners(wall, from, to));
-}
-
-/** A wall's plan rectangle between two distances along it. */
-function sliceCorners(wall: Wall, from: number, to: number): [number, number][] {
-  const plan = openingPlan(wall, { offset: from, width: to - from } as Opening);
-  const [nx, nz] = plan.normal;
-  const h = plan.halfThickness;
-  const [ax, az] = plan.near;
-  const [bx, bz] = plan.far;
-  return [
-    [ax + nx * h, az + nz * h],
-    [bx + nx * h, bz + nz * h],
-    [bx - nx * h, bz - nz * h],
-    [ax - nx * h, az - nz * h],
-  ];
-}
-
 type Project = (x: number, z: number) => readonly [number, number];
 
 /**
@@ -238,7 +205,7 @@ type Project = (x: number, z: number) => readonly [number, number];
  * what the section cuts and the glass is what it sees.
  *
  * **Either kind, when the plane does not pass through it, is one dashed line
- * along the wall** and nothing more. There is no hole to draw: `solidSpans`
+ * along the wall** and nothing more. There is no hole to draw: `wallSolids`
  * leaves the poché unbroken, and reveals and glazing across it would tell a
  * builder there is an opening at cutting height where there is solid wall. A
  * door below the plane (a hatch) is a threshold seen beneath it; a window above
@@ -248,52 +215,37 @@ type Project = (x: number, z: number) => readonly [number, number];
  * height".
  */
 function openingSymbol(wall: Wall, opening: Opening, cut: number, p: Project): string[] {
-  const plan = openingPlan(wall, opening);
-  const [ax, az] = plan.near;
-  const [bx, bz] = plan.far;
-  const [nx, nz] = plan.normal;
-  const h = plan.halfThickness;
-  const out: string[] = [];
-
-  const edge = (side: 1 | -1): string =>
-    `M${pts(p(ax + nx * h * side, az + nz * h * side))} L${pts(p(bx + nx * h * side, bz + nz * h * side))}`;
+  const mark = openingMark(wall, opening, cut);
+  const seg = ([a, b]: readonly [readonly [number, number], readonly [number, number]]): string =>
+    `M${pts(p(a[0], a[1]))} L${pts(p(b[0], b[1]))}`;
 
   // Before either kind is drawn as cut, because neither is unless the plane
   // passes through it — see the doc comment.
-  if (!cutsThrough(opening, cut)) {
-    out.push(
-      `<path d="M${pts(p(ax, az))} L${pts(p(bx, bz))}" fill="none" stroke="${INK.line}" stroke-width="${WEIGHT.seen}" stroke-dasharray="1.4 1"/>`,
-    );
-    return out;
+  if (mark.kind === "hidden") {
+    return [
+      `<path d="${seg([mark.from, mark.to])}" fill="none" stroke="${INK.line}" stroke-width="${WEIGHT.seen}" stroke-dasharray="1.4 1"/>`,
+    ];
   }
 
-  if (opening.kind === "window") {
+  if (mark.kind === "window") {
     // Both reveals, plus the glazing between them.
-    out.push(
-      `<path d="${edge(1)} ${edge(-1)}" fill="none" stroke="${INK.line}" stroke-width="${WEIGHT.seen}"/>`,
-      `<path d="M${pts(p(ax, az))} L${pts(p(bx, bz))}" fill="none" stroke="${INK.glass}" stroke-width="${WEIGHT.symbol}"/>`,
-    );
-    return out;
+    return [
+      `<path d="${seg(mark.reveals[0])} ${seg(mark.reveals[1])}" fill="none" stroke="${INK.line}" stroke-width="${WEIGHT.seen}"/>`,
+      `<path d="${seg(mark.glazing)}" fill="none" stroke="${INK.glass}" stroke-width="${WEIGHT.symbol}"/>`,
+    ];
   }
 
   // Jambs: the reveal returns at each end of the hole.
-  out.push(
-    `<path d="M${pts(p(ax + nx * h, az + nz * h))} L${pts(p(ax - nx * h, az - nz * h))}` +
-      ` M${pts(p(bx + nx * h, bz + nz * h))} L${pts(p(bx - nx * h, bz - nz * h))}" ` +
-      `fill="none" stroke="${INK.line}" stroke-width="${WEIGHT.seen}"/>`,
-  );
+  const out: string[] = [
+    `<path d="${seg(mark.jambs[0])} ${seg(mark.jambs[1])}" fill="none" stroke="${INK.line}" stroke-width="${WEIGHT.seen}"/>`,
+  ];
 
   // Hinged at the near jamb, opening to the +normal side. The leaf stands at
   // 90°, which is how a plan draws a door: not ajar, not shut, but showing the
   // whole quarter-circle it sweeps.
-  const w = opening.width;
-  const hingeX = ax;
-  const hingeZ = az;
-  const leafX = hingeX + nx * w;
-  const leafZ = hingeZ + nz * w;
-  const hinge = p(hingeX, hingeZ);
-  const leaf = p(leafX, leafZ);
-  const shut = p(bx, bz);
+  const hinge = p(mark.hinge[0], mark.hinge[1]);
+  const leaf = p(mark.leaf[0], mark.leaf[1]);
+  const shut = p(mark.shut[0], mark.shut[1]);
   const r = Math.hypot(leaf[0] - hinge[0], leaf[1] - hinge[1]);
 
   out.push(
@@ -304,16 +256,6 @@ function openingSymbol(wall: Wall, opening: Opening, cut: number, p: Project): s
     `<path d="M${pts(leaf)} A${n(r)} ${n(r)} 0 0 ${sweepFlag(hinge, leaf, shut)} ${pts(shut)}" fill="none" stroke="${INK.line}" stroke-width="${WEIGHT.fine}" stroke-dasharray="none"/>`,
   );
   return out;
-}
-
-/** Which way round the swing arc goes, in sheet space. */
-function sweepFlag(
-  hinge: readonly [number, number],
-  from: readonly [number, number],
-  to: readonly [number, number],
-): 0 | 1 {
-  const cross = (from[0] - hinge[0]) * (to[1] - hinge[1]) - (from[1] - hinge[1]) * (to[0] - hinge[0]);
-  return cross > 0 ? 1 : 0;
 }
 
 /**
