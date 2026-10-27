@@ -64,3 +64,42 @@ of edit. The scene files are 12–49 KB on disk, so a capped history is cheap. M
   follow each one. Ctrl+Shift+Z redoes them.
 - Ctrl+Z inside an Inspector text field undoes the typing, not the document.
 - `npm run check` passes.
+
+## Outcome (2026-10-27)
+
+Built as filed. `editDocument(mutate, { label, group })` keeps `undoStack` and `redoStack` in the store
+(`HistoryStep` is the document to go back to and the step's name), capped at `HISTORY_LIMIT` = 100.
+`undo` and `redo` restore a document by re-linting and bumping the revision, the path every edit takes,
+so `SandboxEngine` is untouched. `loadDocument` and `setLoadError` clear both stacks. A rejected edit
+leaves history alone. `packages/schema` and the API are untouched.
+
+**Grouping.** The group of the last edit is module state, and undo, redo and a load end it. Three callers
+needed one:
+
+- the sun slider (`setSolar`, now `group: "solar"`), one call per input event;
+- the paused playhead scrub in `Viewport.tsx`, which commits the sun per drag event, in the same group;
+- every Inspector field, grouped by entity and field (`W-01:thickness`). A spinner commits once per press.
+  The consequence is that two separate commits to the same field with nothing in between are one step.
+
+The gizmo commits once, at the end of a drag (`commitDrag`), so `Move <id>` needs no group. Drop to floor
+is `Drop <id>`, ungrouped.
+
+**Keys and buttons.** `useUndoKeys` (`apps/web/src/ui/useUndoKeys.ts`) binds Ctrl or Cmd with Z,
+Shift+Z and Y on `window`, mounted from the toolbar beside the buttons it presses; there was no central
+place for global keys. It leaves text fields alone, but not a range input: after a drag of the sun slider,
+focus is on the slider, and Ctrl+Z there has to undo the drag. Undo and Redo sit before Save, disabled
+when empty or during a render, titled "Undo Move table-garden (Ctrl+Z)".
+
+**Checked in Chromium** (Playwright, :5181). On Greenhollow: dragged `table-garden` with the gizmo's XZ
+handle by real pointer events (2.40, −33.80 → −0.19, −33.85), set W-01's thickness to 360 mm in the
+Inspector, and dragged the sun slider from 17:20 to 14:54. With the plan view open, three Ctrl+Z undid
+them in reverse: the time went back, then W-01's mesh and its plan outline went from 0.36 to 0.30 m, then
+the table's mesh moved back. Three Ctrl+Shift+Z redid them in order. Typing into the Thickness field and
+pressing Ctrl+Z took "3005" back to "300" with the undo stack unchanged.
+
+**Heap, 100 Greenhollow steps:** about 6.8 MB in Chromium (`performance.memory` with forced GC, history
+held against history cleared), 68 KB a step; 10.3 MB in Node for 100 parsed documents. The scene is 49 KB
+on disk. Small, so the cap stays at 100.
+
+**549 → 603 tests across 75 and 76** (19 here: store history, toolbar buttons, keys). Turning grouping off
+fails two of them; treating number inputs as non-text fails the text-field one. `npm run check` passes.

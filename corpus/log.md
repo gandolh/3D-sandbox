@@ -1262,7 +1262,7 @@ started in the browser lives only as its scene JSON, saved through `apps/api`.
 [Brief 74](briefs/done/74-a-cad-familiar-way-to-draw-the-house.md) moved to `done/` with the owner's
 choice in its outcome. Five build briefs follow it, in build order:
 [75](briefs/done/75-a-plan-view-to-draw-in.md) a plan view in world metres to draw in,
-[76](briefs/todo/76-undo-and-redo.md) undo and redo over whole-document snapshots,
+[76](briefs/done/76-undo-and-redo.md) undo and redo over whole-document snapshots,
 [77](briefs/todo/77-the-wall-tool.md) the Wall tool with snapping and typed lengths,
 [78](briefs/todo/78-doors-windows-and-rooms.md) doors, windows, rooms and floors, and
 [79](briefs/todo/79-a-new-house-and-scenes-from-the-api.md) New house plus a scene picker that reads
@@ -1297,3 +1297,21 @@ under the pointer to four decimals, and hovering W-02's ends read its `start` an
 announced at every pointer move. It has a strip of its own at the foot of the plan view. Selecting an opening
 or a room works, but the Inspector has nothing to show for one yet: `findEntity` does not resolve them.
 549 → 584 tests.
+
+## 2026-10-27: build | Brief 76 done, undo and redo
+
+[Brief 76](briefs/done/76-undo-and-redo.md): `editDocument` keeps the documents it replaces, up to 100,
+each named by its edit ("Move table-garden", "Change W-01 thickness"); Ctrl+Z and Ctrl+Shift+Z or Ctrl+Y
+walk them, and so do two new toolbar buttons. Edits that fire per input event fold into one step by group:
+the sun slider, the paused playhead scrub, and each Inspector field.
+
+**A range input is not a text field.** The keys stand aside in text fields so a field undoes its own
+typing, but after a drag of the sun slider focus is on the slider, and Ctrl+Z there must undo the drag.
+
+**A history step is cheap:** 100 Greenhollow steps held about 7 MB of heap in Chromium and 10 MB in Node,
+so the cap of 100 is not about memory. In the browser, a gizmo drag, a thickness edit and a slider drag
+undid in reverse with the mesh and the plan following each, and redid in order.
+
+A check-script note: Vite serves a module edited after the dev server started with a `?t=` query, so
+`import("/src/state/store.ts")` from the page then gets a second store. Restart the server before driving
+the app's store from a script.

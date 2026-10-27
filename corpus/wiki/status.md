@@ -112,7 +112,7 @@ earlier ones, and the right way round.
 
 Brief 74 (2026-10-21): the house is drawn in Solstice, Revit-style, with
 building parts only. Briefs **75–79** build it; roofs come later. Done so far:
-75, the plan view (2026-10-27).
+75, the plan view, and 76, undo (both 2026-10-27).
 
 Still deliberately open, in [open-questions.md](open-questions.md): schema
 migrations. The two unbaked conifers were dropped from villa's forest on
@@ -194,7 +194,7 @@ migrations. The two unbaked conifers were dropped from villa's forest on
 | 73 | [Plan view draws over the timeline](../briefs/done/73-plan-view-draws-over-the-timeline.md) | done |
 | 74 | [A CAD-familiar way to draw the house](../briefs/done/74-a-cad-familiar-way-to-draw-the-house.md) | done: the owner chose to build the CAD habits into Solstice |
 | 75 | [A plan view to draw in](../briefs/done/75-a-plan-view-to-draw-in.md) | done |
-| 76 | [Undo and redo](../briefs/todo/76-undo-and-redo.md) | todo |
+| 76 | [Undo and redo](../briefs/done/76-undo-and-redo.md) | done |
 | 77 | [The Wall tool](../briefs/todo/77-the-wall-tool.md) | todo (needs 75, 76) |
 | 78 | [Doors, windows, rooms and floors](../briefs/todo/78-doors-windows-and-rooms.md) | todo (needs 77) |
 | 79 | [A new house, and scenes from the API](../briefs/todo/79-a-new-house-and-scenes-from-the-api.md) | todo (needs 75) |
