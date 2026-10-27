@@ -95,7 +95,35 @@ export interface AppState {
    * reporting success.
    */
   rendering: boolean;
+  /**
+   * Undo history: the documents edits replaced, newest last, each named by the
+   * edit that replaced it. Redo is the same, for steps undone.
+   *
+   * Whole documents, not patches. `editDocument` already makes a fresh, parsed
+   * document on every edit and never mutates the old one, so keeping a
+   * reference to the old one *is* an exact undo step, with no diffing and no
+   * inverse to write for each kind of edit (brief 76).
+   */
+  undoStack: readonly HistoryStep[];
+  redoStack: readonly HistoryStep[];
 }
+
+/** One undoable step: the document to go back to, and what the step did. */
+export interface HistoryStep {
+  document: SceneDocument;
+  /** e.g. "Move P-03", for the button's tooltip. */
+  label: string;
+}
+
+/**
+ * How many steps undo keeps; the oldest goes first.
+ *
+ * Measured on Greenhollow, the largest scene (49 KB on disk): 100 steps held
+ * about 7 MB of heap in Chromium and 10 MB in Node, 70–100 KB a step. Cheap
+ * enough that the cap is not about memory pressure today, only about a long
+ * session not growing without bound.
+ */
+export const HISTORY_LIMIT = 100;
 
 let state: AppState = {
   document: null,
@@ -119,7 +147,18 @@ let state: AppState = {
   planSheet: false,
   planPointer: null,
   rendering: false,
+  undoStack: [],
+  redoStack: [],
 };
+
+/**
+ * The group of the last edit, while consecutive edits share one.
+ *
+ * Module state rather than `AppState` because nothing renders from it: it is
+ * only how `editDocument` knows to fold the next edit into the step before.
+ * Undo, redo and a load all end a group.
+ */
+let lastGroup: string | null = null;
 
 const listeners = new Set<() => void>();
 const emit = (): void => listeners.forEach((l) => l());
@@ -145,6 +184,7 @@ export function useStore<T>(select: (s: AppState) => T): T {
 /* ── actions ───────────────────────────────────────────────────── */
 
 export function loadDocument(document: SceneDocument, sceneId?: string): void {
+  lastGroup = null;
   set({
     document,
     findings: lintScene(document),
@@ -162,6 +202,10 @@ export function loadDocument(document: SceneDocument, sceneId?: string): void {
     // site shows empty ground on another. Null refits on the next paint.
     planLevelId: null,
     planView: null,
+    // A different scene is not a step back. Undoing into the last scene's
+    // document would swap scenes behind the picker's back.
+    undoStack: [],
+    redoStack: [],
     ...(sceneId === undefined ? {} : { sceneId }),
     status: `${document.title} loaded`,
     loadError: null,
@@ -169,15 +213,19 @@ export function loadDocument(document: SceneDocument, sceneId?: string): void {
 }
 
 /** No document, and this is why. Clears when one loads. */
-export const setLoadError = (loadError: string): void =>
+export const setLoadError = (loadError: string): void => {
+  lastGroup = null;
   set({
     loadError,
     document: null,
+    undoStack: [],
+    redoStack: [],
     findings: [],
     selection: null,
     status: loadError,
     alert: loadError,
   });
+};
 
 export const select = (selection: string | null): void => set({ selection });
 
@@ -232,16 +280,32 @@ export const setRendering = (rendering: boolean): void => set({ rendering });
 export const setAssetSizes = (assetSizes: ReadonlyMap<string, readonly [number, number, number]>): void =>
   set({ assetSizes });
 
+/** What an edit is called in the undo history, and whether it folds into the one before. */
+export interface EditOptions {
+  /** The step's name, e.g. "Add wall W-07". Shown on the Undo button. */
+  label?: string;
+  /**
+   * Consecutive edits with the same group fold into one undo step until a
+   * different edit arrives. For anything that edits per input event: one drag
+   * of the sun slider is a hundred `setSolar` calls and one step.
+   */
+  group?: string;
+}
+
 /**
  * Apply an edit to the document, then re-validate.
  *
  * The edit is re-parsed through the schema so defaults and coercions apply the
  * same way they would on load — an edited document and a loaded one must be
  * indistinguishable, or the editor becomes a second source of truth.
+ *
+ * The document it replaces goes on the undo stack, and any edit clears redo.
+ * A rejected edit changes nothing, history included.
  */
-export function editDocument(mutate: (draft: SceneDocument) => void): void {
-  if (state.document === null) return;
-  const draft = structuredClone(state.document) as SceneDocument;
+export function editDocument(mutate: (draft: SceneDocument) => void, options: EditOptions = {}): void {
+  const previous = state.document;
+  if (previous === null) return;
+  const draft = structuredClone(previous) as SceneDocument;
   mutate(draft);
 
   const parsed = SceneDocument.safeParse(draft);
@@ -250,14 +314,72 @@ export function editDocument(mutate: (draft: SceneDocument) => void): void {
     return;
   }
 
+  const label = options.label ?? "Edit";
+  const top = state.undoStack.at(-1);
+  const folds = options.group !== undefined && options.group === lastGroup && top !== undefined;
+  // Folding keeps the document from before the group began, so one undo goes
+  // back past the whole drag; the label follows the latest edit.
+  const undoStack = folds
+    ? [...state.undoStack.slice(0, -1), { document: top.document, label }]
+    : [...state.undoStack, { document: previous, label }].slice(-HISTORY_LIMIT);
+  lastGroup = options.group ?? null;
+
   set({
     document: parsed.data,
     findings: lintScene(parsed.data),
     revision: state.revision + 1,
+    undoStack,
+    redoStack: [],
   });
 }
 
-export const setSolar = (solar: SolarTime): void =>
-  editDocument((draft) => {
-    draft.solar = solar;
+/** Does anything in the document carry this id? Openings and rooms included. */
+function hasId(node: unknown, id: string): boolean {
+  if (Array.isArray(node)) return node.some((item) => hasId(item, id));
+  if (node === null || typeof node !== "object") return false;
+  if ((node as { id?: unknown }).id === id) return true;
+  return Object.values(node).some((value) => hasId(value, id));
+}
+
+/**
+ * Put a document from history back, through the same path an edit takes:
+ * re-lint and bump the revision, so the engine regenerates as it would for
+ * any other change. Not while a render runs — the same rule that guards the
+ * scene picker and Save, because the trace is sampling the geometry this
+ * would dispose.
+ */
+function restore(
+  from: "undoStack" | "redoStack",
+  to: "undoStack" | "redoStack",
+  verb: "Undid" | "Redid",
+): void {
+  const current = state.document;
+  const step = state[from].at(-1);
+  if (current === null || step === undefined || state.rendering) return;
+  lastGroup = null;
+  const selection =
+    state.selection !== null && hasId(step.document.subject, state.selection) ? state.selection : null;
+  set({
+    document: step.document,
+    findings: lintScene(step.document),
+    revision: state.revision + 1,
+    [from]: state[from].slice(0, -1),
+    [to]: [...state[to], { document: current, label: step.label }],
+    // A selection pointing at a wall the undo removed would leave the
+    // Inspector and the gizmo holding nothing.
+    selection,
+    status: `${verb}: ${step.label}`,
+    alert: null,
   });
+}
+
+export const undo = (): void => restore("undoStack", "redoStack", "Undid");
+export const redo = (): void => restore("redoStack", "undoStack", "Redid");
+
+export const setSolar = (solar: SolarTime): void =>
+  editDocument(
+    (draft) => {
+      draft.solar = solar;
+    },
+    { label: `Set the sun to ${solar.time}`, group: "solar" },
+  );

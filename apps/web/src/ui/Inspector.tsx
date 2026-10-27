@@ -105,11 +105,19 @@ function WallInspector({ id, levelIndex, wallIndex }: { id: string; levelIndex: 
   const level = doc?.subject.levels[levelIndex];
   if (wall === undefined || level === undefined) return null;
 
-  const edit = (mutate: (w: NonNullable<typeof wall>) => void): void =>
-    editDocument((draft) => {
-      const target = draft.subject.levels[levelIndex]?.walls[wallIndex];
-      if (target !== undefined) mutate(target);
-    });
+  /**
+   * One field's edit, named for the undo history. Grouped by field, so a held
+   * spinner arrow — one commit per press — is one undo step, and so is a run
+   * of edits to the same field with nothing else in between.
+   */
+  const edit = (field: string, mutate: (w: NonNullable<typeof wall>) => void, of: string = id): void =>
+    editDocument(
+      (draft) => {
+        const target = draft.subject.levels[levelIndex]?.walls[wallIndex];
+        if (target !== undefined) mutate(target);
+      },
+      { label: `Change ${of} ${field}`, group: `${of}:${field}` },
+    );
 
   return (
     <div>
@@ -119,7 +127,7 @@ function WallInspector({ id, levelIndex, wallIndex }: { id: string; levelIndex: 
         label="Length"
         unit="m"
         value={wallLength(wall)}
-        onCommit={(next) => next > 0 && edit((w) => setWallLength(w, next))}
+        onCommit={(next) => next > 0 && edit("length", (w) => setWallLength(w, next))}
       />
       <Field
         label="Height"
@@ -127,7 +135,7 @@ function WallInspector({ id, levelIndex, wallIndex }: { id: string; levelIndex: 
         value={wall.height ?? level.height}
         onCommit={(next) =>
           next > 0 &&
-          edit((w) => {
+          edit("height", (w) => {
             w.height = next;
           })
         }
@@ -139,7 +147,7 @@ function WallInspector({ id, levelIndex, wallIndex }: { id: string; levelIndex: 
         value={mToMm(wall.thickness)}
         onCommit={(next) =>
           next > 0 &&
-          edit((w) => {
+          edit("thickness", (w) => {
             w.thickness = mmToM(next);
           })
         }
@@ -149,7 +157,7 @@ function WallInspector({ id, levelIndex, wallIndex }: { id: string; levelIndex: 
         unit="°"
         step={0.5}
         value={wallBearing(wall)}
-        onCommit={(next) => edit((w) => setWallBearing(w, next))}
+        onCommit={(next) => edit("bearing", (w) => setWallBearing(w, next))}
       />
 
       <Divider>Openings · {wall.openings.length}</Divider>
@@ -167,10 +175,14 @@ function WallInspector({ id, levelIndex, wallIndex }: { id: string; levelIndex: 
               unit="m"
               value={opening.offset}
               onCommit={(next) =>
-                edit((w) => {
-                  const o = w.openings[openingIndex];
-                  if (o !== undefined) o.offset = next;
-                })
+                edit(
+                  "offset",
+                  (w) => {
+                    const o = w.openings[openingIndex];
+                    if (o !== undefined) o.offset = next;
+                  },
+                  opening.id,
+                )
               }
             />
             <Field
@@ -179,10 +191,14 @@ function WallInspector({ id, levelIndex, wallIndex }: { id: string; levelIndex: 
               value={opening.width}
               onCommit={(next) =>
                 next > 0 &&
-                edit((w) => {
-                  const o = w.openings[openingIndex];
-                  if (o !== undefined) o.width = next;
-                })
+                edit(
+                  "width",
+                  (w) => {
+                    const o = w.openings[openingIndex];
+                    if (o !== undefined) o.width = next;
+                  },
+                  opening.id,
+                )
               }
             />
             <Field
@@ -191,10 +207,14 @@ function WallInspector({ id, levelIndex, wallIndex }: { id: string; levelIndex: 
               value={opening.height}
               onCommit={(next) =>
                 next > 0 &&
-                edit((w) => {
-                  const o = w.openings[openingIndex];
-                  if (o !== undefined) o.height = next;
-                })
+                edit(
+                  "height",
+                  (w) => {
+                    const o = w.openings[openingIndex];
+                    if (o !== undefined) o.height = next;
+                  },
+                  opening.id,
+                )
               }
             />
             <Field
@@ -202,10 +222,14 @@ function WallInspector({ id, levelIndex, wallIndex }: { id: string; levelIndex: 
               unit="m"
               value={opening.sill}
               onCommit={(next) =>
-                edit((w) => {
-                  const o = w.openings[openingIndex];
-                  if (o !== undefined) o.sill = next;
-                })
+                edit(
+                  "sill",
+                  (w) => {
+                    const o = w.openings[openingIndex];
+                    if (o !== undefined) o.sill = next;
+                  },
+                  opening.id,
+                )
               }
             />
           </div>
@@ -244,11 +268,17 @@ function PlacementInspector({ index }: { index: number }) {
   const assetSize = placement === undefined ? undefined : assetSizes.get(placement.asset);
   if (doc === undefined || doc === null || placement === undefined) return null;
 
-  const edit = (mutate: (p: NonNullable<typeof placement>) => void): void =>
-    editDocument((draft) => {
-      const target = draft.subject.placements[index];
-      if (target !== undefined) mutate(target);
-    });
+  /** Named for the undo history, and grouped by field like the wall's. */
+  const edit = (field: string, mutate: (p: NonNullable<typeof placement>) => void, group = true): void =>
+    editDocument(
+      (draft) => {
+        const target = draft.subject.placements[index];
+        if (target !== undefined) mutate(target);
+      },
+      group
+        ? { label: `Change ${placement.id} ${field}`, group: `${placement.id}:${field}` }
+        : { label: `${field} ${placement.id}` },
+    );
 
   const drop = async (): Promise<void> => {
     const current = getState().document;
@@ -290,9 +320,13 @@ function PlacementInspector({ index }: { index: number }) {
       ignoreEntity: placement.id,
     });
 
-    edit((p) => {
-      p.position = [result.position[0], result.position[1] - half[1], result.position[2]];
-    });
+    edit(
+      "Drop",
+      (p) => {
+        p.position = [result.position[0], result.position[1] - half[1], result.position[2]];
+      },
+      false,
+    );
     setStatus(
       result.settled
         ? `${placement.id} settled on ${result.restingOn ?? "nothing"} after ${result.steps} steps`
@@ -308,7 +342,7 @@ function PlacementInspector({ index }: { index: number }) {
         unit="m"
         value={placement.position[0]}
         onCommit={(v) =>
-          edit((p) => {
+          edit("x", (p) => {
             p.position = [v, p.position[1], p.position[2]];
           })
         }
@@ -318,7 +352,7 @@ function PlacementInspector({ index }: { index: number }) {
         unit="m"
         value={placement.position[1]}
         onCommit={(v) =>
-          edit((p) => {
+          edit("y", (p) => {
             p.position = [p.position[0], v, p.position[2]];
           })
         }
@@ -328,7 +362,7 @@ function PlacementInspector({ index }: { index: number }) {
         unit="m"
         value={placement.position[2]}
         onCommit={(v) =>
-          edit((p) => {
+          edit("z", (p) => {
             p.position = [p.position[0], p.position[1], v];
           })
         }
@@ -339,7 +373,7 @@ function PlacementInspector({ index }: { index: number }) {
         step={5}
         value={placement.rotationY}
         onCommit={(v) =>
-          edit((p) => {
+          edit("rotation", (p) => {
             p.rotationY = v;
           })
         }
@@ -350,7 +384,7 @@ function PlacementInspector({ index }: { index: number }) {
         step={0.05}
         onCommit={(v) =>
           v > 0 &&
-          edit((p) => {
+          edit("scale", (p) => {
             p.scale = v;
           })
         }

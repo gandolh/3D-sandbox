@@ -57,9 +57,12 @@ export function Viewport() {
           return;
         }
         let moved = false;
-        editDocument((draft) => {
-          moved = translateEntity(draft, id, dx, dz);
-        });
+        editDocument(
+          (draft) => {
+            moved = translateEntity(draft, id, dx, dz);
+          },
+          { label: `Move ${id}` },
+        );
         if (!moved) setAlert(`${id} cannot be moved by dragging`);
       },
       onStats: setStats,
@@ -229,9 +232,14 @@ export function Viewport() {
       const time = minutesToClock(lastMinutes);
       const current = getState().document;
       if (current === null || current.solar.time === time) return;
-      editDocument((draft) => {
-        draft.solar = { ...draft.solar, time };
-      });
+      // The same group as the sun slider: scrubbing the playhead while paused
+      // commits per drag event, and one scrub is one undo step.
+      editDocument(
+        (draft) => {
+          draft.solar = { ...draft.solar, time };
+        },
+        { label: `Set the sun to ${time}`, group: "solar" },
+      );
     };
     playerRef.current = player;
 

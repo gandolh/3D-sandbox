@@ -2,6 +2,7 @@ import { estimateQueue, formatDuration, pickRenderDirectory, renderQueue } from 
 import type { RenderRequest } from "../engine/SandboxEngine.js";
 import { SCENES } from "../scenes.js";
 import {
+  redo,
   setSceneId,
   setShotId,
   setShowColliders,
@@ -9,8 +10,10 @@ import {
   setShowPlan,
   setStatus,
   setTheme,
+  undo,
   useStore,
 } from "../state/store.js";
+import { useUndoKeys } from "./useUndoKeys.js";
 
 export function Toolbar({ onSave }: { onSave: () => void }) {
   const doc = useStore((s) => s.document);
@@ -38,6 +41,11 @@ export function Toolbar({ onSave }: { onSave: () => void }) {
   const duringRender = rendering ? "A render is running" : undefined;
   const shots = doc?.shots ?? [];
   const shot = shots.find((s) => s.id === shotId);
+  const undoStep = useStore((s) => s.undoStack.at(-1));
+  const redoStep = useStore((s) => s.redoStack.at(-1));
+  // The keys live beside the buttons they press, and the toolbar is always
+  // mounted.
+  useUndoKeys();
 
   return (
     <header className="flex h-[46px] shrink-0 items-center gap-3 border-b border-line bg-chrome px-3.5">
@@ -114,6 +122,38 @@ export function Toolbar({ onSave }: { onSave: () => void }) {
       >
         Plan
       </button>
+
+      {/*
+        Disabled rather than silent when there is nothing to take back, and
+        named for the step they would take — "Undo Move P-03" — so a press is
+        never a guess. Off during a render for the same reason as the picker:
+        the trace is sampling the geometry an undo would dispose.
+      */}
+      <div className="flex">
+        <button
+          type="button"
+          onClick={undo}
+          disabled={rendering || undoStep === undefined}
+          title={
+            duringRender ?? (undoStep === undefined ? "Nothing to undo" : `Undo ${undoStep.label} (Ctrl+Z)`)
+          }
+          className="rounded-l-sm border border-line bg-panel px-2.5 py-1.5 text-[12px] text-ink disabled:opacity-40"
+        >
+          Undo
+        </button>
+        <button
+          type="button"
+          onClick={redo}
+          disabled={rendering || redoStep === undefined}
+          title={
+            duringRender ??
+            (redoStep === undefined ? "Nothing to redo" : `Redo ${redoStep.label} (Ctrl+Shift+Z)`)
+          }
+          className="-ml-px rounded-r-sm border border-line bg-panel px-2.5 py-1.5 text-[12px] text-ink disabled:opacity-40"
+        >
+          Redo
+        </button>
+      </div>
 
       <button
         type="button"
