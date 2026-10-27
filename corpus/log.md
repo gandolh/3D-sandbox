@@ -1264,7 +1264,7 @@ choice in its outcome. Five build briefs follow it, in build order:
 [75](briefs/done/75-a-plan-view-to-draw-in.md) a plan view in world metres to draw in,
 [76](briefs/done/76-undo-and-redo.md) undo and redo over whole-document snapshots,
 [77](briefs/done/77-the-wall-tool.md) the Wall tool with snapping and typed lengths,
-[78](briefs/todo/78-doors-windows-and-rooms.md) doors, windows, rooms and floors, and
+[78](briefs/done/78-doors-windows-and-rooms.md) doors, windows, rooms and floors, and
 [79](briefs/todo/79-a-new-house-and-scenes-from-the-api.md) New house plus a scene picker that reads
 the API. Roofs are left for a later brief.
 
@@ -1332,3 +1332,17 @@ exactly, and survived Save, `GET` and reload unchanged (API on a temp copy of `s
 And the corner notch the brief suspected is real: filed as
 [a todo](todos/walls-leave-a-notch-at-every-outside-corner.md) for `packages/geometry`.
 603 → 642 tests.
+
+## 2026-10-27: build | Brief 78 done, doors, windows, rooms and floors
+
+[Brief 78](briefs/done/78-doors-windows-and-rooms.md): four more tools. Doors and windows follow the pointer
+along a wall, snap to its centre or to 0.05 m, take a typed distance from the nearer end, and turn red when
+the linter's own three opening rules would refuse them. A click inside walls names a room on their inner
+faces; a click inside a building lays a slab to their outer faces. Each part is one undo step.
+
+**Rooms come from a planar graph of the centrelines**, every wall split where another meets it, because a
+partition ending mid-wall shares no end with that wall and would otherwise close nothing. On 77's 8 × 6 m
+box the room came out 7.76 × 5.76 m, 44.7 m² on the plan, and the slab 8.24 × 6.24 m.
+
+**Outside the brief's file list:** `findEntity` and the Inspector now resolve openings and rooms, because
+"type its offset in the Inspector" needs a selected opening to show up there. 642 → 665 tests.

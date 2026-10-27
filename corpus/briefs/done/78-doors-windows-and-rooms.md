@@ -77,3 +77,45 @@ gets a later brief.
 - Each placed part is one Ctrl+Z step.
 - Unit tests for the face finder on a rectangle, an L shape and a room split by a partition.
 - `npm run check` passes.
+
+## Outcome (2026-10-27)
+
+Built as filed. The pure half joined 77's in `apps/web/src/lib/drawing/`: `openings.ts` (the wall under the
+pointer, the offset snap, typed distances, `openingProblems`) and `faces.ts` (`planarFaces`, `roomOutline`,
+`floorOutline`). The tools are `useOpeningTool.tsx` (Door and Window) and `useAreaTools.tsx` (Room and
+Floor) in `apps/web/src/ui/plan/`, with their options bars in `ToolBar.tsx`. `packages/schema`, the lint
+rules and `packages/geometry` are untouched.
+
+**The red ghost asks the linter.** `openingProblems` runs the three rules from `RULES` on the document with
+the candidate appended last to its wall, which is where `openings-do-not-overlap` reports a pair, and keeps
+the errors whose path resolves to the candidate. Nothing re-implements their arithmetic.
+
+**Faces.** Every wall is split wherever another meets or crosses it, so a partition ending mid-length on an
+external wall (a T, which shares no end) still closes its rooms. Faces are walked with the inside on the
+left; bounded faces come out positive, each group's outside negative. A room is the smallest bounded face
+round the click with each edge moved in by its own wall's half thickness, a floor the group's outside moved
+out; walls with a free end are dropped from the outline. Tested on a rectangle, an L, a box split by a
+120 mm partition meeting both walls mid-length, and a stub wall inside a room.
+
+**Two files outside the brief's list.** "Type its offset in the Inspector" needs the Inspector to find a
+selected opening, and `findEntity` did not resolve openings or rooms (brief 75 noted the gap). It now does,
+and `Inspector.tsx` shows an opening's own four fields and a room's name, use and area. Opening ids number
+from the document's highest `d-N` and `w-N` with no padding (Villa's `d-01` gives `d-2`). Rooms are `r-<n>`,
+slabs `slab-<n>`. A new floor takes the level's most used slab material, then the document's, before the
+walls'. The plan view now draws slabs, faintly, so a floor can be seen, selected and deleted.
+
+**Checked in Chromium** (Playwright, :5181) on 77's box, drawn with the Wall tool on an empty level of Villa:
+
+- Typed distances cut `d-2` at 1 m and `w-23` at 1.5 m from W-05's far end (offset 5.3), and `w-24` at 2 m
+  on W-06. The document has no errors; the plan draws all three; W-05's mesh went from 12 to 110
+  triangles and W-06's from 12 to 66, so the 3D view cuts them.
+- A window at 1.45 m on W-05 showed a red ghost ("Does not fit"); the click placed nothing and the footer
+  said `Not placed: opening "w-25" overlaps "d-2" on wall "W-05"`.
+- A click outside the box made nothing and said "Not inside a closed set of walls". Inside, the popover
+  made Living, polygon (0.12, −0.12) to (7.88, −5.88), labelled 44.7 m² on the plan.
+- The Floor tool laid `slab-1` from (−0.12, 0.12) to (8.12, −6.12).
+- Five Ctrl+Z took back the slab, the room and the three openings one at a time; five Ctrl+Shift+Z put
+  them back.
+
+In happy-dom too: dragging `d-2` along W-05, a drag onto `w-23` put back, the Inspector's Offset field
+taking 4.8, and Delete on an opening, a room and a slab. **642 → 665 tests.** `npm run check` passes.
