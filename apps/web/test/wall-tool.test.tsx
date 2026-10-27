@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { toScreen, type ViewTransform } from "../src/lib/plan-view.js";
 import { sceneById } from "../src/scenes.js";
 import {
+  allowDrawing,
   getState,
   loadDocument,
   select,
@@ -63,6 +64,8 @@ beforeEach(() => {
   setPlanSheet(false);
   setPlanTool("select");
   setWallOptions({ thickness: 0.24, height: null, material: null });
+  // Villa has a builder; brief 79's warning is answered once, as a person would.
+  allowDrawing("villa-carpathia");
   emptyLevel();
 });
 

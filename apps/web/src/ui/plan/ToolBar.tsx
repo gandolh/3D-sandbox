@@ -3,8 +3,8 @@ import { useState } from "react";
 import { parseDecimal } from "../../lib/drawing/walls.js";
 import {
   type PlanTool,
+  pickTool,
   setOpeningOptions,
-  setPlanTool,
   setSlabOptions,
   setWallOptions,
   useStore,
@@ -59,7 +59,9 @@ export function ToolBar({ doc }: { doc: SceneDocument }) {
             aria-pressed={tool === t.id}
             disabled={why !== null}
             title={why ?? t.title}
-            onClick={() => setPlanTool(t.id)}
+            // Through `pickTool`, which warns before drawing in a scene the
+            // next build would overwrite.
+            onClick={() => pickTool(t.id)}
             className={`${toolButton(tool === t.id)} ${i > 0 ? "-ml-px" : ""}`}
           >
             {t.label}

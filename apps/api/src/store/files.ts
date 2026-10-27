@@ -189,3 +189,25 @@ export const sceneMtime = async (scenesDir: string, id: string): Promise<number>
 
 export const sceneBytes = async (scenesDir: string, id: string): Promise<number> =>
   (await stat(join(scenesDir, `${id}${SUFFIX}`))).size;
+
+/**
+ * Whether a scene has a TypeScript builder: `src/<id>.ts` beside the scene
+ * files, which is where `scenes/build.ts` finds them.
+ *
+ * Worked out on every listing and never stored. The SQLite index holds only
+ * what a rescan of the scene files can recompute, and this is a fact about a
+ * different directory: a builder added or deleted would leave a stored flag
+ * wrong until something thought to reindex.
+ *
+ * It relies on a builder's file name being the id of the document it builds,
+ * since `build.ts` names its output by `document.id`; a test holds the three
+ * builders to that.
+ */
+export async function hasBuilder(scenesDir: string, id: string): Promise<boolean> {
+  if (!SLUG.test(id)) return false;
+  try {
+    return (await stat(join(scenesDir, "src", `${id}.ts`))).isFile();
+  } catch {
+    return false;
+  }
+}

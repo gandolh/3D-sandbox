@@ -6,6 +6,7 @@ import { makeWall } from "../src/lib/drawing/walls.js";
 import { toScreen, type ViewTransform } from "../src/lib/plan-view.js";
 import { sceneById } from "../src/scenes.js";
 import {
+  allowDrawing,
   editDocument,
   getState,
   loadDocument,
@@ -84,6 +85,8 @@ async function open(tool: "Door" | "Window" | "Room" | "Floor" | "Select"): Prom
 beforeEach(() => {
   setPlanSheet(false);
   setPlanTool("select");
+  // Villa has a builder; brief 79's warning is answered once, as a person would.
+  allowDrawing("villa-carpathia");
   boxScene();
   render(<Harness />);
   act(() => setPlanView(VIEW));

@@ -1,9 +1,9 @@
 import { estimateQueue, formatDuration, pickRenderDirectory, renderQueue } from "../engine/queue.js";
 import type { RenderRequest } from "../engine/SandboxEngine.js";
-import { SCENES } from "../scenes.js";
+import { openScene } from "../lib/scene-source.js";
 import {
   redo,
-  setSceneId,
+  setDialog,
   setShotId,
   setShowColliders,
   setShowContext,
@@ -15,6 +15,20 @@ import {
 } from "../state/store.js";
 import { useUndoKeys } from "./useUndoKeys.js";
 
+/** Why New house is or is not available, for its tooltip. */
+export function newHouseTitle(apiState: "checking" | "none" | "down" | "up"): string {
+  switch (apiState) {
+    case "up":
+      return "Start an empty house on this site, saved as a new scene file";
+    case "none":
+      return "This build has no API, so a new house would have nowhere to be saved";
+    case "down":
+      return "The API is not answering (start it with npm run api), so a new house cannot be saved";
+    default:
+      return "Checking for the API…";
+  }
+}
+
 export function Toolbar({ onSave }: { onSave: () => void }) {
   const doc = useStore((s) => s.document);
   const theme = useStore((s) => s.theme);
@@ -23,6 +37,8 @@ export function Toolbar({ onSave }: { onSave: () => void }) {
   const showPlan = useStore((s) => s.showPlan);
   const shotId = useStore((s) => s.shotId);
   const sceneId = useStore((s) => s.sceneId);
+  const scenes = useStore((s) => s.scenes);
+  const apiState = useStore((s) => s.apiState);
   /**
    * A render owns the GPU, and these controls can pull the ground from under it.
    *
@@ -50,18 +66,22 @@ export function Toolbar({ onSave }: { onSave: () => void }) {
   return (
     <header className="flex h-[46px] shrink-0 items-center gap-3 border-b border-line bg-chrome px-3.5">
       <span className="text-[14px] font-semibold tracking-tight text-ink">Solstice</span>
-      {SCENES.length > 1 ? (
+      {scenes.length > 1 ? (
         <select
           value={sceneId}
-          onChange={(event) => setSceneId(event.target.value)}
+          onChange={(event) => void openScene(event.target.value)}
           disabled={rendering}
           aria-label="Scene"
-          title={duringRender ?? "Which scene is open"}
+          title={
+            duringRender ??
+            (apiState === "up" ? "Which scene is open — the files the API serves" : "Which scene is open")
+          }
           className="rounded-sm border border-line bg-panel px-2 py-[3px] font-mono text-[11.5px] text-muted disabled:opacity-40"
         >
-          {SCENES.map((s) => (
+          {scenes.map((s) => (
             <option key={s.id} value={s.id}>
-              {s.id}.scene.json
+              {/* A drawn scene has no builder; it is worth seeing which is which. */}
+              {s.id}.scene.json{s.hasBuilder ? "" : " · drawn"}
             </option>
           ))}
         </select>
@@ -70,6 +90,21 @@ export function Toolbar({ onSave }: { onSave: () => void }) {
           {doc === null ? "—" : `${doc.id}.scene.json`}
         </span>
       )}
+
+      {/*
+        A drawn house is a scene file with no builder, and only the API can
+        write one, so with no API there is nowhere for it to go. Disabled with
+        the reason rather than hidden, so the feature is findable.
+      */}
+      <button
+        type="button"
+        onClick={() => setDialog({ kind: "new-house", copy: false })}
+        disabled={rendering || apiState !== "up"}
+        title={duringRender ?? newHouseTitle(apiState)}
+        className="rounded-sm border border-line bg-panel px-2.5 py-1.5 font-mono text-[10px] tracking-wider text-muted uppercase hover:text-ink disabled:opacity-40"
+      >
+        New house
+      </button>
 
       <div className="flex-1" />
 

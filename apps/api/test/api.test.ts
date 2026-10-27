@@ -1,4 +1,4 @@
-import { mkdtemp, readdir, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { serializeScene } from "@solstice/schema";
@@ -328,5 +328,71 @@ describe("writing a scene", () => {
     // itself or the index would start scanning half-written documents.
     await app.inject({ method: "PUT", url: "/api/scenes/villa-carpathia", payload: reference });
     expect((await readdir(dir)).filter((f) => f.endsWith(".tmp"))).toEqual([]);
+  });
+});
+
+describe("which scenes have a builder", () => {
+  it("says so per scene, from src/<id>.ts beside the scene files", async () => {
+    // Villa gets a builder file; a drawn scene beside it does not.
+    await mkdir(join(dir, "src"));
+    await writeFile(join(dir, "src", "villa-carpathia.ts"), "export default {};\n", "utf8");
+    const drawn = { ...reference, id: "test-cottage", title: "Test Cottage" };
+    expect((await app.inject({ method: "POST", url: "/api/scenes", payload: drawn })).statusCode).toBe(201);
+
+    const { scenes } = (await get("/api/scenes")).json() as { scenes: { id: string; hasBuilder: boolean }[] };
+    expect(scenes.map((s) => [s.id, s.hasBuilder])).toEqual([
+      ["test-cottage", false],
+      ["villa-carpathia", true],
+    ]);
+  });
+
+  it("notices a builder added after boot, because it is never stored", async () => {
+    const before = (await get("/api/scenes")).json() as { scenes: { hasBuilder: boolean }[] };
+    expect(before.scenes[0]!.hasBuilder).toBe(false);
+    await mkdir(join(dir, "src"));
+    await writeFile(join(dir, "src", "villa-carpathia.ts"), "export default {};\n", "utf8");
+    const after = (await get("/api/scenes")).json() as { scenes: { hasBuilder: boolean }[] };
+    expect(after.scenes[0]!.hasBuilder).toBe(true);
+    // And the index itself holds no such column.
+    expect(Object.keys(index.list()[0]!)).not.toContain("hasBuilder");
+  });
+
+  it("does not count a directory named like a builder", async () => {
+    await mkdir(join(dir, "src", "villa-carpathia.ts"), { recursive: true });
+    const { scenes } = (await get("/api/scenes")).json() as { scenes: { hasBuilder: boolean }[] };
+    expect(scenes[0]!.hasBuilder).toBe(false);
+  });
+});
+
+describe("the version after a write", () => {
+  it("hands back the new mtime, so a second conditional save goes through", async () => {
+    const read = await get("/api/scenes/villa-carpathia");
+    const first = await app.inject({
+      method: "PUT",
+      url: "/api/scenes/villa-carpathia",
+      headers: { "x-scene-mtime": String(read.headers["x-scene-mtime"]) },
+      payload: { ...reference, title: "First" },
+    });
+    expect(first.statusCode).toBe(200);
+    const next = first.headers["x-scene-mtime"];
+    expect(Number(next)).toBeGreaterThan(0);
+    const second = await app.inject({
+      method: "PUT",
+      url: "/api/scenes/villa-carpathia",
+      headers: { "x-scene-mtime": String(next) },
+      payload: { ...reference, title: "Second" },
+    });
+    expect(second.statusCode).toBe(200);
+  });
+
+  it("hands a creator the version it now holds", async () => {
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/scenes",
+      payload: { ...reference, id: "test-cottage", title: "Test Cottage" },
+    });
+    expect(res.statusCode).toBe(201);
+    const fresh = await get("/api/scenes/test-cottage");
+    expect(res.headers["x-scene-mtime"]).toBe(fresh.headers["x-scene-mtime"]);
   });
 });

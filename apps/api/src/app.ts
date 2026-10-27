@@ -4,6 +4,7 @@ import Fastify, { type FastifyInstance } from "fastify";
 import { type Config, loadConfig } from "./config.js";
 import {
   deleteSceneFile,
+  hasBuilder,
   readSceneFile,
   SceneNotFoundError,
   StalePreconditionError,
@@ -82,7 +83,17 @@ export async function buildApp(overrides: Partial<Config> = {}): Promise<BuiltAp
     scenes: index.list().length,
   }));
 
-  app.get("/api/scenes", async () => ({ scenes: index.list() }));
+  /**
+   * The index, plus `hasBuilder` per scene: whether `npm run scenes` would
+   * overwrite it. The browser warns before drawing in one that it would.
+   */
+  app.get("/api/scenes", async () => ({
+    scenes: await Promise.all(
+      index
+        .list()
+        .map(async (scene) => ({ ...scene, hasBuilder: await hasBuilder(config.scenesDir, scene.id) })),
+    ),
+  }));
 
   /**
    * The document, and the version of it the caller is now holding.
@@ -131,6 +142,9 @@ export async function buildApp(overrides: Partial<Config> = {}): Promise<BuiltAp
     }
     const { document, bytes } = await writeSceneFile(config.scenesDir, id, request.body);
     index.upsert(await summarize(config.scenesDir, id, document, bytes));
+    // The version the creator now holds, as a read would hand it out, so its
+    // first save can be conditional like every later one.
+    reply.header("x-scene-mtime", String(await sceneMtime(config.scenesDir, id)));
     return reply.code(201).send(document);
   });
 
@@ -166,6 +180,9 @@ export async function buildApp(overrides: Partial<Config> = {}): Promise<BuiltAp
 
     const { document, bytes } = await writeSceneFile(config.scenesDir, id, request.body, expected);
     index.upsert(await summarize(config.scenesDir, id, document, bytes));
+    // The new version. Without it a client holding the mtime it read would
+    // find its own second save refused as stale.
+    reply.header("x-scene-mtime", String(await sceneMtime(config.scenesDir, id)));
     return { ok: true, id, bytes, warnings: index.get(id)?.warnings ?? 0 };
   });
 

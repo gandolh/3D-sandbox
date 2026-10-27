@@ -1,9 +1,9 @@
-import { lintScene, SceneDocument, serializeScene } from "@solstice/schema";
 import { useEffect } from "react";
-import { DEFAULT_SCENE_ID, sceneById } from "./scenes.js";
-import { getState, loadDocument, setLoadError, setStatus, useStore } from "./state/store.js";
+import { openScene, refreshScenes, saveOpenScene } from "./lib/scene-source.js";
+import { getState, useStore } from "./state/store.js";
 import { Inspector } from "./ui/Inspector.jsx";
 import { PlanView } from "./ui/PlanView.jsx";
+import { SceneDialogs } from "./ui/SceneDialogs.jsx";
 import { SceneTree } from "./ui/SceneTree.jsx";
 import { Timeline } from "./ui/Timeline.jsx";
 import { Toolbar } from "./ui/Toolbar.jsx";
@@ -16,82 +16,18 @@ export function App() {
   const findings = useStore((s) => s.findings);
   const errors = findings.filter((f) => f.severity === "error").length;
 
-  const sceneId = useStore((s) => s.sceneId);
-
-  // Re-runs on every scene change, and goes through the same parse each time.
-  // A scene reached by switching is not a scene anyone validated less.
+  // Ask the API what it has before opening anything, so the first scene comes
+  // from the file on disk when there is one rather than from the bundle and
+  // then again from the API. The listing gives up after 1.5 s, so a missing
+  // API costs that and no more. Every later open — the picker, New house, a
+  // reload — goes through the same `openScene`.
   useEffect(() => {
-    const scene = sceneById(sceneId) ?? sceneById(DEFAULT_SCENE_ID);
-    if (scene === undefined) {
-      setLoadError("No scenes are bundled in this build");
-      return;
-    }
-    const parsed = SceneDocument.safeParse(scene.json);
-    if (!parsed.success) {
-      setLoadError(`${scene.title} failed to parse: ${parsed.error.issues[0]?.message ?? "unknown"}`);
-      return;
-    }
-    loadDocument(parsed.data, scene.id);
-  }, [sceneId]);
-
-  /**
-   * Save writes through the API, which validates again before the file is
-   * touched. When the API is not running — the common case while working on the
-   * viewport alone — it falls back to downloading the canonical file, so the
-   * round-trip format stays inspectable either way.
-   *
-   * `__API_BASE__` is empty in a build that has no API behind it at all (the
-   * static sub-path deploy). That is a different thing from an API that is
-   * merely down, and it is checked first: posting into a host's 404 page
-   * returns a valid HTTP response, so the unreachable path would never be
-   * taken and the user would be told the API refused a save it never saw.
-   */
-  const onSave = async (): Promise<void> => {
-    const doc = getState().document;
-    if (doc === null) return;
-    if (lintScene(doc).some((f) => f.severity === "error")) {
-      setStatus("Not saved — the document has errors");
-      return;
-    }
-
-    const download = (): void => {
-      const blob = new Blob([serializeScene(doc)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const anchor = document.createElement("a");
-      anchor.href = url;
-      anchor.download = `${doc.id}.scene.json`;
-      anchor.click();
-      URL.revokeObjectURL(url);
-    };
-
-    if (__API_BASE__ === "") {
-      download();
-      setStatus("No API in this build — downloaded instead");
-      return;
-    }
-
-    setStatus("Saving…");
-    try {
-      const response = await fetch(`${__API_BASE__}/scenes/${doc.id}`, {
-        method: "PUT",
-        headers: { "content-type": "application/json" },
-        body: serializeScene(doc),
-      });
-      if (response.ok) {
-        const body = (await response.json()) as { bytes?: number };
-        setStatus(`Saved · ${body.bytes ?? 0} bytes`);
-        return;
-      }
-      setStatus(`API refused the save (${response.status})`);
-    } catch {
-      download();
-      setStatus("API unreachable — downloaded instead");
-    }
-  };
+    void refreshScenes().then(() => openScene(getState().sceneId));
+  }, []);
 
   return (
     <div className="flex h-full flex-col">
-      <Toolbar onSave={() => void onSave()} />
+      <Toolbar onSave={() => void saveOpenScene()} />
       <div className="flex min-h-0 flex-1">
         <SceneTree />
         {/*
@@ -107,6 +43,7 @@ export function App() {
         <Inspector />
       </div>
       <Timeline />
+      <SceneDialogs />
       {/*
         The one place the app says what it just did — a save, a drop, a scene
         load, a parse failure, every step of a render queue — and until now it

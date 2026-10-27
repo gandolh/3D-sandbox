@@ -1,7 +1,8 @@
 import { type LintFinding, lintScene, SceneDocument, type SolarTime } from "@solstice/schema";
 import { useSyncExternalStore } from "react";
+import { apiBase } from "../lib/api.js";
 import type { ViewTransform } from "../lib/plan-view.js";
-import { DEFAULT_SCENE_ID } from "../scenes.js";
+import { DEFAULT_SCENE_ID, SCENES } from "../scenes.js";
 
 /**
  * A ~50-line store on `useSyncExternalStore`.
@@ -20,7 +21,7 @@ export interface AppState {
   revision: number;
   showContext: boolean;
   showColliders: boolean;
-  /** Which bundled scene is open — see `scenes.ts`. */
+  /** Which scene is open, by id. Set by `loadDocument`; `openScene` is the way in. */
   sceneId: string;
   /** Shot id to render, or null for "whatever the viewport is looking at". */
   shotId: string | null;
@@ -120,7 +121,39 @@ export interface AppState {
    */
   undoStack: readonly HistoryStep[];
   redoStack: readonly HistoryStep[];
+  /**
+   * What the scene picker lists: the API's scenes when it answers, with the
+   * bundled ones filling in any id it does not have.
+   */
+  scenes: readonly SceneEntry[];
+  /** `none`: this build has no API. `down`: it has one that does not answer. */
+  apiState: "checking" | "none" | "down" | "up";
+  /**
+   * The version of the open scene's file, from the API's `x-scene-mtime`, so
+   * Save can refuse to overwrite a file changed on disk since. Null for a
+   * bundled scene.
+   */
+  sceneMtime: number | null;
+  /** The one modal question the app is asking, if any. */
+  dialog: SceneDialog | null;
 }
+
+/** One entry in the scene picker. */
+export interface SceneEntry {
+  id: string;
+  title: string;
+  /** `scenes/src/<id>.ts` exists: the next `npm run scenes` rewrites this file. */
+  hasBuilder: boolean;
+  source: "api" | "bundled";
+}
+
+export type SceneDialog =
+  /** New house, or Save as a new house when `copy` is set; `tool` is picked once it opens. */
+  | { kind: "new-house"; copy: boolean; tool?: PlanTool; error?: string }
+  /** A drawing tool was picked in a scene that has a builder. */
+  | { kind: "builder"; tool: PlanTool }
+  /** Save found the file changed on disk since it was opened. */
+  | { kind: "stale" };
 
 export type PlanTool = "select" | "wall" | "door" | "window" | "room" | "floor";
 
@@ -179,6 +212,11 @@ let state: AppState = {
   rendering: false,
   undoStack: [],
   redoStack: [],
+  // The bundled scenes all have builders: they are the three in scenes/src.
+  scenes: SCENES.map((scene) => ({ id: scene.id, title: scene.title, hasBuilder: true, source: "bundled" })),
+  apiState: apiBase() === "" ? "none" : "checking",
+  sceneMtime: null,
+  dialog: null,
 };
 
 /**
@@ -279,6 +317,38 @@ export const setPlanLevelId = (planLevelId: string | null): void => set({ planLe
 export const setPlanView = (planView: ViewTransform | null): void => set({ planView });
 export const setPlanSheet = (planSheet: boolean): void => set({ planSheet });
 export const setPlanTool = (planTool: PlanTool): void => set({ planTool });
+
+/** Scenes where "draw anyway" was chosen this session. Not saved: a reload asks again. */
+const drawingAllowed = new Set<string>();
+
+/** Answer the builder warning for this scene, for the rest of the session. */
+export const allowDrawing = (sceneId: string): void => {
+  drawingAllowed.add(sceneId);
+};
+
+/**
+ * Pick a plan view tool, warning first when it draws into a scene that has a
+ * builder: the next `npm run scenes` rewrites that scene's JSON from its
+ * TypeScript and the drawing is gone (decisions.md, "The browser draws
+ * building parts"). Select never warns; it edits what is there.
+ *
+ * Keyed on the open document's id, which the API holds equal to the file's
+ * name, rather than on `sceneId`, which only the picker sets.
+ */
+export function pickTool(tool: PlanTool): void {
+  const id = state.document?.id;
+  const entry = state.scenes.find((s) => s.id === id);
+  if (tool !== "select" && id !== undefined && entry?.hasBuilder === true && !drawingAllowed.has(id)) {
+    set({ dialog: { kind: "builder", tool } });
+    return;
+  }
+  set({ planTool: tool });
+}
+
+export const setDialog = (dialog: SceneDialog | null): void => set({ dialog });
+export const setScenes = (scenes: readonly SceneEntry[], apiState: AppState["apiState"]): void =>
+  set({ scenes, apiState });
+export const setSceneMtime = (sceneMtime: number | null): void => set({ sceneMtime });
 export const setWallOptions = (patch: Partial<AppState["wallOptions"]>): void =>
   set({ wallOptions: { ...state.wallOptions, ...patch } });
 export const setOpeningOptions = (kind: "door" | "window", patch: Partial<OpeningSizes>): void =>
@@ -295,14 +365,6 @@ export const setStatus = (status: string): void => set({ status, alert: null });
 export const setAlert = (alert: string): void => set({ alert, status: alert });
 
 export const setShotId = (shotId: string | null): void => set({ shotId });
-
-/**
- * Open a different bundled scene.
- *
- * Only sets the id — `App` watches it and does the parse, so switching and
- * first load take the same path rather than two that can drift apart.
- */
-export const setSceneId = (sceneId: string): void => set({ sceneId });
 
 /**
  * Move the playhead. Called every frame during playback, so it must stay cheap.
