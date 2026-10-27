@@ -158,7 +158,7 @@ beside it.
 
 Follow-ups: [75](./75-a-plan-view-to-draw-in.md) (the plan view),
 [76](./76-undo-and-redo.md) (undo and redo),
-[77](../todo/77-the-wall-tool.md) (the Wall tool),
+[77](./77-the-wall-tool.md) (the Wall tool),
 [78](../todo/78-doors-windows-and-rooms.md) (doors, windows, rooms and floors), and
 [79](../todo/79-a-new-house-and-scenes-from-the-api.md) (a new house, and scenes from the API).
 Roofs are a later brief.

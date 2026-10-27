@@ -1263,7 +1263,7 @@ started in the browser lives only as its scene JSON, saved through `apps/api`.
 choice in its outcome. Five build briefs follow it, in build order:
 [75](briefs/done/75-a-plan-view-to-draw-in.md) a plan view in world metres to draw in,
 [76](briefs/done/76-undo-and-redo.md) undo and redo over whole-document snapshots,
-[77](briefs/todo/77-the-wall-tool.md) the Wall tool with snapping and typed lengths,
+[77](briefs/done/77-the-wall-tool.md) the Wall tool with snapping and typed lengths,
 [78](briefs/todo/78-doors-windows-and-rooms.md) doors, windows, rooms and floors, and
 [79](briefs/todo/79-a-new-house-and-scenes-from-the-api.md) New house plus a scene picker that reads
 the API. Roofs are left for a later brief.
@@ -1315,3 +1315,20 @@ undid in reverse with the mesh and the plan following each, and redid in order.
 A check-script note: Vite serves a module edited after the dev server started with a `?t=` query, so
 `import("/src/state/store.ts")` from the page then gets a second store. Restart the server before driving
 the app's store from a script.
+
+## 2026-10-27: build | Brief 77 done, the Wall tool
+
+[Brief 77](briefs/done/77-the-wall-tool.md): pick Wall, click points, and each pair becomes a wall, one
+undo step each. Snapping shows a marker and a word (End, Middle, On wall, Grid, or a 15° angle), Shift
+holds ortho, and typing a number opens a length field that takes "4,2". Grips on a selected wall drag a
+shared corner as one, and Delete removes the wall.
+
+**Exact corners come from three rules, each tested:** a new wall starts at the last point's own numbers,
+an end snap returns stored coordinates untouched, and compass directions are exact unit vectors, because
+`Math.cos(π/2)` is not zero. In the browser the 8 × 6 m acceptance box came out with every corner shared
+exactly, and survived Save, `GET` and reload unchanged (API on a temp copy of `scenes/`).
+
+**The typed angle is a bearing**, clockwise from north, to match the Inspector, not CAD's angle from east.
+And the corner notch the brief suspected is real: filed as
+[a todo](todos/walls-leave-a-notch-at-every-outside-corner.md) for `packages/geometry`.
+603 → 642 tests.

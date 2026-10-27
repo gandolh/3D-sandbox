@@ -91,3 +91,55 @@ it while building, and if it is real, file a todo for the geometry rather than f
 - Dragging a shared corner grip moves both walls' ends together.
 - Save, reload the scene, and the walls are identical.
 - `npm run check` passes.
+
+## Outcome (2026-10-27)
+
+Built as filed. The pure half is `apps/web/src/lib/drawing/`: `snap.ts` (`snapPoint`, `directionOf`) and
+`walls.ts` (the chain, `placePoint`, `nextWallId`, `defaultWallMaterial`, `parseDecimal`, `moveCorner`).
+The UI is in `apps/web/src/ui/plan/`: `ToolBar.tsx` (the tool bar and the Wall options bar),
+`useWallTool.tsx`, `useSelectTool.tsx` (click to select, grips, Delete), `SnapMarker.tsx`, and `tool.ts`,
+the interface `PlanSurface` now hands every gesture but pan and zoom to. The store gained `planTool` and
+`wallOptions`. `packages/schema`, `packages/geometry` and the linter are untouched; `PlanView.tsx` (75's)
+mounts the two bars.
+
+**Exact corners, by construction.** A new wall's `start` is the chain's last point copied verbatim; an end
+snap returns the stored coordinates, never recomputed; a click on the chain's first point ends the loop on
+that point's own numbers. Typed lengths go along `directionOf(bearing)`, which is exact at the four compass
+points (`Math.cos(π/2)` is 6e-17, so a wall typed "6" north would otherwise end at 8.000000000000000367),
+and the sum is cleaned of float noise. A test asserts the 8, 6, 8 box with `toEqual`; nudging the end snap
+by 1e-12 fails three tests.
+
+**Decisions made here.**
+
+- The typed angle is a **bearing**, clockwise from north, the convention of the Inspector's Bearing field
+  and the document, not CAD's counter-clockwise from east. A wall typed at 90 reads 90 when selected.
+- Snap order is end, middle, on wall, grid, then **angle**: a direction within 3° of a multiple of 15°. A
+  pixel tolerance made the 15° rays catch almost everywhere far from the start, and hid the grid.
+- A free point (nothing snapped) is rounded to the centimetre, as the readout shows it.
+- Esc with a wall in progress drops it and ends the chain, keeping the walls already written; Esc with
+  nothing in progress returns to Select. Esc in the typed field only closes the field.
+- A click back on the start after one wall is ignored: it would lay a second wall on the first.
+- Grips move every wall end within 1e-6 m of the corner, the tolerance the sheet groups a structure by.
+  Moving a `start` slides that wall's openings, since offsets run from `start`; the linter reports any
+  that stop fitting.
+
+**Checked in Chromium** (Playwright, dev server on :5181, `apps/api` on :5174 against a copy of `scenes/`
+in a temp directory, so no committed scene was written). An empty level was added through the store,
+since nothing in the UI adds a level until 79.
+
+- The acceptance box: start, `8` Enter, `6` Enter, `8` Enter, click the first point. Four walls W-05 to
+  W-08, (0, 0) → (8, 0) → (8, −6) → (0, −6) → (0, 0), every shared corner the same numbers; no findings
+  on them; 0.24 m, no `height` key, Lime Plaster 04. The engine's four meshes close the rectangle.
+- Save wrote 13,605 bytes; `GET /api/scenes/villa-carpathia`, parsed and loaded, gave walls identical to
+  the ones drawn. Reopening from the picker waits for 79, which teaches the picker to read the API.
+- Four Ctrl+Z: 4 → 3 → 2 → 1 → 0 walls. Esc mid-wall wrote nothing; a second Esc chose Select.
+- "4,2" and "4.2" both gave 4.2 m; Shift drew (4.2, −4.2) → (1.3, −4.2).
+- On Greenhollow, hovering by W-02 showed End, Middle, On wall and Grid with their markers, and a wall
+  started on W-02's end began at exactly (5.5, −20).
+- Dragging the W-01/W-02 corner grip moved both ends to (6, −19.5), as one undo step.
+
+**The corner notch is real** and filed as
+[a todo](../../todos/walls-leave-a-notch-at-every-outside-corner.md): the box's W-05 mesh spans z −0.12 to
+0.12 from x 0, W-08's x −0.12 to 0.12 up to z 0, and the square between is in neither.
+
+**603 → 642 tests** (25 pure, 14 through the component). `npm run check` passes.
