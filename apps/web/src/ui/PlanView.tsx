@@ -2,7 +2,13 @@ import { formatMetres } from "../lib/plan-view.js";
 import { getState, setPlanLevelId, setPlanSheet, setPlanView, useStore } from "../state/store.js";
 import { PlanSheet } from "./plan/PlanSheet.jsx";
 import { PlanSurface } from "./plan/PlanSurface.jsx";
-import { ToolBar, WallOptionsBar } from "./plan/ToolBar.jsx";
+import {
+  FloorOptionsBar,
+  OpeningOptionsBar,
+  RoomOptionsBar,
+  ToolBar,
+  WallOptionsBar,
+} from "./plan/ToolBar.jsx";
 
 const barButton = (on: boolean): string =>
   `rounded-sm border px-2 py-[3px] font-mono text-[10px] tracking-wider uppercase ${
@@ -92,9 +98,14 @@ export function PlanView() {
         </button>
       </div>
 
-      {!sheet && tool === "wall" && level !== undefined && (
+      {!sheet && level !== undefined && tool === "wall" && (
         <WallOptionsBar doc={doc} levelHeight={level.height} />
       )}
+      {!sheet && level !== undefined && (tool === "door" || tool === "window") && (
+        <OpeningOptionsBar kind={tool} />
+      )}
+      {!sheet && level !== undefined && tool === "room" && <RoomOptionsBar />}
+      {!sheet && level !== undefined && tool === "floor" && <FloorOptionsBar doc={doc} level={level} />}
 
       {sheet ? <PlanSheet doc={doc} levelId={level?.id} /> : <PlanSurface doc={doc} level={level} />}
 

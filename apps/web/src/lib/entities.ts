@@ -1,6 +1,8 @@
 import {
   type Level,
+  type Opening,
   type Placement,
+  type Room,
   type SceneDocument,
   type Wall,
   wallBearing,
@@ -22,8 +24,27 @@ export interface PlacementRef {
   index: number;
 }
 
+/** An opening, found through its host wall: its fields live in the wall's `openings`. */
+export interface OpeningRef {
+  kind: "opening";
+  opening: Opening;
+  wall: Wall;
+  levelIndex: number;
+  wallIndex: number;
+  openingIndex: number;
+}
+
+export interface RoomRef {
+  kind: "room";
+  room: Room;
+  levelIndex: number;
+  roomIndex: number;
+}
+
 export type EntityRef =
   | WallRef
+  | OpeningRef
+  | RoomRef
   | PlacementRef
   | { kind: "roof"; id: string; index: number }
   | { kind: "slab"; id: string }
@@ -33,6 +54,14 @@ export function findEntity(doc: SceneDocument, id: string): EntityRef | null {
   for (const [levelIndex, level] of doc.subject.levels.entries()) {
     for (const [wallIndex, wall] of level.walls.entries()) {
       if (wall.id === id) return { kind: "wall", wall, level, levelIndex, wallIndex };
+      // The plan view selects openings and rooms by id since brief 75, and
+      // the Inspector has to be able to find them to show them.
+      for (const [openingIndex, opening] of wall.openings.entries()) {
+        if (opening.id === id) return { kind: "opening", opening, wall, levelIndex, wallIndex, openingIndex };
+      }
+    }
+    for (const [roomIndex, room] of level.rooms.entries()) {
+      if (room.id === id) return { kind: "room", room, levelIndex, roomIndex };
     }
     for (const slab of level.slabs) {
       if (slab.id === id) return { kind: "slab", id };

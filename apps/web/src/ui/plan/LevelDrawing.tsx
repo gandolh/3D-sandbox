@@ -34,7 +34,8 @@ type Pt = readonly [number, number];
  * a plot's boundary wall because it is about one building; this is where walls
  * are edited, and a wall you cannot see is a wall you cannot select.
  *
- * Each part carries `data-entity`, which is what a click resolves to.
+ * Each part carries `data-entity`, which is what a click resolves to. Floor
+ * slabs are drawn too, faintly, which the sheet does not do.
  */
 export const LevelDrawing = memo(function LevelDrawing({
   level,
@@ -57,7 +58,25 @@ export const LevelDrawing = memo(function LevelDrawing({
 
   return (
     <g>
-      {/* Rooms under everything, as on the sheet, so poché and symbols sit on top. */}
+      {/*
+        Floor slabs below everything, as the faintest thing on the plan: the
+        sheet leaves them out, but this is where a slab is laid and deleted,
+        and a part you cannot see is a part you cannot select.
+      */}
+      {level.slabs.map((slab) => (
+        <path
+          key={slab.id}
+          data-entity={slab.id}
+          data-selected={selection === slab.id ? "true" : undefined}
+          d={poly(slab.polygon)}
+          fill={selection === slab.id ? SELECTED_FILL : "#faf9f7"}
+          stroke={selection === slab.id ? SELECTED : INK.faint}
+          strokeWidth={selection === slab.id ? 1.5 : 0.6}
+          strokeDasharray="5 4"
+        />
+      ))}
+
+      {/* Rooms under the walls, as on the sheet, so poché and symbols sit on top. */}
       {level.rooms.map((room) => (
         <path
           key={room.id}

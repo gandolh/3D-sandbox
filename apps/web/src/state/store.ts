@@ -95,6 +95,10 @@ export interface AppState {
    * means "the default": the level's most used, or the document's first.
    */
   wallOptions: { thickness: number; height: number | null; material: string | null };
+  /** What the Door and Window tools cut: a door 0.9 × 2.1 m, a window 1.2 × 1.2 m at 0.9 m. */
+  openingOptions: { door: OpeningSizes; window: OpeningSizes };
+  /** What the Floor tool lays. `material` null means the level's most used slab material. */
+  slabOptions: { thickness: number; material: string | null };
   /**
    * Whether a path trace owns the GPU right now.
    *
@@ -118,7 +122,14 @@ export interface AppState {
   redoStack: readonly HistoryStep[];
 }
 
-export type PlanTool = "select" | "wall";
+export type PlanTool = "select" | "wall" | "door" | "window" | "room" | "floor";
+
+/** An opening's size, as the Door and Window tools' options bars hold it. */
+export interface OpeningSizes {
+  width: number;
+  height: number;
+  sill: number;
+}
 
 /** One undoable step: the document to go back to, and what the step did. */
 export interface HistoryStep {
@@ -160,6 +171,11 @@ let state: AppState = {
   planPointer: null,
   planTool: "select",
   wallOptions: { thickness: 0.24, height: null, material: null },
+  openingOptions: {
+    door: { width: 0.9, height: 2.1, sill: 0 },
+    window: { width: 1.2, height: 1.2, sill: 0.9 },
+  },
+  slabOptions: { thickness: 0.25, material: null },
   rendering: false,
   undoStack: [],
   redoStack: [],
@@ -219,6 +235,7 @@ export function loadDocument(document: SceneDocument, sceneId?: string): void {
     // A material chosen for one scene's walls is a key into that scene's
     // table, and names nothing in the next one.
     wallOptions: { ...state.wallOptions, material: null },
+    slabOptions: { ...state.slabOptions, material: null },
     // A different scene is not a step back. Undoing into the last scene's
     // document would swap scenes behind the picker's back.
     undoStack: [],
@@ -264,6 +281,10 @@ export const setPlanSheet = (planSheet: boolean): void => set({ planSheet });
 export const setPlanTool = (planTool: PlanTool): void => set({ planTool });
 export const setWallOptions = (patch: Partial<AppState["wallOptions"]>): void =>
   set({ wallOptions: { ...state.wallOptions, ...patch } });
+export const setOpeningOptions = (kind: "door" | "window", patch: Partial<OpeningSizes>): void =>
+  set({ openingOptions: { ...state.openingOptions, [kind]: { ...state.openingOptions[kind], ...patch } } });
+export const setSlabOptions = (patch: Partial<AppState["slabOptions"]>): void =>
+  set({ slabOptions: { ...state.slabOptions, ...patch } });
 /** Pointer rate, like `setPlayhead`: cheap because only the readout selects it. */
 export const setPlanPointer = (planPointer: readonly [number, number] | null): void => set({ planPointer });
 

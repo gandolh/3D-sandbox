@@ -1,4 +1,13 @@
-import { degToRad, mmToM, mToMm, wallBearing, wallLength } from "@solstice/schema";
+import {
+  area,
+  degToRad,
+  mmToM,
+  mToMm,
+  type Opening,
+  type Wall,
+  wallBearing,
+  wallLength,
+} from "@solstice/schema";
 import { findEntity, setWallBearing, setWallLength } from "../lib/entities.js";
 import { physicsFor, physicsReady } from "../lib/physics.js";
 import { editDocument, getState, setStatus, useStore } from "../state/store.js";
@@ -47,6 +56,14 @@ export function Inspector() {
             </p>
           ) : entity.kind === "wall" ? (
             <WallInspector id={entity.wall.id} levelIndex={entity.levelIndex} wallIndex={entity.wallIndex} />
+          ) : entity.kind === "opening" ? (
+            <OpeningInspector
+              levelIndex={entity.levelIndex}
+              wallIndex={entity.wallIndex}
+              openingIndex={entity.openingIndex}
+            />
+          ) : entity.kind === "room" ? (
+            <RoomInspector levelIndex={entity.levelIndex} roomIndex={entity.roomIndex} />
           ) : entity.kind === "placement" ? (
             <PlacementInspector index={entity.index} />
           ) : (
@@ -99,18 +116,15 @@ const Header = ({ kind, id }: { kind: string; id: string }) => (
   </div>
 );
 
-function WallInspector({ id, levelIndex, wallIndex }: { id: string; levelIndex: number; wallIndex: number }) {
-  const doc = useStore((s) => s.document);
-  const wall = doc?.subject.levels[levelIndex]?.walls[wallIndex];
-  const level = doc?.subject.levels[levelIndex];
-  if (wall === undefined || level === undefined) return null;
-
-  /**
-   * One field's edit, named for the undo history. Grouped by field, so a held
-   * spinner arrow — one commit per press — is one undo step, and so is a run
-   * of edits to the same field with nothing else in between.
-   */
-  const edit = (field: string, mutate: (w: NonNullable<typeof wall>) => void, of: string = id): void =>
+/**
+ * One field's edit of a wall or one of its openings, named for the undo
+ * history. Grouped by field, so a held spinner arrow — one commit per press —
+ * is one undo step, and so is a run of edits to the same field with nothing
+ * else in between.
+ */
+const wallEdit =
+  (levelIndex: number, wallIndex: number, id: string): WallEdit =>
+  (field, mutate, of = id) =>
     editDocument(
       (draft) => {
         const target = draft.subject.levels[levelIndex]?.walls[wallIndex];
@@ -118,6 +132,70 @@ function WallInspector({ id, levelIndex, wallIndex }: { id: string; levelIndex: 
       },
       { label: `Change ${of} ${field}`, group: `${of}:${field}` },
     );
+
+/**
+ * A selected opening: its own four numbers, and the wall it is cut in.
+ *
+ * The offset is typed here, as the brief for the drawing tools asks; the plan
+ * view's Select tool drags it along the wall instead.
+ */
+function OpeningInspector({
+  levelIndex,
+  wallIndex,
+  openingIndex,
+}: {
+  levelIndex: number;
+  wallIndex: number;
+  openingIndex: number;
+}) {
+  const doc = useStore((s) => s.document);
+  const wall = doc?.subject.levels[levelIndex]?.walls[wallIndex];
+  const opening = wall?.openings[openingIndex];
+  if (wall === undefined || opening === undefined) return null;
+  return (
+    <div>
+      <Header kind={opening.kind} id={opening.id} />
+      <p className="mb-2 text-[11px] text-subtle">
+        In wall <span className="font-mono text-muted">{wall.id}</span>, {wallLength(wall).toFixed(2)} m long.
+        {opening.kind === "door" && " Swings to the wall's left."}
+      </p>
+      <OpeningFields
+        opening={opening}
+        openingIndex={openingIndex}
+        edit={wallEdit(levelIndex, wallIndex, wall.id)}
+        focused
+      />
+    </div>
+  );
+}
+
+/** A selected room: what it is called, what it is for, and its derived area. */
+function RoomInspector({ levelIndex, roomIndex }: { levelIndex: number; roomIndex: number }) {
+  const doc = useStore((s) => s.document);
+  const room = doc?.subject.levels[levelIndex]?.rooms[roomIndex];
+  if (room === undefined) return null;
+  return (
+    <div>
+      <Header kind="room" id={room.id} />
+      <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 text-[11.5px]">
+        <dt className="text-muted">Name</dt>
+        <dd className="text-right text-ink">{room.name}</dd>
+        <dt className="text-muted">Use</dt>
+        <dd className="text-right font-mono text-ink">{room.use}</dd>
+        <dt className="text-muted">Area</dt>
+        <dd className="text-right font-mono text-ink tabular-nums">{area(room.polygon).toFixed(2)} m²</dd>
+      </dl>
+    </div>
+  );
+}
+
+function WallInspector({ id, levelIndex, wallIndex }: { id: string; levelIndex: number; wallIndex: number }) {
+  const doc = useStore((s) => s.document);
+  const wall = doc?.subject.levels[levelIndex]?.walls[wallIndex];
+  const level = doc?.subject.levels[levelIndex];
+  if (wall === undefined || level === undefined) return null;
+
+  const edit = wallEdit(levelIndex, wallIndex, id);
 
   return (
     <div>
@@ -165,74 +243,7 @@ function WallInspector({ id, levelIndex, wallIndex }: { id: string; levelIndex: 
         <p className="text-[11px] text-subtle">None.</p>
       ) : (
         wall.openings.map((opening, openingIndex) => (
-          <div key={opening.id} className="mb-3 border-l border-line pl-2">
-            <div className="mb-1 flex items-baseline justify-between">
-              <span className="font-mono text-[10.5px] text-ink">{opening.id}</span>
-              <span className="font-mono text-[9.5px] text-subtle">{opening.kind}</span>
-            </div>
-            <Field
-              label="Offset"
-              unit="m"
-              value={opening.offset}
-              onCommit={(next) =>
-                edit(
-                  "offset",
-                  (w) => {
-                    const o = w.openings[openingIndex];
-                    if (o !== undefined) o.offset = next;
-                  },
-                  opening.id,
-                )
-              }
-            />
-            <Field
-              label="Width"
-              unit="m"
-              value={opening.width}
-              onCommit={(next) =>
-                next > 0 &&
-                edit(
-                  "width",
-                  (w) => {
-                    const o = w.openings[openingIndex];
-                    if (o !== undefined) o.width = next;
-                  },
-                  opening.id,
-                )
-              }
-            />
-            <Field
-              label="Height"
-              unit="m"
-              value={opening.height}
-              onCommit={(next) =>
-                next > 0 &&
-                edit(
-                  "height",
-                  (w) => {
-                    const o = w.openings[openingIndex];
-                    if (o !== undefined) o.height = next;
-                  },
-                  opening.id,
-                )
-              }
-            />
-            <Field
-              label="Sill"
-              unit="m"
-              value={opening.sill}
-              onCommit={(next) =>
-                edit(
-                  "sill",
-                  (w) => {
-                    const o = w.openings[openingIndex];
-                    if (o !== undefined) o.sill = next;
-                  },
-                  opening.id,
-                )
-              }
-            />
-          </div>
+          <OpeningFields key={opening.id} opening={opening} openingIndex={openingIndex} edit={edit} />
         ))
       )}
 
@@ -405,6 +416,92 @@ function PlacementInspector({ index }: { index: number }) {
           ? "Proxy geometry — this asset is not downloaded."
           : `${assetSize[0].toFixed(2)} × ${assetSize[1].toFixed(2)} × ${assetSize[2].toFixed(2)} m`}
       </p>
+    </div>
+  );
+}
+
+type WallEdit = (field: string, mutate: (w: Wall) => void, of?: string) => void;
+
+/** One opening's four numbers. Listed under its wall, or alone when the opening itself is selected. */
+function OpeningFields({
+  opening,
+  openingIndex,
+  edit,
+  focused,
+}: {
+  opening: Opening;
+  openingIndex: number;
+  edit: WallEdit;
+  focused?: boolean;
+}) {
+  return (
+    <div className={`mb-3 border-l pl-2 ${focused === true ? "border-accent" : "border-line"}`}>
+      <div className="mb-1 flex items-baseline justify-between">
+        <span className="font-mono text-[10.5px] text-ink">{opening.id}</span>
+        <span className="font-mono text-[9.5px] text-subtle">{opening.kind}</span>
+      </div>
+      <Field
+        label="Offset"
+        unit="m"
+        value={opening.offset}
+        onCommit={(next) =>
+          edit(
+            "offset",
+            (w) => {
+              const o = w.openings[openingIndex];
+              if (o !== undefined) o.offset = next;
+            },
+            opening.id,
+          )
+        }
+      />
+      <Field
+        label="Width"
+        unit="m"
+        value={opening.width}
+        onCommit={(next) =>
+          next > 0 &&
+          edit(
+            "width",
+            (w) => {
+              const o = w.openings[openingIndex];
+              if (o !== undefined) o.width = next;
+            },
+            opening.id,
+          )
+        }
+      />
+      <Field
+        label="Height"
+        unit="m"
+        value={opening.height}
+        onCommit={(next) =>
+          next > 0 &&
+          edit(
+            "height",
+            (w) => {
+              const o = w.openings[openingIndex];
+              if (o !== undefined) o.height = next;
+            },
+            opening.id,
+          )
+        }
+      />
+      <Field
+        label="Sill"
+        unit="m"
+        value={opening.sill}
+        onCommit={(next) =>
+          edit(
+            "sill",
+            (w) => {
+              const o = w.openings[openingIndex];
+              if (o !== undefined) o.sill = next;
+            },
+            opening.id,
+          )
+        }
+      />
     </div>
   );
 }

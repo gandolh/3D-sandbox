@@ -14,6 +14,8 @@ import { getState, setPlanPointer, setPlanView, useStore } from "../../state/sto
 import { Grid } from "./Grid.jsx";
 import { LevelDrawing } from "./LevelDrawing.jsx";
 import type { Tool, ToolPointer } from "./tool.js";
+import { useFloorTool, useRoomTool } from "./useAreaTools.jsx";
+import { useOpeningTool } from "./useOpeningTool.jsx";
 import { useSelectTool } from "./useSelectTool.jsx";
 import { useWallTool } from "./useWallTool.jsx";
 
@@ -163,9 +165,14 @@ export function PlanSurface({ doc, level }: { doc: SceneDocument; level: Level |
   // Both tools run every render — hooks cannot be conditional — and only the
   // chosen one is active and receives events.
   const context = { doc, level: level ?? NO_LEVEL, view: shown };
+  const on = (t: typeof planTool): boolean => planTool === t && level !== undefined;
   const tools: Record<typeof planTool, Tool> = {
-    select: useSelectTool({ ...context, active: planTool === "select" && level !== undefined }),
-    wall: useWallTool({ ...context, active: planTool === "wall" && level !== undefined }),
+    select: useSelectTool({ ...context, active: on("select") }),
+    wall: useWallTool({ ...context, active: on("wall") }),
+    door: useOpeningTool("door", { ...context, active: on("door") }),
+    window: useOpeningTool("window", { ...context, active: on("window") }),
+    room: useRoomTool({ ...context, active: on("room") }),
+    floor: useFloorTool({ ...context, active: on("floor") }),
   };
   const tool = level === undefined ? null : tools[planTool];
 
