@@ -29,6 +29,12 @@ assets/                  ← manifest, download list, impostor bake harness
       └──► assets-src/   (downloads: gitignored except the baked atlases)
 ```
 
+`apps/web` opens what `apps/api` lists when it answers, and the three scenes
+bundled at build time when it does not, so the static deploy still works. A
+scene drawn in the browser has no builder; the listing's `hasBuilder` is how
+the editor knows to warn before drawing in one the next scene build would
+overwrite (brief 79).
+
 `packages/schema` is the bottom of the stack and must stay free of three.js,
 React, and Fastify. Inside it, `src/derive/` is the home for any computation a
 **generator and its checker both need** — a wall's angle, a field's instance

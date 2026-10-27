@@ -1265,7 +1265,7 @@ choice in its outcome. Five build briefs follow it, in build order:
 [76](briefs/done/76-undo-and-redo.md) undo and redo over whole-document snapshots,
 [77](briefs/done/77-the-wall-tool.md) the Wall tool with snapping and typed lengths,
 [78](briefs/done/78-doors-windows-and-rooms.md) doors, windows, rooms and floors, and
-[79](briefs/todo/79-a-new-house-and-scenes-from-the-api.md) New house plus a scene picker that reads
+[79](briefs/done/79-a-new-house-and-scenes-from-the-api.md) New house plus a scene picker that reads
 the API. Roofs are left for a later brief.
 
 Two facts from the code shaped them. The web app opens only the three scenes bundled at build time,
@@ -1346,3 +1346,19 @@ box the room came out 7.76 × 5.76 m, 44.7 m² on the plan, and the slab 8.24 ×
 
 **Outside the brief's file list:** `findEntity` and the Inspector now resolve openings and rooms, because
 "type its offset in the Inspector" needs a selected opening to show up there. 642 → 665 tests.
+
+## 2026-10-27: build | Brief 79 done, a new house, and scenes from the API
+
+[Brief 79](briefs/done/79-a-new-house-and-scenes-from-the-api.md): the picker lists the API's scenes when it
+answers, falling back to the bundled three, and every open goes through one `openScene`. Save sends the
+version it opened, so a file edited by hand meanwhile is refused with a dialog and a Reload, not
+overwritten. New house posts an empty level on the open scene's site and opens it with the Wall tool.
+Picking a drawing tool in a scene with a builder warns once, with Save as a new house as the way out.
+
+**The API now returns `x-scene-mtime` on PUT and POST.** Without it the version from the read went stale on
+the first save, and the second was refused. `hasBuilder` is worked out per listing from `src/<id>.ts` and
+never stored; a test holds each builder's file name to its document id.
+
+**`npm run scenes` was run from a copy in /tmp**, with the real builders linked in and a drawn scene beside
+their outputs: it rewrote the three and left the drawn one byte-identical, and nothing was written into the
+repo's `scenes/`. 665 → 691 tests, and `corpus/briefs/todo/` is empty again.

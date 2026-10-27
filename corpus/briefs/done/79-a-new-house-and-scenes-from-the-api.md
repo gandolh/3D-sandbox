@@ -78,3 +78,57 @@ built any time after 75.
 - With no API, the three bundled scenes still open, and New house is disabled with a reason.
 - API tests cover `hasBuilder` for a scene with and without a builder.
 - `npm run check` passes.
+
+## Outcome (2026-10-27)
+
+Built as filed. The web side is `apps/web/src/lib/api.ts` (the client, and the one guarded read of
+`__API_BASE__`, which vitest does not define), `apps/web/src/lib/scene-source.ts` (`refreshScenes`,
+`openScene`, `saveOpenScene`, `createHouse`), and `apps/web/src/ui/SceneDialogs.tsx`. `App.tsx` lists the
+API's scenes before opening the first, and Save goes through `saveOpenScene`. On the API, `hasBuilder` is
+in `store/files.ts` and `GET /api/scenes`. `scenes/build.ts`, `scenes/src/`, `packages/schema` and the
+create and replace rules are untouched.
+
+**One path in.** First load, the picker, New house and a reload after a stale save all call `openScene`,
+which takes the API's copy when the API lists the id and the bundled one otherwise, through
+`SceneDocument.safeParse` either way. `setSceneId`, which drove the old load-by-effect, is gone. The listing
+gives up after 1.5 s, and a non-OK answer counts as down, because Vite's proxy answers 500 when the API is
+stopped.
+
+**Two additions outside the brief's list.** PUT and POST responses now carry `x-scene-mtime`: without it the
+version kept from the read went stale on the first save, and the second save was refused. The rules are as
+they were. And the warning is raised from the plan view's `ToolBar.tsx` through a store `pickTool`, with the
+scene list, the API state, the kept version and the dialogs in the store; the 77 and 78 tests answer
+Villa's warning in `beforeEach`. The check keys on the open document's id, which the API holds equal to its
+file name.
+
+**Choices.** The id is the title lowercased, accents stripped and words hyphenated ("Căsuța" → `casuta`); one
+that cannot start with a letter ("2nd Cottage") is refused in the dialog. "Save as a new house" copies the
+whole open document, unsaved edits included. A new house copies all the open scene's materials, so one
+made from Greenhollow starts with 17 `materials-are-used` warnings: of its 18 materials only the terrain's is
+used (16 after drawing four walls).
+
+**Checked in Chromium** (Playwright; dev server on :5181 with `apps/api` on :5174 against a temp copy of
+`scenes/` that had the three builder file names in `src/`, a second dev server on :5182 built with no API):
+
+- New house "Test Cottage" wrote `test-cottage.scene.json` with Greenhollow's site and one empty Ground floor,
+  and opened it in the plan view with the Wall tool, no marks, and "· drawn" in the picker.
+- Four walls drawn and saved matched the file on disk. Switching to Greenhollow and back, and reloading the
+  page and picking it, both reopened it from the API with the same walls.
+- Retitling the file by hand while it was open, then saving: the stale dialog, the alert in the footer, and the
+  file still had the hand edit and its 0.24 m wall. Reload from disk showed the new title.
+- Wall in Greenhollow showed the warning with the brief's wording and left the tool on Select. Save as a new
+  house made `greenhollow-copy` (`hasBuilder: false`, all 23 walls) and opened it with the Wall tool; Wall and
+  Door there warned nothing. Back in Greenhollow, Draw anyway, then Select and Wall: no second warning.
+- With no API in the build, and separately with the API stopped, the three bundled scenes opened and New house
+  was disabled, titled "This build has no API…" and "The API is not answering (start it with npm run api)…".
+
+**`npm run scenes` leaves a drawn scene alone,** checked without writing into the repo: `scenes/build.ts` was
+run from a copy in /tmp with `src/` linked to the real builders and `test-cottage.scene.json` beside the
+outputs. It rewrote the three builders' files and left the drawn one byte-identical (sha256 match, mtime
+unchanged). The acceptance names `scenes/test-cottage.scene.json`; with the API on its default directory New
+house writes there, but that path was not exercised, so no scene file was ever created in the repo.
+
+**Tests:** API (`hasBuilder` with and without a builder, a builder added after boot, a directory that is not a
+builder, the version on PUT and POST, and each builder's file name against its document id) and web (17:
+titles, the minimal document, the merged list, down and none, the kept version and the stale refusal through
+a fake API, New house and its refusals, the warning). **665 → 691 tests.** `npm run check` passes.

@@ -111,8 +111,8 @@ byte-identical plans. Renders of the scenes are now the mirror images of
 earlier ones, and the right way round.
 
 Brief 74 (2026-10-21): the house is drawn in Solstice, Revit-style, with
-building parts only. Briefs **75–79** build it; roofs come later. Done so far:
-75 to 78, the plan view, undo, walls, openings, rooms and floors (2026-10-27).
+building parts only. Briefs **75–79**, all done 2026-10-27, built it: the plan
+view, undo, walls, openings, rooms, floors, New house. Roofs come later.
 
 Still deliberately open, in [open-questions.md](open-questions.md): schema
 migrations. The two unbaked conifers were dropped from villa's forest on
@@ -197,7 +197,7 @@ migrations. The two unbaked conifers were dropped from villa's forest on
 | 76 | [Undo and redo](../briefs/done/76-undo-and-redo.md) | done |
 | 77 | [The Wall tool](../briefs/done/77-the-wall-tool.md) | done |
 | 78 | [Doors, windows, rooms and floors](../briefs/done/78-doors-windows-and-rooms.md) | done |
-| 79 | [A new house, and scenes from the API](../briefs/todo/79-a-new-house-and-scenes-from-the-api.md) | todo (needs 75) |
+| 79 | [A new house, and scenes from the API](../briefs/done/79-a-new-house-and-scenes-from-the-api.md) | done |
 | 43 | [Impostor quads are the wrong shape](../briefs/done/43-impostor-quads-are-the-wrong-shape.md) | done |
 | 44 | [The dome and the render disagree after sunset](../briefs/done/44-the-dome-and-the-render-disagree-after-sunset.md) | done |
 | 45 | [Scatter counts and seeds](../briefs/done/45-scatter-counts-and-seeds.md) | done |
