@@ -1,5 +1,5 @@
 import { CUT_HEIGHT } from "@solstice/drawing";
-import type { Level } from "@solstice/schema";
+import type { Level, SceneDocument } from "@solstice/schema";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   fitExtent,
@@ -10,15 +10,29 @@ import {
   wheelFactor,
   zoomAt,
 } from "../../lib/plan-view.js";
-import { getState, select, setPlanPointer, setPlanView, useStore } from "../../state/store.js";
+import { getState, setPlanPointer, setPlanView, useStore } from "../../state/store.js";
 import { Grid } from "./Grid.jsx";
 import { LevelDrawing } from "./LevelDrawing.jsx";
+import type { Tool, ToolPointer } from "./tool.js";
+import { useSelectTool } from "./useSelectTool.jsx";
+import { useWallTool } from "./useWallTool.jsx";
 
 /** Used until the surface has been measured, and forever in a DOM that does no layout. */
 const FALLBACK_SIZE = { width: 800, height: 600 };
 
 /** A press that travels further than this, in px, is a drag and not a click. */
 const CLICK_SLOP = 4;
+
+/** An empty level to hand the tools when the document has none, so hooks run unconditionally. */
+const NO_LEVEL: Level = {
+  id: "none",
+  name: "No levels",
+  elevation: 0,
+  height: 2.7,
+  walls: [],
+  slabs: [],
+  rooms: [],
+};
 
 /**
  * The world point under a pointer event, `[x, z]` metres.
@@ -45,13 +59,12 @@ export function fitTo(level: Level | undefined, width: number, height: number): 
 /**
  * The editable plan: an SVG in world metres, on white.
  *
- * Wheel zooms about the pointer. Middle-button drag pans, and so does Space
- * plus drag, for a trackpad with no middle button. A click selects whatever
- * part is under it — a wall, an opening or a room — through the store, so the
- * Inspector and the scene tree follow; a click on bare ground clears the
- * selection.
+ * The surface owns the view: wheel zooms about the pointer; middle-button
+ * drag pans, and so does Space plus drag, for a trackpad with no middle
+ * button. Every other gesture goes to the chosen tool — Select picks parts and
+ * drags their grips, Wall draws.
  */
-export function PlanSurface({ level }: { level: Level | undefined }) {
+export function PlanSurface({ doc, level }: { doc: SceneDocument; level: Level | undefined }) {
   const box = useRef<HTMLDivElement | null>(null);
   const svg = useRef<SVGSVGElement | null>(null);
   const [size, setSize] = useState(FALLBACK_SIZE);
@@ -59,10 +72,18 @@ export function PlanSurface({ level }: { level: Level | undefined }) {
   const [spaceHeld, setSpaceHeld] = useState(false);
   const view = useStore((s) => s.planView);
   const selection = useStore((s) => s.selection);
+  const planTool = useStore((s) => s.planTool);
 
   const hover = useRef(false);
   const space = useRef(false);
-  const drag = useRef<{ id: number; x: number; y: number; travelled: number; panning: boolean } | null>(null);
+  const drag = useRef<{
+    id: number;
+    x: number;
+    y: number;
+    travelled: number;
+    panning: boolean;
+    tool: boolean;
+  } | null>(null);
 
   // Measure, and keep measuring: the pane changes size with the window and
   // when the side panels do.
@@ -139,28 +160,62 @@ export function PlanSurface({ level }: { level: Level | undefined }) {
 
   const shown = view ?? fitTo(level, size.width, size.height);
 
+  // Both tools run every render — hooks cannot be conditional — and only the
+  // chosen one is active and receives events.
+  const context = { doc, level: level ?? NO_LEVEL, view: shown };
+  const tools: Record<typeof planTool, Tool> = {
+    select: useSelectTool({ ...context, active: planTool === "select" && level !== undefined }),
+    wall: useWallTool({ ...context, active: planTool === "wall" && level !== undefined }),
+  };
+  const tool = level === undefined ? null : tools[planTool];
+
+  const pointerOf = (event: React.PointerEvent | React.MouseEvent): ToolPointer => {
+    const current = getState().planView ?? shown;
+    const rect = (svg.current ?? (event.currentTarget as Element)).getBoundingClientRect();
+    const screen: [number, number] = [event.clientX - rect.left, event.clientY - rect.top];
+    return {
+      world: toWorld(current, screen),
+      screen,
+      shift: event.shiftKey,
+      target: event.target as Element,
+    };
+  };
+
   const onPointerDown = (event: React.PointerEvent<SVGSVGElement>): void => {
     const panning = event.button === 1 || (event.button === 0 && space.current);
     if (event.button !== 0 && !panning) return;
-    if (panning) {
+    const took = !panning && (tool?.down?.(pointerOf(event)) ?? false);
+    if (panning || took) {
       event.preventDefault();
       event.currentTarget.setPointerCapture?.(event.pointerId);
-      setGrabbing(true);
     }
-    drag.current = { id: event.pointerId, x: event.clientX, y: event.clientY, travelled: 0, panning };
+    if (panning) setGrabbing(true);
+    drag.current = {
+      id: event.pointerId,
+      x: event.clientX,
+      y: event.clientY,
+      travelled: 0,
+      panning,
+      tool: took,
+    };
   };
 
   const onPointerMove = (event: React.PointerEvent<SVGSVGElement>): void => {
     const current = getState().planView ?? shown;
     setPlanPointer(pointerWorld(event.currentTarget, current, event));
     const d = drag.current;
-    if (d === null || d.id !== event.pointerId) return;
-    const dx = event.clientX - d.x;
-    const dy = event.clientY - d.y;
-    d.travelled += Math.hypot(dx, dy);
-    d.x = event.clientX;
-    d.y = event.clientY;
-    if (d.panning) setPlanView(pan(current, dx, dy));
+    if (d !== null && d.id === event.pointerId) {
+      const dx = event.clientX - d.x;
+      const dy = event.clientY - d.y;
+      d.travelled += Math.hypot(dx, dy);
+      d.x = event.clientX;
+      d.y = event.clientY;
+      if (d.panning) {
+        setPlanView(pan(current, dx, dy));
+        return;
+      }
+    }
+    tool?.move?.(pointerOf(event));
   };
 
   const onPointerUp = (event: React.PointerEvent<SVGSVGElement>): void => {
@@ -171,12 +226,15 @@ export function PlanSurface({ level }: { level: Level | undefined }) {
       setGrabbing(false);
       return;
     }
+    if (d.tool) {
+      tool?.up?.(pointerOf(event));
+      return;
+    }
     if (d.travelled > CLICK_SLOP) return;
-    // The part under the pointer, by the `data-entity` its marks carry. The
-    // drawing's own stacking decides ties, so an opening wins over its wall.
-    const hit = (event.target as Element | null)?.closest?.("[data-entity]");
-    select(hit?.getAttribute("data-entity") ?? null);
+    tool?.click?.(pointerOf(event));
   };
+
+  const cursor = grabbing ? "grabbing" : spaceHeld ? "grab" : (tool?.cursor ?? "default");
 
   return (
     <div ref={box} className="relative min-h-0 min-w-0 flex-1 overflow-hidden bg-white">
@@ -185,17 +243,18 @@ export function PlanSurface({ level }: { level: Level | undefined }) {
         role="img"
         aria-label={level === undefined ? "Plan view" : `Plan view of ${level.name}`}
         data-testid="plan-surface"
+        data-tool={planTool}
         width={size.width}
         height={size.height}
-        className={`absolute inset-0 block size-full touch-none select-none ${
-          grabbing ? "cursor-grabbing" : spaceHeld ? "cursor-grab" : "cursor-default"
-        }`}
+        style={{ cursor }}
+        className="absolute inset-0 block size-full touch-none select-none"
         onPointerEnter={() => {
           hover.current = true;
         }}
         onPointerLeave={() => {
           hover.current = false;
           setPlanPointer(null);
+          tool?.leave?.();
         }}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
@@ -204,20 +263,26 @@ export function PlanSurface({ level }: { level: Level | undefined }) {
           drag.current = null;
           setGrabbing(false);
         }}
+        onDoubleClick={(event) => tool?.doubleClick?.(pointerOf(event))}
         // The middle button's autoscroll (and, on Linux, its paste) would
         // otherwise take over the pan.
         onMouseDown={(event) => {
           if (event.button === 1) event.preventDefault();
         }}
         onAuxClick={(event) => event.preventDefault()}
-        onContextMenu={(event) => event.preventDefault()}
+        onContextMenu={(event) => {
+          event.preventDefault();
+          tool?.contextMenu?.(pointerOf(event));
+        }}
       >
         <rect width={size.width} height={size.height} fill="#ffffff" />
         <Grid view={shown} width={size.width} height={size.height} />
         {level !== undefined && (
-          <LevelDrawing level={level} view={shown} selection={selection} cut={CUT_HEIGHT} />
+          <LevelDrawing level={tool?.preview ?? level} view={shown} selection={selection} cut={CUT_HEIGHT} />
         )}
+        {tool?.overlay}
       </svg>
+      {tool?.html}
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { formatMetres } from "../lib/plan-view.js";
 import { getState, setPlanLevelId, setPlanSheet, setPlanView, useStore } from "../state/store.js";
 import { PlanSheet } from "./plan/PlanSheet.jsx";
 import { PlanSurface } from "./plan/PlanSurface.jsx";
+import { ToolBar, WallOptionsBar } from "./plan/ToolBar.jsx";
 
 const barButton = (on: boolean): string =>
   `rounded-sm border px-2 py-[3px] font-mono text-[10px] tracking-wider uppercase ${
@@ -27,6 +28,7 @@ export function PlanView() {
   const doc = useStore((s) => s.document);
   const planLevelId = useStore((s) => s.planLevelId);
   const sheet = useStore((s) => s.planSheet);
+  const tool = useStore((s) => s.planTool);
 
   if (doc === null) {
     return (
@@ -77,6 +79,7 @@ export function PlanView() {
             Fit
           </button>
         )}
+        {!sheet && level !== undefined && <ToolBar doc={doc} />}
         <div className="flex-1" />
         <button
           type="button"
@@ -89,7 +92,11 @@ export function PlanView() {
         </button>
       </div>
 
-      {sheet ? <PlanSheet doc={doc} levelId={level?.id} /> : <PlanSurface level={level} />}
+      {!sheet && tool === "wall" && level !== undefined && (
+        <WallOptionsBar doc={doc} levelHeight={level.height} />
+      )}
+
+      {sheet ? <PlanSheet doc={doc} levelId={level?.id} /> : <PlanSurface doc={doc} level={level} />}
 
       {!sheet && <PointerReadout />}
     </div>

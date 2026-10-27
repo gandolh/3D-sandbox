@@ -86,6 +86,16 @@ export interface AppState {
    */
   planPointer: readonly [number, number] | null;
   /**
+   * The plan view's tool. Select edits what exists; the others turn clicks
+   * into one kind of building part. Esc returns to Select.
+   */
+  planTool: PlanTool;
+  /**
+   * What the Wall tool's options bar says a new wall gets. `material` null
+   * means "the default": the level's most used, or the document's first.
+   */
+  wallOptions: { thickness: number; height: number | null; material: string | null };
+  /**
    * Whether a path trace owns the GPU right now.
    *
    * Here rather than inside the engine because the controls that must not be
@@ -107,6 +117,8 @@ export interface AppState {
   undoStack: readonly HistoryStep[];
   redoStack: readonly HistoryStep[];
 }
+
+export type PlanTool = "select" | "wall";
 
 /** One undoable step: the document to go back to, and what the step did. */
 export interface HistoryStep {
@@ -146,6 +158,8 @@ let state: AppState = {
   planView: null,
   planSheet: false,
   planPointer: null,
+  planTool: "select",
+  wallOptions: { thickness: 0.24, height: null, material: null },
   rendering: false,
   undoStack: [],
   redoStack: [],
@@ -202,6 +216,9 @@ export function loadDocument(document: SceneDocument, sceneId?: string): void {
     // site shows empty ground on another. Null refits on the next paint.
     planLevelId: null,
     planView: null,
+    // A material chosen for one scene's walls is a key into that scene's
+    // table, and names nothing in the next one.
+    wallOptions: { ...state.wallOptions, material: null },
     // A different scene is not a step back. Undoing into the last scene's
     // document would swap scenes behind the picker's back.
     undoStack: [],
@@ -244,6 +261,9 @@ export const setShowPlan = (showPlan: boolean): void => set({ showPlan });
 export const setPlanLevelId = (planLevelId: string | null): void => set({ planLevelId });
 export const setPlanView = (planView: ViewTransform | null): void => set({ planView });
 export const setPlanSheet = (planSheet: boolean): void => set({ planSheet });
+export const setPlanTool = (planTool: PlanTool): void => set({ planTool });
+export const setWallOptions = (patch: Partial<AppState["wallOptions"]>): void =>
+  set({ wallOptions: { ...state.wallOptions, ...patch } });
 /** Pointer rate, like `setPlayhead`: cheap because only the readout selects it. */
 export const setPlanPointer = (planPointer: readonly [number, number] | null): void => set({ planPointer });
 
