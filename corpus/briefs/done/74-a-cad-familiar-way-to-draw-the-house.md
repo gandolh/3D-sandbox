@@ -156,7 +156,7 @@ to read from the API. And `planSvg` throws on a level with no walls and fits its
 on every call, so the plan you draw in is a new surface in world metres, with the 1:100 sheet kept
 beside it.
 
-Follow-ups: [75](../todo/75-a-plan-view-to-draw-in.md) (the plan view),
+Follow-ups: [75](./75-a-plan-view-to-draw-in.md) (the plan view),
 [76](../todo/76-undo-and-redo.md) (undo and redo),
 [77](../todo/77-the-wall-tool.md) (the Wall tool),
 [78](../todo/78-doors-windows-and-rooms.md) (doors, windows, rooms and floors), and

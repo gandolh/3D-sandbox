@@ -1261,7 +1261,7 @@ started in the browser lives only as its scene JSON, saved through `apps/api`.
 
 [Brief 74](briefs/done/74-a-cad-familiar-way-to-draw-the-house.md) moved to `done/` with the owner's
 choice in its outcome. Five build briefs follow it, in build order:
-[75](briefs/todo/75-a-plan-view-to-draw-in.md) a plan view in world metres to draw in,
+[75](briefs/done/75-a-plan-view-to-draw-in.md) a plan view in world metres to draw in,
 [76](briefs/todo/76-undo-and-redo.md) undo and redo over whole-document snapshots,
 [77](briefs/todo/77-the-wall-tool.md) the Wall tool with snapping and typed lengths,
 [78](briefs/todo/78-doors-windows-and-rooms.md) doors, windows, rooms and floors, and
@@ -1280,3 +1280,20 @@ meanings.
 The owner dropped [the scene staying on proxy shapes after an early solar seek](todos/done/scene-stays-on-proxy-shapes-after-early-solar-seek.md),
 seen once on 2026-10-09 and never reproduced. It moved to `todos/done/` with a note; its
 steps and leads stay there in case it comes back.
+
+## 2026-10-27: build | Brief 75 done, a plan view to draw in
+
+[Brief 75](briefs/done/75-a-plan-view-to-draw-in.md): Plan now opens an SVG in world metres on white, with
+a grid that thins as you zoom out, wheel zoom about the pointer, middle or Space drag to pan, Fit, a level
+picker (Elmsgate's upper floor is reachable for the first time) and a pointer readout. Clicking a wall, an
+opening or a room selects it. The 1:100 sheet moved behind a Sheet toggle and draws the chosen level.
+
+**The sheet and the plan view draw the same marks.** `wallSolids` and `openingMark` moved out of `plan.ts`
+into `packages/drawing/src/linework.ts`; fixtures written before the move hold `planSvg` byte-identical on
+all four levels. Checked in Chromium through Playwright on port 5181: a wheel notch kept the world point
+under the pointer to four decimals, and hovering W-02's ends read its `start` and `end`.
+
+**The readout is not in the app footer.** That footer is a polite live region, so a coordinate there would be
+announced at every pointer move. It has a strip of its own at the foot of the plan view. Selecting an opening
+or a room works, but the Inspector has nothing to show for one yet: `findEntity` does not resolve them.
+549 → 584 tests.

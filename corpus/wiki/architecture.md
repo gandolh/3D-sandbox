@@ -1,6 +1,6 @@
 ---
 summary: Layer map, dependency direction, and the document-to-pixels pipeline — how a scene JSON file becomes a rendered image.
-updated: 2026-09-13
+updated: 2026-10-27
 ---
 
 # Architecture
@@ -41,7 +41,11 @@ checked the other.
 `geometry` rather than layered on it: a plan is a **horizontal section rendered
 as vectors**, not a view of meshes, and it has to be producible on a machine
 with no GPU. That constraint is what lets the whole drawing be asserted in
-tests — line weights, door swings, room labels — rather than eyeballed. `packages/geometry` sits above it and depends on three.js but
+tests — line weights, door swings, room labels — rather than eyeballed. Its
+marks live in `linework.ts` in world metres (`wallSolids`, `openingMark`), and two
+surfaces project them: `planSvg` onto the 1:100 sheet in millimetres, and the web
+app's plan view onto the screen in pixels, so the two cannot disagree about a jamb
+or a swing (brief 75). `packages/geometry` sits above it and depends on three.js but
 **never on a WebGL context** — geometry construction and CSG are pure CPU work, so
 the generator is testable headlessly in Node. That is why triangle counts, opening
 cuts and scatter determinism have real tests rather than a screenshot someone

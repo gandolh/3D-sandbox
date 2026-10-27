@@ -78,3 +78,49 @@ Build order for the drawing work: 75, then 76 (undo), 77 (walls), 78 (openings, 
   the three scenes (test).
 - Toggling Plan off and on keeps the same viewport canvas element (no engine reload).
 - `npm run check` passes.
+
+## Outcome (2026-10-27)
+
+Built as filed, in `apps/web/src/ui/PlanView.tsx`, `apps/web/src/ui/plan/` (`PlanSurface`, `LevelDrawing`,
+`Grid`, `PlanSheet`) and the pure transform `apps/web/src/lib/plan-view.ts`. The store gained `planLevelId`,
+`planView`, `planSheet` and `planPointer`; `loadDocument` resets the first two, because a level id and a
+framing from one scene mean nothing in another. The engine, `Viewport.tsx`, `packages/schema`, `Scroll.tsx`
+and `App.tsx` are untouched.
+
+**One shared set of marks.** `wallSolids` and `openingMark` moved from `plan.ts` into
+`packages/drawing/src/linework.ts`, in world metres; the sheet projects them to paper and the plan view to
+pixels. `packages/drawing/test/plan-unchanged.test.ts` holds `planSvg` byte-identical against fixtures
+written by the code before the move, on all four levels of the three scenes. Flipping the door leaf to the
+other side fails three of the four; the fourth, Elmsgate's first floor, has no door.
+
+**The pointer readout is in a strip at the foot of the plan view, not in the app footer.** The app footer is
+a polite live region (`role="status"`, `aria-atomic`), so a coordinate there would be read aloud at every
+pointer move, and `setStatus` clears a standing alert. The strip is `aria-live="off"`.
+
+**What it draws.** Every wall on the level, boundary walls included, since this is where walls are selected;
+the sheet still frames the house alone. So Fit on Greenhollow frames the whole plot and the house is small.
+A level change keeps the view, as a CAD program does. Room labels drop out when the room is narrower on
+screen than its name. Line weights are the sheet's, doubled to pixels with a 0.6 px floor.
+
+**Selection.** A click resolves to the `data-entity` of the mark under it, so an opening wins over its wall
+and a room sits under both; bare ground clears the selection, a pan does not. Openings and rooms select by
+id, but the Inspector shows its "Select something" line for them, because `findEntity` resolves walls,
+slabs, roofs and placements only and `lib/entities.ts` was not this brief's. Brief 78, which edits openings
+in the plan, is where that matters.
+
+**Checked in Chromium** (Playwright, dev server on :5181, 1440×900):
+
+- Every level of the three scenes draws one mark per wall, opening and room (56, 11, 8 and 9), with no
+  alert. An empty level added through the store shows the grid and nothing else.
+- Hovering W-02's ends reads `x 5.50 m · z -20.00 m` and `x 5.50 m · z -32.00 m`, its `start` and `end`.
+- A wheel notch at (700, 420) zoomed 14.73 → 23.10 px/m with the world point under the pointer unchanged
+  to four decimals (0.0679, −21.1317).
+- Clicking W-02 put it in the Inspector; clicking P-bed3 in the scene tree highlighted it in the plan.
+- Middle drag and Space + drag both panned by exactly the pointer's travel and kept the selection.
+- Sheet showed the 1:100 drawing; Plan off and on kept the same canvas element.
+
+The wheel, the hover and the pan are also unit-tested in happy-dom. **549 → 584 tests**; `npm run check`
+passes.
+
+**Seen while building, for brief 77:** the plan shows the corner notch its note predicted, on Elmsgate's
+first floor among others, where two walls meet at a shared end and each stops square.
