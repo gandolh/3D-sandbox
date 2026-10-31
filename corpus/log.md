@@ -1362,3 +1362,7 @@ never stored; a test holds each builder's file name to its document id.
 **`npm run scenes` was run from a copy in /tmp**, with the real builders linked in and a drawn scene beside
 their outputs: it rewrote the three and left the drawn one byte-identical, and nothing was written into the
 repo's `scenes/`. 665 → 691 tests, and `corpus/briefs/todo/` is empty again.
+
+## [2026-10-31] maintenance | README: drawing in the plan view, and a GIF of it
+
+A README refresh pass with the readme-docs standard. The README still said 72 tasks were done, the latest on 2026-10-07, and that the browser "only tweaks, lights and looks" with no CAD drawing, though briefs 73-79 (to 2026-10-27) made the plan view a surface to draw walls, doors, windows, rooms and floors in, with undo, redo and New house. It now says so, and a new `docs/images/draw-house.gif` shows New house, four typed walls, a door, two windows, a room and Save; `shots.md` has the beats. The three older images still match their screens and stay; `plan.webp` is now captioned as the plan sheet, which the plan view shows behind its Sheet toggle. Checked: `npm install`, `npm run build`, `npm run dev` and `npm run api` against a scratch copy of `scenes/`, so nothing was written into the repo.

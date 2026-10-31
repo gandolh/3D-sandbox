@@ -6,21 +6,26 @@ A browser editor and path-traced renderer for one house and its plot, for anyone
   <img src="docs/images/sun-path.gif" width="100%" alt="Solstice showing the Greenhollow smallholding from above while the solar clock runs from 07:30 to 19:30: shadows of the house, pergola and hedges swing round the plot as the timeline's playhead moves across the day">
 </p>
 
-**Status:** Personal project in active development. All 72 planned tasks in the [project wiki](corpus/wiki/status.md) are done, the latest on 2026-10-07. It runs locally only, with no hosted copy. The editor works in any WebGL2 browser. The path tracer needs a real GPU, and a headless browser under WSL2 falls back to software and cannot finish a render.
+**Status:** Personal project in active development. All 79 briefs in the [project wiki](corpus/wiki/status.md) are done, the latest on 2026-10-27, which added drawing a house in the plan view. It runs locally only, with no hosted copy. The editor works in any WebGL2 browser. The path tracer needs a real GPU, and a headless browser under WSL2 falls back to software and cannot finish a render.
 
 ## What it does
 
 - Opens a house and its plot in a WebGL2 viewport where you orbit, select and edit walls, their openings and placements, and drop furniture onto the floor below it. Three scenes come bundled: a smallholding, a two-storey town house and a test fixture.
 - Puts the sun where it would be for the scene's latitude, longitude, date and time, and plays a keyframed sun-path study across the day on a timeline.
 - Path-traces a named shot, or the whole shot list unattended, at each shot's own camera, clock and resolution, and saves the stills to your machine.
+- Draws a house in the plan view: walls with snapping and typed lengths and bearings, doors and windows placed on a wall, rooms and floors filled from closed walls, with undo and redo. New house starts an empty level on a scene's site and saves it through the API.
 - Draws a measured floor plan as SVG from the same document, with room names, areas and door swings.
 - Lints every scene for mistakes a schema cannot catch, such as a window on a wall that does not exist or two openings that overlap.
 
-Scenes are TypeScript modules in the repo, written by a person working with an AI assistant, and they compile to JSON documents the linter checks. A design is therefore a text file you can diff and review, which a SketchUp or Blender file is not. The browser only tweaks, lights and looks. It has no LLM inside, no freehand CAD drawing, and it renders stills, never an animated sequence.
+The bundled scenes are TypeScript modules in the repo, written by a person working with an AI assistant, and they compile to JSON documents the linter checks. A house drawn in the browser is saved as the same JSON. Either way a design is a text file you can diff and review, which a SketchUp or Blender file is not. It has no LLM inside, no roof tool in the plan view, and it renders stills, never an animated sequence.
 
 ## Screenshots
 
-| A wall selected: its size, bearing and windows, editable in the inspector | The plan view, drawn from the same document |
+New house, then the Wall tool with typed lengths and bearings, a door, two windows and a room, then Save:
+
+<img src="docs/images/draw-house.gif" width="100%" alt="Solstice drawing a new house in the plan view: the New house dialog titled Sample Cottage, four walls typed as 8, 6, 8 and 6 metres at bearings 90, 180, 270 and 0, a door on the south wall, windows on the north and east walls, a click inside that names a Living room of 44.7 square metres, and the footer saying Saved">
+
+| A wall selected: its size, bearing and windows, editable in the inspector | The plan sheet, drawn from the same document |
 |---|---|
 | ![Greenhollow's garden side at 10:15 in the real-time viewport: a lime-plastered house with a tiled roof, window openings and a table with chairs on the porch. Wall W-02 is selected in the scene tree, and the inspector lists its length, height, thickness and bearing and the offset, width, height and sill of its three windows](docs/images/wall-inspector.webp) | ![Greenhollow's ground-floor plan at 1:100: living room, three bedrooms, hall, larder, bathroom and kitchen, each with its area, plus door swings, overall dimensions of 11300 by 12300 mm, a scale bar and a north arrow](docs/images/plan.webp) |
 
