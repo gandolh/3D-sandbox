@@ -52,7 +52,7 @@ Brief: [02-geometry-generator.md](./briefs/done/02-geometry-generator.md).
 
 ## [2026-09-11] blocker | Cannot push — no GitHub credentials on this machine
 
-`origin` is `https://github.com/gandolh/3D-sandbox.git`, but there is no `gh` CLI,
+`origin` is `https://github.com/<owner>/3D-sandbox.git`, but there is no `gh` CLI,
 no git credential helper, no `GH_TOKEN`/`GITHUB_TOKEN`, and no GitHub SSH key
 (`~/.ssh` holds GitLab and VPS keys only; `ssh -T git@github.com` is denied).
 Commits accumulate locally on `main`. Resolving this needs a human — a token, a
