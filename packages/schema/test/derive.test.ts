@@ -14,7 +14,7 @@ import {
 import { baseScene } from "./fixtures.js";
 
 /**
- * The half of brief 37's drift guards that fits inside one package.
+ * The half of the shared primitives' drift guards that fits inside one package.
  *
  * The cross-package agreements — mesh against collider, generator against
  * estimate — are in `apps/web/test/shared-primitives.test.ts`, because that is
@@ -250,7 +250,7 @@ describe("the document ceiling", () => {
   });
 
   it("makes an absurd field an error, not a warning", () => {
-    // The exact document from the brief: it used to parse, lint with a
+    // The exact document from the audit: it used to parse, lint with a
     // *warning*, and be persisted by `PUT /api/scenes/:id` as a legitimate
     // authored scene, because `loadScene` only refuses on errors.
     const input = baseScene();

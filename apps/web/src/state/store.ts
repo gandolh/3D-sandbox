@@ -117,7 +117,7 @@ export interface AppState {
    * Whole documents, not patches. `editDocument` already makes a fresh, parsed
    * document on every edit and never mutates the old one, so keeping a
    * reference to the old one *is* an exact undo step, with no diffing and no
-   * inverse to write for each kind of edit (brief 76).
+   * inverse to write for each kind of edit.
    */
   undoStack: readonly HistoryStep[];
   redoStack: readonly HistoryStep[];

@@ -9,6 +9,13 @@ read more.
 - `wiki/` — the synthesis. The LLM owns this and rewrites it freely.
 - `briefs/{todo,done,superseded}/` — **immutable** work specs, `NN-slug.md`.
   Numbers are stable for the life of the file; never renumber on a move.
+  Briefs run in number order; `wiki/status.md` doesn't list them. Numbering
+  restarted at 01 on 2026-11-02: the seventy-nine briefs before that were folded
+  into the wiki and deleted, and the last commit holding them is `f8f39a0`
+  (`log.md`, "Briefs reset").
+- Code comments and test titles don't cite brief numbers ("brief 46", "(brief
+  75)"). Say what the code does and why, or give the date; the history belongs
+  in `log.md`.
 - `todos/` — captured prose, pre-spec.
 - `log.md` — chronological, newest last. Absolute dates only.
 - `index.md` — generated catalog. Regenerate with `bash corpus/lint.sh --index`.

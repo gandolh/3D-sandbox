@@ -1,11 +1,14 @@
 ---
-summary: Dated snapshot of what is built, what is in flight, and what is next — the living dashboard.
-updated: 2026-10-27
+summary: Dated snapshot (2026-11-02) of Solstice — what runs (three scenes, five packages, the API, the plan drawing), the audits of 2026-09-12 to 2026-10-01 and what they changed, the right-handed compass (2026-10-07), drawing the house in the browser (2026-10-27), what cannot be exercised on this machine, and what is open.
+updated: 2026-11-02
 ---
 
-# Status
+# Status — 2026-11-02
 
-_Snapshot: 2026-09-13_
+`origin/main` is at `dbe161d`; the local commits after it (`f8f39a0` and the
+briefs reset) are not pushed. `npm run check` is the gate and runs by hand.
+Brief numbering restarted at 01 on 2026-11-02 (see [log.md](../log.md),
+"Briefs reset"); no brief is open.
 
 ## Where things stand
 
@@ -35,16 +38,15 @@ costs and why the denoiser ships off.
 **The deploy is not this repo's work.** It lives in the `vps-deploy` estate and
 is operated there by hand. Nothing in `apps/` or `packages/` waits on it.
 
-## Next
+## How it got here
 
-Four audit rounds on 2026-09-12 — twelve lenses in all — produced **24 briefs
-(22–45)**, plus **46–49** for the house and its drawings. The full ranked lists
-are in [log.md](../log.md). **All 28 are done** and `corpus/briefs/todo/` is
-empty.
+Four audit rounds on 2026-09-12 — twelve lenses in all — produced 24 briefs,
+plus four for the house and its drawings. The full ranked lists are in
+[log.md](../log.md). All 28 were done by 2026-09-13.
 
 An engineering audit on 2026-09-13 (performance, practices, structure) filed
-**briefs 50–59**: 18 raw findings, 10 vetted, plus **60** filed mid-run when
-`npm run api` turned out not to start at all. **All eleven are done.**
+ten briefs from 18 raw findings, plus one filed mid-run when `npm run api`
+turned out not to start at all. All eleven were done the same day.
 
 The repo gained a lint and format gate (Biome), CI (since removed, 2026-09-26 —
 `npm run check` is now run by hand), a React testing
@@ -52,21 +54,20 @@ environment, `erasableSyntaxOnly`, and a wall-geometry cache. Greenhollow's
 edit path went from **98 ms per keystroke** to **5.8 ms per committed edit**.
 Measurements and the drop list are in [log.md](../log.md).
 
-A further audit on 2026-09-20 filed **briefs 61–71**, closed on 2026-10-01, all
-eleven with every fix verified by mutation. Two were data-loss or security:
-`POST` could overwrite a hand-written scene (61), and a material slug could run
-shell commands from `download.sh` (62). Several briefs turned out bigger than
-filed: the impostor bake was broken three ways, not one (65); the plan bug was
-live in Greenhollow's own drawing (67); the drop probe needed a footprint grid,
-not just rotated corners (66). One finding was smaller than filed: Chrome
-already coalesced the ARM fetches, so what tripled was GPU uploads, not
-downloads (69). The committed download list was also stale, because nothing
+A further audit on 2026-09-20 filed eleven briefs, closed on 2026-10-01, all
+with every fix verified by mutation. Two were data-loss or security: `POST`
+could overwrite a hand-written scene, and a material slug could run shell
+commands from `download.sh`. Several turned out bigger than filed: the impostor
+bake was broken three ways, not one; the plan bug was live in Greenhollow's own
+drawing; the drop probe needed a footprint grid, not just rotated corners. One
+finding was smaller than filed: Chrome already coalesced the ARM fetches, so
+what tripled was GPU uploads, not downloads. The committed download list was also stale, because nothing
 checked material slugs; `material-slug-resolves` now does (2026-10-06).
 
 A verification pass on 2026-09-13 re-read every acceptance criterion against the
 code rather than against the outcome notes, and found **two that were not
-actually met** — 45's estimate agreed with the generator only for rectangles,
-and 27's duplicate-id test exercised the wrong collision. Both closed. Worth
+actually met** — the scatter estimate agreed with the generator only for
+rectangles, and the duplicate-id test exercised the wrong collision. Both closed. Worth
 repeating on any batch of briefs closed quickly.
 
 The suite went **255 → 389 tests** across that work, and the change in *kind*
@@ -86,13 +87,13 @@ gzipped, by deferring Rapier and the path tracer out of it.
 hardware GL — the browser reports no `KHR_parallel_shader_compile`, and the
 path-tracing shader's synchronous compile does not finish. The viewport, the
 generator and everything headless are unaffected; only the render path cannot be
-exercised end-to-end here. Brief 40's outcome has the detail.
+exercised end-to-end here ([running-on-a-gpu.md](running-on-a-gpu.md)).
 
 The theme across the audit was one thing said three ways — this codebase's tests
 asserted that output exists and is roughly the right size, not that it is
 correct. Bounding boxes instead of directions, counts instead of associations,
-silence on a good document instead of a finding on a bad one. Each closed brief
-attacked that directly, and the impostor fix is the clearest case: a
+silence on a good document instead of a finding on a bad one. Each fix attacked
+that directly, and the impostor fix is the clearest case: a
 bounding-box assertion could not catch it, so the test reads the **UVs** beside
 the positions.
 
@@ -104,100 +105,25 @@ physics cache's claim that keying on the revision "makes both impossible". Each
 survived because a confident comment invites checking against your memory of the
 design rather than against the code.
 
-Brief 72 (2026-10-07) made the compass right-handed: north is −Z and east is
+On 2026-10-07 the compass became right-handed: north is −Z and east is
 +X, so the sun turns clockwise seen from above. The three scenes were mirrored
 to keep their look, proven by renders, unchanged wall bearings and
 byte-identical plans. Renders of the scenes are now the mirror images of
 earlier ones, and the right way round.
 
-Brief 74 (2026-10-21): the house is drawn in Solstice, Revit-style, with
-building parts only. Briefs **75–79**, all done 2026-10-27, built it: the plan
-view, undo, walls, openings, rooms, floors, New house. Roofs come later.
+On 2026-10-21 the owner chose to draw the house in Solstice, Revit-style, with
+building parts only; on 2026-10-27 the plan view, undo, walls, openings, rooms,
+floors and New house were built ([drawing.md](drawing.md)). Roofs come later.
 
-Still deliberately open, in [open-questions.md](open-questions.md): schema
-migrations. The two unbaked conifers were dropped from villa's forest on
-2026-10-06.
+The two unbaked conifers were dropped from villa's forest on 2026-10-06.
 
-## Briefs
+## Open
 
-| # | Brief | State |
-|---|---|---|
-| 01 | [Scene document schema and linter](../briefs/done/01-schema-and-linter.md) | done |
-| 02 | [Geometry generator](../briefs/done/02-geometry-generator.md) | done |
-| 03 | [Solar time](../briefs/done/03-solar.md) | done |
-| 04 | [Viewport and app shell](../briefs/done/04-viewport-shell.md) | done |
-| 05 | [Fastify persistence API](../briefs/done/05-persistence-api.md) | done |
-| 06 | [Path-traced render](../briefs/done/06-path-traced-render.md) | done |
-| 07 | [Physics as an authoring aid](../briefs/done/07-physics-authoring.md) | done |
-| 08 | [Shots render what they declare](../briefs/done/08-shots-render-what-they-declare.md) | done |
-| 09 | [The homestead scene](../briefs/done/09-the-homestead-scene.md) | done |
-| 10 | [Asset manifest and models](../briefs/done/10-asset-manifest-and-models.md) | done |
-| 11 | [Textures and foliage](../briefs/done/11-textures-and-foliage.md) | done |
-| 12 | [Render convergence](../briefs/done/12-render-convergence.md) | done |
-| 13 | [Vegetation impostors](../briefs/done/13-vegetation-impostors.md) | done |
-| 14 | [Animation time](../briefs/done/14-animation-time.md) | done |
-| 15 | [Finish a render](../briefs/done/15-finish-a-render.md) | done |
-| 16 | [Denoiser](../briefs/done/16-denoiser.md) | done |
-| 17 | [Repo honesty pass](../briefs/done/17-repo-honesty-pass.md) | done |
-| 18 | [Finish the vegetation](../briefs/done/18-vegetation-finishing.md) | done (tree bakes deferred) |
-| 19 | [Render the whole shot list](../briefs/done/19-render-the-whole-shot-list.md) | done |
-| 20 | [A scene picker](../briefs/done/20-scene-picker.md) | done |
-| 21 | [Elmsgate, a two-storey town house](../briefs/done/21-a-town-house.md) | done |
-| 22 | [Collider rotation units](../briefs/done/22-collider-rotation-units.md) | done |
-| 23 | [Normals face outward](../briefs/done/23-normals-face-outward.md) | done |
-| 24 | [Physics cache ignores sizes](../briefs/done/24-physics-cache-ignores-sizes.md) | done |
-| 25 | [Defer the heavy half](../briefs/done/25-defer-the-heavy-half.md) | done |
-| 26 | [Stop shipping source maps](../briefs/done/26-stop-shipping-source-maps.md) | done |
-| 27 | [Arm the unproven rules](../briefs/done/27-arm-the-unproven-rules.md) | done |
-| 28 | [Close the cross-origin surface](../briefs/done/28-close-the-cross-origin-surface.md) | done |
-| 29 | [Writing a scene must not destroy one](../briefs/done/29-writing-a-scene-must-not-destroy-one.md) | done |
-| 30 | [Give the document a ceiling](../briefs/done/30-give-the-document-a-ceiling.md) | done |
-| 31 | [Contain the bake server](../briefs/done/31-contain-the-bake-server.md) | done |
-| 32 | [Type-check the scenes](../briefs/done/32-typecheck-the-scenes.md) | done |
-| 33 | [Make the README true](../briefs/done/33-make-the-readme-true.md) | done |
-| 34 | [A truncated download is forever](../briefs/done/34-a-truncated-download-is-forever.md) | done |
-| 35 | [The app cannot tell you what happened](../briefs/done/35-the-app-cannot-tell-you-what-happened.md) | done |
-| 36 | [Reach Cancel without a mouse](../briefs/done/36-reach-cancel-without-a-mouse.md) | done |
-| 37 | [A home for shared primitives](../briefs/done/37-a-home-for-shared-primitives.md) | done |
-| 38 | [Tests that do not hold weight](../briefs/done/38-tests-that-do-not-hold-weight.md) | done |
-| 39 | [Switching scenes keeps the first one's assets](../briefs/done/39-switching-scenes-keeps-the-first-ones-assets.md) | done |
-| 40 | [Every render leaks the GPU](../briefs/done/40-every-render-leaks-the-gpu.md) | done |
-| 41 | [A render can be undermined while it runs](../briefs/done/41-a-render-can-be-undermined-while-it-runs.md) | done |
-| 42 | [Bring the fixture forward](../briefs/done/42-bring-the-fixture-forward.md) | done |
-| 46 | [A house a real architect would draw](../briefs/done/46-a-house-a-real-architect-would-draw.md) | done |
-| 47 | [The ground between the buildings](../briefs/done/47-the-ground-between-the-buildings.md) | done |
-| 48 | [Rooms are implied and nothing can name them](../briefs/done/48-rooms-are-implied-and-nothing-can-name-them.md) | done |
-| 49 | [A drawing, not a screenshot](../briefs/done/49-a-drawing-not-a-screenshot.md) | done |
-| 50 | [A dragged placement springs back](../briefs/done/50-a-dragged-placement-springs-back.md) | done |
-| 51 | [Every keystroke rebuilds the scene](../briefs/done/51-every-keystroke-rebuilds-the-scene.md) | done |
-| 52 | [The vine allocates four thousand geometries](../briefs/done/52-the-vine-allocates-four-thousand-geometries.md) | done |
-| 53 | [No linter, no formatter](../briefs/done/53-no-linter-no-formatter.md) | done |
-| 54 | [Scenes typecheck green and crash](../briefs/done/54-scenes-typecheck-green-and-crash.md) | done |
-| 55 | [No test can touch the interface](../briefs/done/55-no-test-can-touch-the-interface.md) | done |
-| 56 | [Nothing runs the gate](../briefs/done/56-nothing-runs-the-gate.md) | done |
-| 57 | [The largest workspace opted out of the base config](../briefs/done/57-the-largest-workspace-opted-out-of-the-base-config.md) | done |
-| 58 | [Work repeated every frame that cannot change](../briefs/done/58-work-repeated-every-frame-that-cannot-change.md) | done |
-| 59 | [One wall moves and the whole scene is rebuilt](../briefs/done/59-one-wall-moves-and-the-whole-scene-is-rebuilt.md) | done |
-| 60 | [npm run api does not start](../briefs/done/60-npm-run-api-does-not-start.md) | done |
-| 61 | [POST checks the index, not the disk](../briefs/done/61-post-checks-the-index-not-the-disk.md) | done |
-| 62 | [A material slug can run commands](../briefs/done/62-a-material-slug-can-run-commands.md) | done |
-| 63 | [The post is half the width the linter thinks](../briefs/done/63-the-post-is-half-the-width-the-linter-thinks.md) | done |
-| 64 | [unique-ids does not claim rooms or paving](../briefs/done/64-unique-ids-does-not-claim-rooms-or-paving.md) | done |
-| 65 | [The bake writes the atlas where nothing looks](../briefs/done/65-the-bake-writes-the-atlas-where-nothing-looks.md) | done |
-| 66 | [A rotated placement drops on the wrong footprint](../briefs/done/66-a-rotated-placement-drops-on-the-wrong-footprint.md) | done |
-| 67 | [The plan draws a window through solid wall](../briefs/done/67-the-plan-draws-a-window-through-solid-wall.md) | done |
-| 68 | [A run computes its own wall angle](../briefs/done/68-a-run-computes-its-own-wall-angle.md) | done |
-| 69 | [Every ARM texture is loaded three times](../briefs/done/69-every-arm-texture-is-loaded-three-times.md) | done |
-| 70 | [ScatterInstance is declared twice](../briefs/done/70-scatterinstance-is-declared-twice.md) | done |
-| 71 | [Numbers that drift](../briefs/done/71-numbers-that-drift.md) | done |
-| 72 | [A compass that matches the world](../briefs/done/72-a-compass-that-matches-the-world.md) | done |
-| 73 | [Plan view draws over the timeline](../briefs/done/73-plan-view-draws-over-the-timeline.md) | done |
-| 74 | [A CAD-familiar way to draw the house](../briefs/done/74-a-cad-familiar-way-to-draw-the-house.md) | done: the owner chose to build the CAD habits into Solstice |
-| 75 | [A plan view to draw in](../briefs/done/75-a-plan-view-to-draw-in.md) | done |
-| 76 | [Undo and redo](../briefs/done/76-undo-and-redo.md) | done |
-| 77 | [The Wall tool](../briefs/done/77-the-wall-tool.md) | done |
-| 78 | [Doors, windows, rooms and floors](../briefs/done/78-doors-windows-and-rooms.md) | done |
-| 79 | [A new house, and scenes from the API](../briefs/done/79-a-new-house-and-scenes-from-the-api.md) | done |
-| 43 | [Impostor quads are the wrong shape](../briefs/done/43-impostor-quads-are-the-wrong-shape.md) | done |
-| 44 | [The dome and the render disagree after sunset](../briefs/done/44-the-dome-and-the-render-disagree-after-sunset.md) | done |
-| 45 | [Scatter counts and seeds](../briefs/done/45-scatter-counts-and-seeds.md) | done |
+- **Walls leave a notch at every outside corner**
+  ([the todo](../todos/walls-leave-a-notch-at-every-outside-corner.md)).
+- **Roofs** cannot be drawn in the browser yet.
+- **Schema migrations**, deliberately open in [open-questions.md](open-questions.md).
+- **Path tracing needs the real GPU.** A headless browser under WSL2 falls back
+  to software, where the path tracer's shader compile does not finish; the
+  flags that reach the GPU through X11 are in
+  [running-on-a-gpu.md](running-on-a-gpu.md).

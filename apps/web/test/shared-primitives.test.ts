@@ -20,7 +20,7 @@ import { describe, expect, it } from "vitest";
 import { setWallBearing } from "../src/lib/entities.js";
 
 /**
- * The drift guards for brief 37.
+ * The drift guards for the shared primitives.
  *
  * They live in `apps/web` for a structural reason: the dependency direction is
  * `geometry → schema` and `physics → schema` with nothing depending on
@@ -172,7 +172,7 @@ describe("scatter instance count", () => {
     expect(scatterInstances(f)).toHaveLength(estimateScatterInstances(f).instances);
   });
 
-  // Every arrangement, and every *shape* — the brief's acceptance criterion is
+  // Every arrangement, and every *shape* — the acceptance criterion is
   // "the same number for every arrangement", and the first version of this
   // tested only a rectangle. On a rectangle the old estimate happened to be
   // exact; on an L it quoted 130 against 100 placed, 30 % over.

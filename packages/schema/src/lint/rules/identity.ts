@@ -13,8 +13,8 @@ import type { RawFinding, Rule } from "../types.js";
  * Two rooms sharing a wall's id then had their findings attached to the wall,
  * and were unreachable from the tree themselves.
  *
- * A hand-maintained enumeration fails silently — the same hazard as brief 24's
- * hand-listed cache key — so there is no list. Every object below the root with
+ * A hand-maintained enumeration fails silently — the same hazard as the physics
+ * cache's hand-listed key — so there is no list. Every object below the root with
  * a string `id` is an entity and is claimed at its own path, and a new entity
  * kind participates the day it is added to the schema. The root's own `id` is
  * the scene's name, not an entity, and is the one exclusion.

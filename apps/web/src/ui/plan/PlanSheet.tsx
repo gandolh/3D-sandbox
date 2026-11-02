@@ -39,7 +39,7 @@ export function PlanSheet({ doc, levelId }: { doc: SceneDocument; levelId: strin
 
   // A column, so `Scroll`'s `min-h-0 flex-1` has a flex parent to act in: as a
   // plain block the scroll root took the sheet's full height, never scrolled,
-  // and painted the bottom of a large plan over the timeline (brief 73).
+  // and painted the bottom of a large plan over the timeline.
   return (
     <div data-testid="plan-sheet" className="flex min-h-0 min-w-0 flex-1 flex-col bg-viewport">
       <Scroll>

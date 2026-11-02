@@ -79,7 +79,7 @@ const cellCount = (origin: M, limit: M, step: M): number =>
  * How many instances a scatter field yields.
  *
  * Shared by the lint rule that guards the triangle budget, by the API's scene
- * summary, and — since this brief — by the generator itself, which used to
+ * summary, and — since 2026-09-12 — by the generator itself, which used to
  * restate the same arithmetic. Two places that must agree, because one tells
  * the user the render will work and the other tells them how big the scene is;
  * three, now that the thing being described also asks.

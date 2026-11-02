@@ -33,7 +33,7 @@ describe("the bundled scene catalogue", () => {
 });
 
 describe("Greenhollow's programme", () => {
-  // Brief 46 asked for a big living room with a fireplace, a bathroom, a
+  // The house's programme asked for a big living room with a fireplace, a bathroom, a
   // kitchen and three bedrooms, and until rooms existed the only record that
   // the house still had them was a comment. This is that claim, checked.
   const doc = SceneDocument.parse(sceneById("greenhollow")!.json);

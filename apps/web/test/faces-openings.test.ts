@@ -20,7 +20,7 @@ const wall = (id: string, start: Pt, end: Pt, thickness = 0.24): Wall => ({
   openings: [],
 });
 
-/** Brief 77's acceptance box: 8 × 6 m, drawn anticlockwise on screen from (0, 0). */
+/** The Wall tool's acceptance box: 8 × 6 m, drawn anticlockwise on screen from (0, 0). */
 const box = (): Wall[] => [
   wall("A", [0, 0], [8, 0]),
   wall("B", [8, 0], [8, -6]),

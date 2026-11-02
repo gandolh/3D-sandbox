@@ -63,7 +63,7 @@ describe("the cached generator draws what the uncached one draws", () => {
   });
 
   it("keys on the whole wall, so a new field cannot slip past it", () => {
-    // Brief 24's lesson: a hand-written list of inputs goes stale. This key is
+    // The physics cache's lesson: a hand-written list of inputs goes stale. This key is
     // `JSON.stringify` of the entire wall, so changing *any* property — here
     // one that the first version of a hand-rolled key would never have listed —
     // is a miss.

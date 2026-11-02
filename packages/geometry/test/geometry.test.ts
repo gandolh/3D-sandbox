@@ -639,7 +639,7 @@ describe("hand-wound surfaces face outward", () => {
   it("lays a road face-up, straight and round a bend", () => {
     // The shipped winding produced (0, −1, 0) on every triangle, and every road
     // in all three scenes rendered pure black against lit terrain. It read as
-    // "asphalt is dark" in two briefs' screenshots.
+    // "asphalt is dark" in two rounds of screenshots.
     for (const path of [
       [
         [0, 0],

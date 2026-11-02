@@ -8,7 +8,7 @@ page must split.
 - [`log.md`](./log.md) — chronological record, newest last
 - [`lint.sh`](./lint.sh) — health check; `--index` regenerates the catalog below
 
-Brief states live in [`wiki/status.md`](./wiki/status.md), not here.
+Briefs run in number order (restarted at 01 on 2026-11-02); [`wiki/status.md`](./wiki/status.md) has a dated line per area and what is open.
 
 ## Wiki
 
@@ -18,10 +18,11 @@ Brief states live in [`wiki/status.md`](./wiki/status.md), not here.
 - [`wiki/budgets.md`](./wiki/budgets.md) — What a scene document is allowed to ask for — the placement triangle budget, the scatter instance ceiling, and the schema bounds that hold when a lint rule cannot.
 - [`wiki/decisions-scene.md`](./wiki/decisions-scene.md) — Locked calls about how a scene is modelled and authored — roof association, material colour, plot orientation, the asset manifest, and what counts as a schema bump.
 - [`wiki/decisions.md`](./wiki/decisions.md) — Locked technical and design calls with the reasons behind them — read before proposing an alternative, so settled trade-offs are not relitigated.
+- [`wiki/drawing.md`](./wiki/drawing.md) — How drawing the house in the browser works (built 2026-10-27) — the plan view and its shared linework, undo and redo with grouped steps, the Wall tool's exact corners and snap order, doors, windows, rooms and floors (the linter as the fit check, faces from split walls), and New house with scenes read from the API; the calls made while building and the known corner notch.
 - [`wiki/glossary.md`](./wiki/glossary.md) — Canonical vocabulary — the terms Solstice uses in a specific way, and the synonyms they displace.
 - [`wiki/open-questions.md`](./wiki/open-questions.md) — Genuinely unresolved questions — deleted the moment they are answered.
 - [`wiki/overview.md`](./wiki/overview.md) — What Solstice is, who authors what, and the top-level layout — read this first if you have never seen the project.
 - [`wiki/render-performance.md`](./wiki/render-performance.md) — What a render actually costs — end-to-end timings, the sample-convergence curve behind the 600-sample default, and the measured finding that the bundled denoiser makes things worse.
 - [`wiki/running-on-a-gpu.md`](./wiki/running-on-a-gpu.md) — Why the path tracer falls back to software under WSL2, and the exact browser flags that reach the real GPU — with measured numbers for both.
-- [`wiki/status.md`](./wiki/status.md) — Dated snapshot of what is built, what is in flight, and what is next — the living dashboard.
+- [`wiki/status.md`](./wiki/status.md) — Dated snapshot (2026-11-02) of Solstice — what runs (three scenes, five packages, the API, the plan drawing), the audits of 2026-09-12 to 2026-10-01 and what they changed, the right-handed compass (2026-10-07), drawing the house in the browser (2026-10-27), what cannot be exercised on this machine, and what is open.
 <!-- CATALOG:END -->

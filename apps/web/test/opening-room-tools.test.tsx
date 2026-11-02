@@ -37,7 +37,7 @@ const click = (pt: Pt) => {
 const level = () => getState().document!.subject.levels.find((l) => l.id === "attic")!;
 const wallById = (id: string) => level().walls.find((w) => w.id === id)!;
 
-/** Villa with an attic holding brief 77's box: W-05 to W-08, (0,0) → (8,0) → (8,−6) → (0,−6). */
+/** Villa with an attic holding the Wall tool's acceptance box: W-05 to W-08, (0,0) → (8,0) → (8,−6) → (0,−6). */
 function boxScene(): void {
   const doc = SceneDocument.parse(sceneById("villa-carpathia")!.json);
   doc.subject.levels.push({
@@ -85,14 +85,14 @@ async function open(tool: "Door" | "Window" | "Room" | "Floor" | "Select"): Prom
 beforeEach(() => {
   setPlanSheet(false);
   setPlanTool("select");
-  // Villa has a builder; brief 79's warning is answered once, as a person would.
+  // Villa has a builder; the draw-anyway warning is answered once, as a person would.
   allowDrawing("villa-carpathia");
   boxScene();
   render(<Harness />);
   act(() => setPlanView(VIEW));
 });
 
-/** The door and two windows of brief 78's acceptance, placed by typed distances. */
+/** The door and two windows of the opening tools' acceptance, placed by typed distances. */
 async function doorAndWindows(): Promise<void> {
   await open("Door");
   move([1.3, 0.05]); // W-05, nearer its start

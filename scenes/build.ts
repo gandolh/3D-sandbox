@@ -88,7 +88,7 @@ for (const entry of entries) {
     console.log(
       `✓ ${document.id}  ${counts.walls} walls, ${counts.openings} openings, ${counts.shots} shots  →  ${document.id}.scene.json`,
     );
-    // The schedule is printed by the thing that computes it. Brief 46's areas
+    // The schedule is printed by the thing that computes it. The house's areas
     // lived in a comment, worked out by hand and checked by nobody.
     const schedule = scheduleOfAreas(document);
     if (schedule.length > 0) {

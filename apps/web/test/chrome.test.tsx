@@ -5,12 +5,12 @@ import type { RenderProgress } from "../src/engine/PathTracer.js";
 import { RenderOverlay } from "../src/ui/RenderOverlay.jsx";
 
 /**
- * The parts of the interface briefs 35 and 36 paid for, finally asserted.
+ * The live regions and keyboard access of 2026-09-12, finally asserted.
  *
  * Both were verified by reading and by a screenshot, because nothing in this
- * project could render a component. Brief 36's outcome had to record that
- * Escape-to-cancel was *unverified here*; brief 24's had to say a dependency
- * array was "verified by reading". This is that gap closing.
+ * project could render a component. The keyboard fix had to record that
+ * Escape-to-cancel was *unverified here*; the physics-cache fix had to say a
+ * dependency array was "verified by reading". This is that gap closing.
  */
 const progress = (over: Partial<RenderProgress> = {}): RenderProgress => ({
   phase: "rendering",
@@ -32,8 +32,8 @@ describe("the render overlay", () => {
 
   it("cancels on Escape, from wherever focus happens to be", async () => {
     // Bound on `window` rather than the overlay, because when someone starts a
-    // render focus is usually on the canvas. This is the assertion brief 36
-    // could not make: its own end-to-end attempt was drowned out by a machine
+    // render focus is usually on the canvas. This is the assertion the keyboard
+    // fix could not make: its own end-to-end attempt was drowned out by a machine
     // that path-traces at 77 s per sample.
     const onCancel = vi.fn();
     render(<RenderOverlay progress={progress()} onCancel={onCancel} />);

@@ -46,7 +46,7 @@ describe("physicsFor", () => {
   });
 
   it("rebuilds when asset sizes arrive, at the same revision", async () => {
-    // The whole brief. Open a scene, use drop-to-floor before the models land,
+    // The whole bug. Open a scene, use drop-to-floor before the models land,
     // and the world cached at revision 1 has *no placement colliders at all* —
     // `deriveColliders` skips any placement whose asset has no size. The models
     // then load; `setAssetSizes` does not bump the revision, and must not. Every

@@ -37,7 +37,7 @@ function draw(points: Pt[]): { walls: { start: Pt; end: Pt }[]; chain: Chain | n
 
 describe("a chain of walls shares its corners exactly", () => {
   it("draws the acceptance box: 8, 6, 8 typed, then a click on the first point", () => {
-    // Brief 77's acceptance, without a browser. East is bearing 90, north 0,
+    // The Wall tool's acceptance, without a browser. East is bearing 90, north 0,
     // west 270. Every corner must be the same numbers, not nearly.
     const start: Pt = [0, 0];
     const a = pointAtBearing(start, 90, 8);

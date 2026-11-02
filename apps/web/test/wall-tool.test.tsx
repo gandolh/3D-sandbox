@@ -64,7 +64,7 @@ beforeEach(() => {
   setPlanSheet(false);
   setPlanTool("select");
   setWallOptions({ thickness: 0.24, height: null, material: null });
-  // Villa has a builder; brief 79's warning is answered once, as a person would.
+  // Villa has a builder; the draw-anyway warning is answered once, as a person would.
   allowDrawing("villa-carpathia");
   emptyLevel();
 });

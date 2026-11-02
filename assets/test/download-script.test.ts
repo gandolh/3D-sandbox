@@ -71,7 +71,7 @@ describe("fetch_one", () => {
   });
 
   it("refetches a file that is the wrong length", () => {
-    // The brief's case: interrupt a download, run the script again. Before this
+    // The reported case: interrupt a download, run the script again. Before this
     // the file existed, so it was skipped — forever, silently, and the scene
     // loaded broken geometry because `assets/manifest.ts` checks a file is
     // present, never that it is valid.

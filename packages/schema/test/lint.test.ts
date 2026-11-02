@@ -39,7 +39,7 @@ describe("unique-ids", () => {
 });
 
 describe("unique-ids covers the tiers its comment claims", () => {
-  // The brief's acceptance was "a duplicate run id is an error", and what the
+  // The acceptance was "a duplicate run id is an error", and what the
   // first pass actually tested was a run colliding with a *wall*. That is a
   // different assertion: it passes on the old rule too, because the wall's id
   // was already claimed. Two runs sharing an id is the case that was broken.
@@ -646,7 +646,7 @@ describe("estimateScatterInstances", () => {
 });
 
 describe("roof-covers-walls, the overhang direction", () => {
-  // Handed over from brief 42, which settled what `overhang` means: *the least
+  // Handed over from the fixture work of 2026-09-12, which settled what `overhang` means: *the least
   // the declared footprint oversails the walls beneath it, on any one side*.
   // The rule passed `+overhang` to `boundsContain` as a tolerance, which
   // loosens containment — it permitted a roof **smaller** than its walls by
@@ -837,7 +837,7 @@ const runFindings = (over: Record<string, unknown>) =>
 
 describe("run-is-well-formed", () => {
   // Five checks, one test each. One of them — the `kind !== "fence"` guard —
-  // was edited two days before this brief was written with nothing asserting
+  // was edited two days before this test was written with nothing asserting
   // that any of the five still worked.
 
   it("rejects a repeated point", () => {
@@ -854,7 +854,7 @@ describe("run-is-well-formed", () => {
 
   it("warns when a run is narrower than its own two rows of posts", () => {
     // 50 mm: under one 80 mm post, so the rows overlap. This was 0.1 m, which
-    // leaves a 20 mm gap — the test asserted the false positive of brief 63.
+    // leaves a 20 mm gap — the test asserted the false positive fixed on 2026-10-01.
     const found = runFindings({ width: 0.05 });
     expect(found).toHaveLength(1);
     expect(found[0]!.severity).toBe("warning");
@@ -862,7 +862,7 @@ describe("run-is-well-formed", () => {
   });
 
   it("does not fire that check on a fence, which stands on one row", () => {
-    // The guard added by brief 21. A fence's `width` is the thickness of the
+    // The guard added with Elmsgate (2026-09-11). A fence's `width` is the thickness of the
     // thing, so a small number is correct, and this rule used to call every
     // railing a mistake.
     // Narrow enough that a colonnade *would* warn, or this proves nothing.

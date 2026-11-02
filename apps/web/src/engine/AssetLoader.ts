@@ -156,7 +156,7 @@ export async function loadAssets(signal?: AbortSignal): Promise<LoadedAssets> {
  * texture read through three channels. Loaded per role it became three
  * `Texture` objects for the same file: three decodes and three GPU uploads of
  * ~16 MB each, per material. (The browser coalesced the network request, so it
- * was never three downloads — measured, brief 69.)
+ * was never three downloads — measured 2026-10-01.)
  *
  * The key is the path **and the colour space**, not the path alone. Only the
  * base colour is colour; normal, roughness, metalness and occlusion are data,

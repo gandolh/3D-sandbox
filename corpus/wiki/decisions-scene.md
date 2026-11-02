@@ -1,6 +1,6 @@
 ---
 summary: Locked calls about how a scene is modelled and authored — roof association, material colour, plot orientation, the asset manifest, and what counts as a schema bump.
-updated: 2026-10-07
+updated: 2026-11-02
 ---
 
 # Scene modelling decisions
@@ -99,7 +99,7 @@ Sketchfab or BlendSwap.
 
 ## A schema version bumps on meaning, not on addition (2026-09-11)
 
-`schemaVersion` stayed at 1 through brief 09, which added `Run`, scatter
+`schemaVersion` stayed at 1 through the homestead scene's work (2026-09-11), which added `Run`, scatter
 `arrangement`, `rowSpacing`, planting `height` and scatter `material`. That was a
 judgement call at the time; it is now the rule:
 
@@ -161,8 +161,8 @@ agrees on is a field that means nothing.
   its real eave in the footprint, with a comment saying so.
 - *Consequence*: `roof-covers-walls` used to pass `overhang` to `boundsContain`
   as a **tolerance**, which loosened the check in the wrong direction — it
-  permitted a roof *smaller* than its walls by that much. Fixed in brief 27
-  (2026-09-12): the tolerance is now negative, so the footprint must reach at
+  permitted a roof *smaller* than its walls by that much. Fixed on
+  2026-09-12: the tolerance is now negative, so the footprint must reach at
   least `overhang` past the walls on every side, with a **1 mm** slack because a
   footprint authored as `rect(7 - 0.4, …)` comes out as `14.399999999999999`
   and missed an exact comparison by 2 × 10⁻¹⁵ m.
@@ -188,7 +188,7 @@ consumer adapts to it.
 
 ## The scenes were mirrored to keep their compass (2026-10-07)
 
-When north became −Z ([decisions.md](decisions.md)), [brief 72](../briefs/done/72-a-compass-that-matches-the-world.md)
+When north became −Z ([decisions.md](decisions.md)), on 2026-10-07, the change
 mirrored the three scenes: z → −z with point order kept, and yaw θ → 180° − θ,
 because the models are symmetric left to right but not front to back. Bearings
 and `northOffset` keep their values. Scatter draws from the south edge, `maxZ`.

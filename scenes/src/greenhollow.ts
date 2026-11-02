@@ -39,7 +39,7 @@ const PORCH_EAVE = 2.7;
 /**
  * The house: 11 × 12 m, grown 2 m south of where it first stood.
  *
- * The footprint follows the brief rather than the other way round. A 98 m²
+ * The footprint follows the programme rather than the other way round. A 98 m²
  * interior cannot hold a big living room, a kitchen, a bathroom and three
  * bedrooms without lying about one of them — the arithmetic runs out at two
  * bedrooms — so the plan asked for 2 m more depth and got it. Growing *south*,
@@ -233,7 +233,7 @@ const houseInternals: WallSpec[] = [
    * a room on either side — which is what `Room` is for, and this is the bug
    * that found it.
    *
-   * Moving it here keeps the point brief 46 made about flue placement: it still
+   * Moving it here keeps the point the house's spec made about flue placement: it still
    * sits on an **internal** wall (`P-day-w`), so the mass stays inside the
    * envelope where it gives its heat back, and it still penetrates near the
    * ridge. It is now centred on the living room's western half, which is where

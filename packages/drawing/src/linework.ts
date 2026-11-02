@@ -11,8 +11,8 @@ export type WorldPt = readonly [number, number];
  * paper in millimetres, and the plan view in the web app, which projects them
  * onto the screen in pixels at whatever zoom the user is at. Keeping the
  * geometry here and the projection in each caller is what lets the two read as
- * the same drawing without either copying the other's arithmetic. Brief 75 pulled
- * these out of `plan.ts`; a test holds the sheet byte-identical to what it drew
+ * the same drawing without either copying the other's arithmetic. They were pulled
+ * out of `plan.ts` on 2026-10-27; a test holds the sheet byte-identical to what it drew
  * before.
  */
 

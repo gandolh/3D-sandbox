@@ -77,7 +77,7 @@ for (const file of (await readdir(scenesDir)).filter((f) => f.endsWith(".scene.j
  * Instancing does not save you here: a 905 MB mesh is 905 MB whether it appears
  * once or 284 times, and it has to reach the GPU and get a BVH built over it
  * either way. These need decimating to a scatter LOD before they are usable,
- * which is its own brief — so the script lists them, loudly, and does not pull
+ * which is its own piece of work — so the script lists them, loudly, and does not pull
  * them.
  */
 const HEAVY_BYTES = 50 * 1024 * 1024;

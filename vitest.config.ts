@@ -10,9 +10,9 @@ import { defineConfig } from "vitest/config";
  * `import.meta.url` is an `http:` URL that `fileURLToPath` refuses.
  *
  * But the app's chrome cannot be tested without a DOM, and until it had one
- * **every `.tsx` file in the repo had zero tests** — the keyboard access from
- * brief 36, the live regions from brief 35, and `Field`'s commit behaviour from
- * brief 51 were all verified by reading.
+ * **every `.tsx` file in the repo had zero tests** — the keyboard access and
+ * the live regions of 2026-09-12, and `Field`'s commit behaviour of
+ * 2026-09-13, were all verified by reading.
  *
  * **The convention is the file extension.** A test that renders components is
  * `.test.tsx` and gets `happy-dom`; everything else is `.test.ts` and gets

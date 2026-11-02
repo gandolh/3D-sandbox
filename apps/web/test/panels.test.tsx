@@ -11,7 +11,7 @@ const load = () => loadDocument(SceneDocument.parse(sceneById(DEFAULT_SCENE_ID)!
 
 describe("the scene tree is a tree", () => {
   it("exposes tree semantics rather than a pile of buttons", () => {
-    // Brief 36 measured 53 tab stops and fourteen `<button disabled>` headings
+    // The 2026-09-12 audit measured 53 tab stops and fourteen `<button disabled>` headings
     // that announced themselves as broken controls. The fix was real tree
     // semantics; this is the assertion it never had.
     load();

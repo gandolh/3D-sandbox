@@ -15,8 +15,8 @@ import { readManifest } from "../../assets/manifest.ts";
  * are costs nothing.
  *
  * **Dev only.** A production build ships no models, so the deployed client falls
- * back to proxies. That is the honest state until vegetation impostors (brief
- * 13) make the asset set small enough to bundle — a static deploy carrying every asset is
+ * back to proxies. That is the honest state until vegetation impostors
+ * make the asset set small enough to bundle — a static deploy carrying every asset is
  * worse than grey boxes.
  */
 function assetsSrc(): Plugin {

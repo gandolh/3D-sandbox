@@ -36,7 +36,7 @@ export interface RoomArea {
  * The schedule of areas: every room, with the floor it actually has.
  *
  * Derived on demand rather than written into the document, because a stored
- * area is a second copy of a polygon and the two drift. Brief 46 worked its
+ * area is a second copy of a polygon and the two drift. The house's spec worked its
  * schedule out by hand and wrote "118.6 m², and the schedule closes to 118.7"
  * into an outcome note; that number was checked by nobody and was already only
  * approximately true by the time the plan moved.

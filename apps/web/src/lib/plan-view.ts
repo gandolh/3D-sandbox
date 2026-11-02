@@ -101,7 +101,7 @@ export const wheelFactor = (deltaY: number): number => Math.exp(-deltaY * 0.0015
 /**
  * Grid spacings, so the grid never turns grey.
  *
- * 1 m minor and 5 m major lines, as the brief asks, and when the minor lines
+ * 1 m minor and 5 m major lines, and when the minor lines
  * crowd together both step up by five: 5 m and 25 m, then 25 m and 125 m. Each
  * tier's minor lines fade in over a band rather than popping on, which is the
  * difference between a grid that breathes with the zoom and one that flickers.

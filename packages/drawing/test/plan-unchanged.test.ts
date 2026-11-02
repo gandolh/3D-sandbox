@@ -7,7 +7,7 @@ import { planSvg } from "../src/plan.js";
 /**
  * The sheet, byte for byte, on every level of the three scenes.
  *
- * Brief 75 pulled the wall and opening linework out of `planSvg` so the plan
+ * The wall and opening linework came out of `planSvg` on 2026-10-27 so the plan
  * view could draw the same marks. These fixtures were written by the code as
  * it stood **before** that extraction, so a refactor that changes one digit of
  * the sheet fails here rather than being argued for by inspection. A scene

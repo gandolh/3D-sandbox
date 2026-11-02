@@ -6,7 +6,7 @@ A browser editor and path-traced renderer for one house and its plot, for anyone
   <img src="docs/images/sun-path.gif" width="100%" alt="Solstice showing the Greenhollow smallholding from above while the solar clock runs from 07:30 to 19:30: shadows of the house, pergola and hedges swing round the plot as the timeline's playhead moves across the day">
 </p>
 
-**Status:** Personal project in active development. All 79 briefs in the [project wiki](corpus/wiki/status.md) are done, the latest on 2026-10-27, which added drawing a house in the plan view. It runs locally only, with no hosted copy. The editor works in any WebGL2 browser. The path tracer needs a real GPU, and a headless browser under WSL2 falls back to software and cannot finish a render.
+**Status:** Personal project in active development. Its latest work, on 2026-10-27, added drawing a house in the plan view ([status](corpus/wiki/status.md)). It runs locally only, with no hosted copy. The editor works in any WebGL2 browser. The path tracer needs a real GPU, and a headless browser under WSL2 falls back to software and cannot finish a render.
 
 ## What it does
 
@@ -63,7 +63,7 @@ Editing a scene, the optional API, assets, GPU flags and env vars: [docs/getting
 | `scenes` | The three scenes: TypeScript sources and the generated `.scene.json` |
 | `assets` | Asset manifest, download-list generator and the impostor bake harness |
 | `assets-src` | Download scripts and list; the downloads themselves are gitignored |
-| `corpus` | The project wiki: decisions, status and the briefs that built it |
+| `corpus` | The project wiki: decisions, status and the log of how it was built |
 
 ## Docs
 

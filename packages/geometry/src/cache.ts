@@ -7,7 +7,7 @@ import type * as THREE from "three";
  * **Why only walls.** The generator rebuilds the whole document on every
  * revision, which is the design and stays the design — geometry is derived, and
  * regenerating everything is what makes it impossible for the scene graph to
- * disagree with the document. But after briefs 51 and 52 the remaining cost is
+ * disagree with the document. But after the 2026-09-13 edit-path fixes the remaining cost is
  * concentrated: of Greenhollow's 28 ms build, **23 ms is wall CSG** — 82 % —
  * across the 11 walls that carry openings. Runs are 1.5 ms and roofs 0.3 ms.
  * Caching those too would add risk for a rounding error.
@@ -17,11 +17,11 @@ import type * as THREE from "three";
  *
  * **The invariant is that this cannot change what gets drawn.** A cache that
  * can serve a stale mesh is strictly worse than the cost it saves — this
- * project has already paid for one cache keyed on too little (brief 24). Two
+ * project has already paid for one cache keyed on too little. Two
  * things enforce it:
  *
  * 1. **The key is the whole wall.** Not a hand-listed set of fields, which is
- *    exactly what went stale in brief 24 — `JSON.stringify` over the entire
+ *    exactly what went stale in the physics cache — `JSON.stringify` over the entire
  *    `Wall` plus the two `Level` fields `buildWall` reads. Add a field to
  *    `Wall` tomorrow and it participates in the key without anyone
  *    remembering. The key costs 0.02 ms for 23 walls against 20 ms of CSG.

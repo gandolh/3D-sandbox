@@ -1,6 +1,6 @@
 ---
 summary: Locked technical and design calls with the reasons behind them — read before proposing an alternative, so settled trade-offs are not relitigated.
-updated: 2026-10-21
+updated: 2026-11-02
 ---
 
 # Decisions
@@ -86,7 +86,7 @@ Rejected: forking CADCraft (a 2D Rust AutoCAD clone with no building parts, no
 CADCraft and importing DXF (two apps, and DXF has no levels or roofs); free
 geometry in the browser; saving drawings as generated TypeScript.
 **Why**: the owner wants to draw a house in a program that feels like CAD
-(brief 74). Architects' house tools (Revit, ArchiCAD) already work on building
+(2026-10-21; how it was built is [drawing.md](drawing.md)). Architects' house tools (Revit, ArchiCAD) already work on building
 parts, which is the model "Parametric-semantic document" chose, so the CAD
 feel is interaction on top of it, not a new kernel. Drawing only parts keeps
 the linter, the plan, colliders and the sun working on everything drawn.
@@ -107,7 +107,7 @@ _2026-10-07_. With +Y up, north is −Z and east is +X. Azimuth and wall bearing
 0/90/180/270 point −Z/+X/+Z/−X, and seen from above the sun turns clockwise.
 `directionFrom` (solar) and `wallBearing` (schema) share it, and a solar test
 holds the two together. The plan drawing, `setWallBearing` and `rect()` follow
-it. Built by [brief 72](../briefs/done/72-a-compass-that-matches-the-world.md).
+it. Built on 2026-10-07.
 Rejected: +Z north, the convention until then. With +X east and +Y up it is a
 mirror image: the sun swept anticlockwise and a plan copied from paper was
 built reversed. Also rejected: flipping east instead, which keeps the mirror,
@@ -146,13 +146,13 @@ Rejected: caching every entity kind; keying on object identity; keying on a
 hand-listed set of fields.
 **Why**: the generator still rebuilds the whole document on every revision, and
 that stays — regenerating everything is what makes it impossible for the scene
-graph to disagree with the document. What changed is that after briefs 51 and
-52 the remaining cost became *concentrated*: **23 of Greenhollow's 28 ms is
+graph to disagree with the document. What changed is that after the 2026-09-13 edit-path
+fixes the remaining cost became *concentrated*: **23 of Greenhollow's 28 ms is
 wall CSG**, 82 %, across the 11 walls that carry openings. Runs are 1.5 ms and
 roofs 0.3 ms, so caching those would add a class of bug for a rounding error.
 
 The key is the whole value and not a field list because a hand-written list is
-exactly what went stale in brief 24 — add a property to `Wall` tomorrow and it
+exactly what went stale in the physics cache (2026-09-12) — add a property to `Wall` tomorrow and it
 participates without anyone remembering. It costs 0.02 ms for 23 walls against
 20 ms of CSG. Identity was rejected outright: `editDocument` structured-clones
 the document, so every entity has a new identity after every edit and an

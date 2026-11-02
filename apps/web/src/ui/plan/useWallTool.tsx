@@ -31,7 +31,7 @@ const n = (v: number): string => v.toFixed(2);
 /**
  * The Wall tool: click points, and each pair becomes a wall.
  *
- * The habits are Revit's and ArchiCAD's (brief 74): pick the tool, click a
+ * The habits are Revit's and ArchiCAD's: pick the tool, click a
  * start, click or type each next point, and the chain carries on from where the
  * last wall ended. Enter, a double-click or a right-click ends it; a click on
  * the chain's first point closes the loop; Esc drops the wall in progress, and

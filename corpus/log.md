@@ -28,7 +28,7 @@ Two traps worth remembering. Zod 4's `.default({})` hands back the literal value
 clean while printing a failure, because its link check ran inside a pipe subshell
 where the failure flag was lost; it now uses process substitution.
 
-Brief: [01-schema-and-linter.md](./briefs/done/01-schema-and-linter.md).
+Brief: 01-schema-and-linter.md.
 
 ## [2026-09-11] done | Brief 02 — Geometry generator
 
@@ -48,7 +48,7 @@ triangles against 10 896 of context**, and that is with proxy trees of ~38
 triangles. Real Poly Haven models would make those same 284 instances 14–57
 million.
 
-Brief: [02-geometry-generator.md](./briefs/done/02-geometry-generator.md).
+Brief: 02-geometry-generator.md.
 
 ## [2026-09-11] blocker | Cannot push — no GitHub credentials on this machine
 
@@ -74,7 +74,7 @@ And **the canonical sun figures moved**: hand-computed 32.3° / 272.3° became
 **32.949° / 271.654°** once refraction was accounted for. The artifact, the scene
 and the regression test now agree on suncalc's numbers.
 
-Brief: [03-solar.md](./briefs/done/03-solar.md).
+Brief: 03-solar.md.
 
 ## [2026-09-11] done | Brief 04 — Viewport and app shell
 
@@ -93,7 +93,7 @@ centrally in `lintScene`. The inspector had been filtering findings by grepping 
 entity id out of the prose message, which worked and would have broken silently on
 the first reworded error.
 
-Brief: [04-viewport-shell.md](./briefs/done/04-viewport-shell.md).
+Brief: 04-viewport-shell.md.
 
 ## [2026-09-11] done | Brief 05 — Fastify persistence API
 
@@ -112,7 +112,7 @@ a malformed payload returned 500 instead of 422; and the API's scene summary
 computed scatter counts separately from the lint rule and got them wrong
 (2 instead of 284). `estimateScatterInstances` is now one shared function.
 
-Brief: [05-persistence-api.md](./briefs/done/05-persistence-api.md).
+Brief: 05-persistence-api.md.
 
 ## [2026-09-11] done | Brief 06 — Path-traced render
 
@@ -134,7 +134,7 @@ HDRI when assets land.
 is an environment limit, not a measurement — but nobody has seen this on real
 hardware, and the shot defaults are untested at speed.
 
-Brief: [06-path-traced-render.md](./briefs/done/06-path-traced-render.md).
+Brief: 06-path-traced-render.md.
 
 ## [2026-09-11] done | Brief 07 — Physics as an authoring aid
 
@@ -159,7 +159,7 @@ proxy boxes, and the reference scene has three.
 
 This completes the agreed sequence. All seven briefs done, 163 tests.
 
-Brief: [07-physics-authoring.md](./briefs/done/07-physics-authoring.md).
+Brief: 07-physics-authoring.md.
 
 ## 2026-09-11 — The path tracer runs on a real GPU
 
@@ -199,9 +199,9 @@ not on addition. Also found that the path tracer already samples `alphaMap` and
 `alphaTest`, so foliage cut-outs need no engine work — which is what made the
 vine question a texture brief rather than a renderer one.
 
-Briefs [10](briefs/todo/10-asset-manifest-and-models.md),
-[11](briefs/todo/11-textures-and-foliage.md) and
-[12](briefs/todo/12-render-convergence.md) written. `decisions.md` passed the
+Briefs 10,
+11 and
+12 written. `decisions.md` passed the
 200-line cap and split into stack and [scene](wiki/decisions-scene.md) halves.
 Hip roofs and stairs parked — nothing is blocked on either.
 
@@ -270,10 +270,10 @@ answered the denoiser question it was deferred behind: yes.
 
 Bugs found only by running it: a placement dropped to the floor landed on its own
 collider; the inspector claimed "proxy geometry" while showing a loaded model.
-Briefs [10](briefs/done/10-asset-manifest-and-models.md),
-[11](briefs/done/11-textures-and-foliage.md),
-[12](briefs/done/12-render-convergence.md),
-[13](briefs/done/13-vegetation-impostors.md) all closed. 207 tests.
+Briefs 10,
+11,
+12,
+13 all closed. 207 tests.
 
 ## 2026-09-11 — Audited against the original brief; five briefs queued
 
@@ -291,7 +291,7 @@ defines animation time. `Timeline.tsx` says the playhead "**is** a sun-path stud
 `animejs` and `motion` are in no `package.json`, the document has no keyframes,
 and the only `requestAnimationFrame` in the app is the render loop. The user
 deferred a play mode to "later" during the grilling, so it is not a broken
-promise — but the code claims to have built it. → [brief 14](briefs/todo/14-animation-time.md)
+promise — but the code claims to have built it. → brief 14
 
 **Also found**: no render has ever run to completion, so `toBlob` and the
 download have never executed (→ 15); `three-gpu-pathtracer` already ships a
@@ -1213,16 +1213,16 @@ the old sign. The path tracer, physics cache and viewport did not.
 
 ## 2026-10-09: Brief 73 filed, and one unconfirmed finding captured
 
-Found during the README refresh; nothing fixed. [Brief 73](briefs/done/73-plan-view-draws-over-the-timeline.md):
+Found during the README refresh; nothing fixed. Brief 73:
 at 1440×900 the plan sheet overruns its pane and paints over the timeline, because `PlanView`'s outer div
 is not a flex column, so `Scroll`'s `min-h-0 flex-1` never bounds it. Captured as a todo, not a brief:
-[the scene staying on proxy shapes after an early solar seek](todos/done/scene-stays-on-proxy-shapes-after-early-solar-seek.md)
+the scene staying on proxy shapes after an early solar seek
 was seen once under SwiftShader (12,354 triangles, fixed by reload) and has no confirmed cause, so
 reproducing it is its first step.
 
 ## 2026-10-19: Brief 73 done, the plan pane scrolls
 
-[Brief 73](briefs/done/73-plan-view-draws-over-the-timeline.md): `PlanView`'s outer div is now a
+Brief 73: `PlanView`'s outer div is now a
 shrinkable flex column (`flex min-h-0 flex-col`), so `Scroll`'s `min-h-0 flex-1` bounds the sheet to the
 pane and the wheel scrolls it. Before the fix, at 1440×900, Elmsgate's 1176 px sheet grew its scroll
 root to 1224 px and covered the timeline at every sampled point; after, the root is the pane's 713 px and
@@ -1242,7 +1242,7 @@ pointer is.
 The owner asked whether to fork CADCraft (storytold/cadcraft) and build house drawing in it, or take
 what we need from it. A read-only clone showed a 2D AutoCAD clone in Rust and egui: about 194k lines,
 MIT OR Apache-2.0, no 3D (2% on its own roadmap), no walls or openings, and growing 3.4x in nine days
-with 311 open PRs. [Brief 74](briefs/todo/74-a-cad-familiar-way-to-draw-the-house.md) compares four
+with 311 open PRs. Brief 74 compares four
 routes: fork it, use it beside Solstice through DXF, lift its small crates, or build the CAD
 conventions into our own editor. It recommends the last, with a DXF import later. The owner decides;
 the last route needs the "no freehand CAD drawing tools" line revisited. Nothing was built.
@@ -1259,13 +1259,13 @@ started in the browser lives only as its scene JSON, saved through `apps/api`.
 
 ## 2026-10-21: briefs | 75–79 filed, drawing the house in the plan view
 
-[Brief 74](briefs/done/74-a-cad-familiar-way-to-draw-the-house.md) moved to `done/` with the owner's
+Brief 74 moved to `done/` with the owner's
 choice in its outcome. Five build briefs follow it, in build order:
-[75](briefs/done/75-a-plan-view-to-draw-in.md) a plan view in world metres to draw in,
-[76](briefs/done/76-undo-and-redo.md) undo and redo over whole-document snapshots,
-[77](briefs/done/77-the-wall-tool.md) the Wall tool with snapping and typed lengths,
-[78](briefs/done/78-doors-windows-and-rooms.md) doors, windows, rooms and floors, and
-[79](briefs/done/79-a-new-house-and-scenes-from-the-api.md) New house plus a scene picker that reads
+75 a plan view in world metres to draw in,
+76 undo and redo over whole-document snapshots,
+77 the Wall tool with snapping and typed lengths,
+78 doors, windows, rooms and floors, and
+79 New house plus a scene picker that reads
 the API. Roofs are left for a later brief.
 
 Two facts from the code shaped them. The web app opens only the three scenes bundled at build time,
@@ -1277,13 +1277,13 @@ meanings.
 
 ## [2026-10-23] maintenance | The proxy-shapes todo is dropped, unreproduced
 
-The owner dropped [the scene staying on proxy shapes after an early solar seek](todos/done/scene-stays-on-proxy-shapes-after-early-solar-seek.md),
+The owner dropped the scene staying on proxy shapes after an early solar seek,
 seen once on 2026-10-09 and never reproduced. It moved to `todos/done/` with a note; its
 steps and leads stay there in case it comes back.
 
 ## 2026-10-27: build | Brief 75 done, a plan view to draw in
 
-[Brief 75](briefs/done/75-a-plan-view-to-draw-in.md): Plan now opens an SVG in world metres on white, with
+Brief 75: Plan now opens an SVG in world metres on white, with
 a grid that thins as you zoom out, wheel zoom about the pointer, middle or Space drag to pan, Fit, a level
 picker (Elmsgate's upper floor is reachable for the first time) and a pointer readout. Clicking a wall, an
 opening or a room selects it. The 1:100 sheet moved behind a Sheet toggle and draws the chosen level.
@@ -1300,7 +1300,7 @@ or a room works, but the Inspector has nothing to show for one yet: `findEntity`
 
 ## 2026-10-27: build | Brief 76 done, undo and redo
 
-[Brief 76](briefs/done/76-undo-and-redo.md): `editDocument` keeps the documents it replaces, up to 100,
+Brief 76: `editDocument` keeps the documents it replaces, up to 100,
 each named by its edit ("Move table-garden", "Change W-01 thickness"); Ctrl+Z and Ctrl+Shift+Z or Ctrl+Y
 walk them, and so do two new toolbar buttons. Edits that fire per input event fold into one step by group:
 the sun slider, the paused playhead scrub, and each Inspector field.
@@ -1318,7 +1318,7 @@ the app's store from a script.
 
 ## 2026-10-27: build | Brief 77 done, the Wall tool
 
-[Brief 77](briefs/done/77-the-wall-tool.md): pick Wall, click points, and each pair becomes a wall, one
+Brief 77: pick Wall, click points, and each pair becomes a wall, one
 undo step each. Snapping shows a marker and a word (End, Middle, On wall, Grid, or a 15° angle), Shift
 holds ortho, and typing a number opens a length field that takes "4,2". Grips on a selected wall drag a
 shared corner as one, and Delete removes the wall.
@@ -1335,7 +1335,7 @@ And the corner notch the brief suspected is real: filed as
 
 ## 2026-10-27: build | Brief 78 done, doors, windows, rooms and floors
 
-[Brief 78](briefs/done/78-doors-windows-and-rooms.md): four more tools. Doors and windows follow the pointer
+Brief 78: four more tools. Doors and windows follow the pointer
 along a wall, snap to its centre or to 0.05 m, take a typed distance from the nearer end, and turn red when
 the linter's own three opening rules would refuse them. A click inside walls names a room on their inner
 faces; a click inside a building lays a slab to their outer faces. Each part is one undo step.
@@ -1349,7 +1349,7 @@ box the room came out 7.76 × 5.76 m, 44.7 m² on the plan, and the slab 8.24 ×
 
 ## 2026-10-27: build | Brief 79 done, a new house, and scenes from the API
 
-[Brief 79](briefs/done/79-a-new-house-and-scenes-from-the-api.md): the picker lists the API's scenes when it
+Brief 79: the picker lists the API's scenes when it
 answers, falling back to the bundled three, and every open goes through one `openScene`. Save sends the
 version it opened, so a file edited by hand meanwhile is refused with a dialog and a Reload, not
 overwritten. New house posts an empty level on the open scene's site and opens it with the Wall tool.
@@ -1366,3 +1366,18 @@ repo's `scenes/`. 665 → 691 tests, and `corpus/briefs/todo/` is empty again.
 ## [2026-10-31] maintenance | README: drawing in the plan view, and a GIF of it
 
 A README refresh pass with the readme-docs standard. The README still said 72 tasks were done, the latest on 2026-10-07, and that the browser "only tweaks, lights and looks" with no CAD drawing, though briefs 73-79 (to 2026-10-27) made the plan view a surface to draw walls, doors, windows, rooms and floors in, with undo, redo and New house. It now says so, and a new `docs/images/draw-house.gif` shows New house, four typed walls, a door, two windows, a room and Save; `shots.md` has the beats. The three older images still match their screens and stay; `plan.webp` is now captioned as the plan sheet, which the plan view shows behind its Sheet toggle. Checked: `npm install`, `npm run build`, `npm run dev` and `npm run api` against a scratch copy of `scenes/`, so nothing was written into the repo.
+
+## [2026-11-02] maintenance | Briefs reset
+
+Part of an estate-wide reset. The seventy-nine briefs in `briefs/done/` are folded into the wiki
+and deleted; brief numbering restarts at 01. The last commit that held them is `f8f39a0`: read
+one with `git show f8f39a0:corpus/briefs/done/77-the-wall-tool.md`. Brief numbers in the entries
+above refer to that set.
+
+The log already told each brief's story; the outcomes of the drawing work (2026-10-27) held more
+than the wiki did, so they now have [drawing.md](wiki/drawing.md): the plan view and its shared
+linework, undo grouping, the Wall tool's exact corners and snap order, the linter as the opening
+fit check, faces from split walls, and scenes read from the API. status.md drops its 79-row
+table and keeps its account of the audits without numbers. The three finished todos in
+`todos/done/` are deleted too (the dropped proxy-shapes one keeps its repro steps in the same
+commit). Code comments, test titles and the READMEs no longer cite brief numbers.

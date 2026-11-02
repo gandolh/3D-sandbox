@@ -54,7 +54,7 @@ export function findEntity(doc: SceneDocument, id: string): EntityRef | null {
   for (const [levelIndex, level] of doc.subject.levels.entries()) {
     for (const [wallIndex, wall] of level.walls.entries()) {
       if (wall.id === id) return { kind: "wall", wall, level, levelIndex, wallIndex };
-      // The plan view selects openings and rooms by id since brief 75, and
+      // The plan view selects openings and rooms by id, and
       // the Inspector has to be able to find them to show them.
       for (const [openingIndex, opening] of wall.openings.entries()) {
         if (opening.id === id) return { kind: "opening", opening, wall, levelIndex, wallIndex, openingIndex };

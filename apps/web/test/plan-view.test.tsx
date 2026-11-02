@@ -199,7 +199,7 @@ describe("selection", () => {
 });
 
 /**
- * Brief 73: the sheet overran its pane and painted over the timeline. It now
+ * The sheet overran its pane and painted over the timeline. It now
  * sits behind the Sheet toggle, and keeps the fix.
  *
  * happy-dom does no layout, so this cannot measure the overrun. It pins the

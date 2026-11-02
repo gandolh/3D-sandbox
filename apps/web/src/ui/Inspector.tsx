@@ -136,7 +136,7 @@ const wallEdit =
 /**
  * A selected opening: its own four numbers, and the wall it is cut in.
  *
- * The offset is typed here, as the brief for the drawing tools asks; the plan
+ * The offset is typed here, as a CAD program does; the plan
  * view's Select tool drags it along the wall instead.
  */
 function OpeningInspector({

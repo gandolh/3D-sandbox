@@ -1,6 +1,6 @@
 ---
 summary: Layer map, dependency direction, and the document-to-pixels pipeline — how a scene JSON file becomes a rendered image.
-updated: 2026-10-27
+updated: 2026-11-02
 ---
 
 # Architecture
@@ -33,7 +33,7 @@ assets/                  ← manifest, download list, impostor bake harness
 bundled at build time when it does not, so the static deploy still works. A
 scene drawn in the browser has no builder; the listing's `hasBuilder` is how
 the editor knows to warn before drawing in one the next scene build would
-overwrite (brief 79).
+overwrite (2026-10-27).
 
 `packages/schema` is the bottom of the stack and must stay free of three.js,
 React, and Fastify. Inside it, `src/derive/` is the home for any computation a
@@ -51,7 +51,7 @@ tests — line weights, door swings, room labels — rather than eyeballed. Its
 marks live in `linework.ts` in world metres (`wallSolids`, `openingMark`), and two
 surfaces project them: `planSvg` onto the 1:100 sheet in millimetres, and the web
 app's plan view onto the screen in pixels, so the two cannot disagree about a jamb
-or a swing (brief 75). `packages/geometry` sits above it and depends on three.js but
+or a swing (2026-10-27, [drawing.md](drawing.md)). `packages/geometry` sits above it and depends on three.js but
 **never on a WebGL context** — geometry construction and CSG are pure CPU work, so
 the generator is testable headlessly in Node. That is why triangle counts, opening
 cuts and scatter determinism have real tests rather than a screenshot someone

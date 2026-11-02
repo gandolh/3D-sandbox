@@ -1,6 +1,6 @@
 ---
 summary: What a render actually costs — end-to-end timings, the sample-convergence curve behind the 600-sample default, and the measured finding that the bundled denoiser makes things worse.
-updated: 2026-09-11
+updated: 2026-11-02
 ---
 
 # Render performance
@@ -27,7 +27,7 @@ viewport frame, forever, for a read that happens once per render.
 
 The lesson is not about WebGL. It is that a fourteen-minute operation whose
 output nobody had ever opened was wrong in the most basic possible way, and four
-briefs of work had been verified against *screenshots of the viewport* rather
+pieces of work had been verified against *screenshots of the viewport* rather
 than against the artefact.
 
 ### Measured, end to end

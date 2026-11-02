@@ -1,6 +1,6 @@
 ---
 summary: Genuinely unresolved questions — deleted the moment they are answered.
-updated: 2026-10-07
+updated: 2026-11-02
 ---
 
 # Open questions
@@ -10,11 +10,12 @@ updated: 2026-10-07
   [decisions.md](decisions.md) — so this stays deferred deliberately rather than
   by accident, until a change actually removes or redefines a field.
 
-_Vine density was brief 18. The denoiser closed on 2026-09-11: brief 16 measured
+_Vine density was settled on 2026-09-11. The denoiser closed the same day: the
+denoiser work measured
 the bundled pass as actively harmful, and the remaining thread — whether a
 trained denoiser like `oidn-web` would do better — died with the convergence
 curve. A trained denoiser earns multi-MB of WASM and weights by making *low*
-sample counts usable, and brief 12 showed 300 samples already sit within 1.8 RMS
+sample counts usable, and the convergence study showed 300 samples already sit within 1.8 RMS
 of 1,500. There is no low-sample regime here left for it to rescue._
 
 _Hip roofs and stairs were parked on 2026-09-11. The schema admits `hip` and the

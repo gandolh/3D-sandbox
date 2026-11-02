@@ -21,7 +21,7 @@ const BUCHAREST = {
   northOffset: 0,
 };
 
-/** 2026-06-21 22:30 local — the brief's case, altitude −11.61°. */
+/** 2026-06-21 22:30 local — the reported case, altitude −11.61°. */
 const afterSunset = () => sunPosition(BUCHAREST as never, { date: "2026-06-21", time: "22:30" });
 
 /** What the engine hands the `Sky` shader. */
@@ -36,7 +36,7 @@ const clampedDirection = (direction: { x: number; y: number; z: number }) => {
 };
 
 describe("after sunset", () => {
-  it("is genuinely below the horizon at the clock the brief names", () => {
+  it("is genuinely below the horizon at the reported clock", () => {
     // Pinned so the rest of this file is testing the engine rather than the
     // almanac. `@solstice/solar` was verified against suncalc separately.
     expect(afterSunset().altitude).toBeCloseTo(-11.61, 1);
