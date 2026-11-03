@@ -1330,7 +1330,7 @@ exactly, and survived Save, `GET` and reload unchanged (API on a temp copy of `s
 
 **The typed angle is a bearing**, clockwise from north, to match the Inspector, not CAD's angle from east.
 And the corner notch the brief suspected is real: filed as
-[a todo](todos/walls-leave-a-notch-at-every-outside-corner.md) for `packages/geometry`.
+a todo for `packages/geometry` (brief 01 since 2026-11-03).
 603 → 642 tests.
 
 ## 2026-10-27: build | Brief 78 done, doors, windows, rooms and floors
@@ -1381,3 +1381,13 @@ fit check, faces from split walls, and scenes read from the API. status.md drops
 table and keeps its account of the audits without numbers. The three finished todos in
 `todos/done/` are deleted too (the dropped proxy-shapes one keeps its repro steps in the same
 commit). Code comments, test titles and the READMEs no longer cite brief numbers.
+
+## [2026-11-03] decision | Wall ends are mitred; brief 01
+
+In an estate-wide grill with the owner: where walls meet, each wall's end is cut along the corner's
+bisector in the mesh, the collider and the plan drawing, instead of extending it by half the other
+wall's thickness, which is right only at 90°. Recorded in
+[decisions-geometry.md](wiki/decisions-geometry.md), a new page split from
+[decisions.md](wiki/decisions.md) with the geometry cache's entry, which passed 200 lines. The todo
+`walls-leave-a-notch-at-every-outside-corner` is now
+[brief 01](briefs/todo/01-wall-ends-are-mitred.md) and is deleted.

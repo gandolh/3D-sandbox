@@ -1,6 +1,6 @@
 ---
 summary: How drawing the house in the browser works (built 2026-10-27) — the plan view and its shared linework, undo and redo with grouped steps, the Wall tool's exact corners and snap order, doors, windows, rooms and floors (the linter as the fit check, faces from split walls), and New house with scenes read from the API; the calls made while building and the known corner notch.
-updated: 2026-11-02
+updated: 2026-11-03
 ---
 
 # Drawing the house
@@ -75,7 +75,7 @@ but pan and zoom).
 
 **Known issue:** walls leave a square notch at every outside corner, because each
 wall's mesh stops square at its end
-([the todo](../todos/walls-leave-a-notch-at-every-outside-corner.md)).
+(brief 01 mitres the ends, [decisions-geometry.md](decisions-geometry.md)).
 
 ## Doors, windows, rooms and floors
 
