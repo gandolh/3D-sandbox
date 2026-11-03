@@ -8,6 +8,9 @@ import {
   Run,
   ScatterField,
   type Wall,
+  wallEnds,
+  wallOutline,
+  wallPoint,
 } from "@solstice/schema";
 import * as THREE from "three";
 import { Evaluator } from "three-bvh-csg";
@@ -79,6 +82,69 @@ describe("wall solids", () => {
     expect(box.min.x).toBeLessThan(0.2);
     expect(box.max.x).toBeGreaterThan(3.8);
     expect(box.max.z - box.min.z).toBeGreaterThan(3.8);
+  });
+
+  it("closes the outside corner where two walls meet, and doubles up nowhere", () => {
+    // Square-ended boxes left (−0.12, 0)–(0, 0.12) empty outside this corner,
+    // and both covered the square inside it.
+    const a: Wall = { ...wall(), id: "W-a", start: [0, 0], end: [6, 0] };
+    const b: Wall = { ...wall(), id: "W-b", start: [0, -4], end: [0, 0] };
+    const meshes = [a, b].map((w) => {
+      const mesh = new THREE.Mesh(buildWall(w, level(), new Evaluator(), wallEnds(w, [a, b])));
+      mesh.updateMatrixWorld(true);
+      return mesh;
+    });
+    // A ray straight down meets the top of whatever is under it (front faces
+    // only): one solid there, so one hit. Two would be an overlap, none a gap.
+    const crossings = (x: number, z: number) =>
+      new THREE.Raycaster(new THREE.Vector3(x, 5, z), new THREE.Vector3(0, -1, 0)).intersectObjects(
+        meshes,
+        false,
+      ).length;
+    // Either side of the mitre, which runs from (0.12, −0.12) to (−0.12, 0.12).
+    for (const [x, z] of [
+      [-0.08, 0.04],
+      [-0.04, 0.08],
+      [0.08, -0.04],
+      [0.04, -0.08],
+    ] as const) {
+      expect(crossings(x, z)).toBe(1);
+    }
+    expect(crossings(-0.13, 0.13)).toBe(0);
+  });
+
+  it("stands on the wall's outline, the one the collider and the plan read", () => {
+    const a: Wall = { ...wall(), id: "W-a", start: [0, 0], end: [6, 0] };
+    const b: Wall = { ...wall(), id: "W-b", start: [0, -4], end: [0, 0] };
+    const ends = wallEnds(a, [a, b]);
+    // Rounded to the micrometre, with −0 folded into 0, so equal points key equally.
+    const key = (x: number, z: number) =>
+      [x, z].map((v) => (Math.round(v * 1e6) / 1e6 + 0).toFixed(6)).join(",");
+    const position = wallSolid(a, level(), ends).getAttribute("position");
+    const footprint = new Set<string>();
+    for (let i = 0; i < position.count; i++) footprint.add(key(position.getX(i), position.getZ(i)));
+    const outline = new Set(wallOutline(a, ends).map(([u, v]) => key(...wallPoint(a, u, v))));
+    expect([...footprint].sort()).toEqual([...outline].sort());
+  });
+
+  it("cuts an opening beside a mitred end out of its own wall, where it sits", () => {
+    // 250 mm from the corner, the linter's minimum.
+    const a: Wall = {
+      ...wall([{ id: "w-1", kind: "window", offset: 0.25, width: 0.9, height: 1.2, sill: 0.9 }]),
+      id: "W-a",
+    };
+    const b: Wall = { ...wall(), id: "W-b", start: [0, -4], end: [0, 0] };
+    const mesh = new THREE.Mesh(buildWall(a, level(), new Evaluator(), wallEnds(a, [a, b])));
+    mesh.updateMatrixWorld(true);
+    const hits = (x: number, y: number) =>
+      new THREE.Raycaster(new THREE.Vector3(x, y, 1), new THREE.Vector3(0, 0, -1)).intersectObject(
+        mesh,
+        false,
+      ).length;
+    expect(hits(0.7, 1.5)).toBe(0);
+    // The pier between the window and the corner, and the wall under the sill.
+    expect(hits(0.15, 1.5)).toBeGreaterThan(0);
+    expect(hits(0.7, 0.5)).toBeGreaterThan(0);
   });
 });
 

@@ -1,5 +1,5 @@
-import { INK, openingMark, sweepFlag, WEIGHT, wallSolids } from "@solstice/drawing";
-import { area, bounds, type Level } from "@solstice/schema";
+import { INK, MITER_LIMIT, openingMark, sweepFlag, WEIGHT, wallSolids } from "@solstice/drawing";
+import { area, bounds, type Level, wallEnds } from "@solstice/schema";
 import { memo } from "react";
 import { toScreen, type ViewTransform } from "../../lib/plan-view.js";
 
@@ -95,7 +95,7 @@ export const LevelDrawing = memo(function LevelDrawing({
         const stroke = Math.min(px(WEIGHT.cut), (wall.thickness * view.scale) / 3);
         return (
           <g key={wall.id} data-entity={wall.id} data-selected={selected ? "true" : undefined}>
-            {wallSolids(wall, cut).map((piece, i) => (
+            {wallSolids(wall, cut, wallEnds(wall, level.walls)).map((piece, i) => (
               <path
                 // biome-ignore lint/suspicious/noArrayIndexKey: a wall's solid pieces have no identity beyond their order
                 key={i}
@@ -104,6 +104,7 @@ export const LevelDrawing = memo(function LevelDrawing({
                 stroke={selected ? SELECTED : INK.line}
                 strokeWidth={selected ? Math.max(stroke, 1.5) : stroke}
                 strokeLinejoin="miter"
+                strokeMiterlimit={MITER_LIMIT}
               />
             ))}
             {/*

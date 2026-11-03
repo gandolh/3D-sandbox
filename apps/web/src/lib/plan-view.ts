@@ -1,5 +1,5 @@
 import { wallCorners } from "@solstice/drawing";
-import { bounds, type Wall } from "@solstice/schema";
+import { bounds, type Wall, wallEnds } from "@solstice/schema";
 
 /**
  * The plan view's camera: world metres to screen pixels and back.
@@ -151,5 +151,5 @@ export function formatMetres(value: number): string {
  */
 export function levelExtent(walls: readonly Wall[]): Extent {
   if (walls.length === 0) return EMPTY_EXTENT;
-  return bounds(walls.flatMap((w) => wallCorners(w)));
+  return bounds(walls.flatMap((w) => wallCorners(w, wallEnds(w, walls))));
 }

@@ -3,10 +3,14 @@ import {
   degToRad,
   type Level,
   type SceneDocument,
+  squareEnds,
   type Wall,
+  type WallEnds,
   wallAngle,
+  wallEnds,
   wallLength,
   wallMidpoint,
+  wallOutline,
 } from "@solstice/schema";
 
 /** A box collider in world space, rotated only about Y. */
@@ -28,6 +32,14 @@ export interface CuboidCollider {
    * does the mesh the collider is supposed to be shaped like.
    */
   rotationY: number;
+  /**
+   * A wall's end piece, cut to meet another wall: its plan outline in the
+   * collider's own frame, `[x, z]` before the yaw, from `position`. The piece is
+   * that outline from `-halfExtents[1]` to `+halfExtents[1]` in y, and the
+   * physics world builds a convex hull of it. `halfExtents` stays the outline's
+   * bounds, so code that only wants a size still has one.
+   */
+  outline?: [number, number][];
 }
 
 const EPSILON = 1e-4;
@@ -93,7 +105,7 @@ export function deriveColliders(doc: SceneDocument, sizes?: PlacementSizes): Cub
   }
 
   for (const level of doc.subject.levels) {
-    for (const wall of level.walls) out.push(...wallColliders(wall, level));
+    for (const wall of level.walls) out.push(...wallColliders(wall, level, wallEnds(wall, level.walls)));
 
     for (const slab of level.slabs) {
       const b = bounds(slab.polygon);
@@ -134,7 +146,7 @@ export function deriveColliders(doc: SceneDocument, sizes?: PlacementSizes): Cub
  * document being parametric — the openings are already positioned along the wall
  * by offset, so this is arithmetic rather than geometry.
  */
-export function wallColliders(wall: Wall, level: Level): CuboidCollider[] {
+export function wallColliders(wall: Wall, level: Level, ends: WallEnds = squareEnds(wall)): CuboidCollider[] {
   const length = wallLength(wall);
   if (length < EPSILON) return [];
 
@@ -159,19 +171,37 @@ export function wallColliders(wall: Wall, level: Level): CuboidCollider[] {
     const dv = vEnd - vStart;
     if (du <= EPSILON || dv <= EPSILON) return null;
 
-    const uCentre = (uStart + uEnd) / 2 - length / 2;
     const vCentre = (vStart + vEnd) / 2;
+    const at = (u: number): [number, number, number] => [
+      midX + Math.cos(rotationY) * u,
+      level.elevation + vCentre,
+      midZ - Math.sin(rotationY) * u,
+    ];
+
+    // Every piece is the wall's outline over its stretch. Most are rectangles
+    // and stay boxes; one that a mitre reaches into (the end piece, or a lintel
+    // over an opening close to a sharp corner) takes the outline's shape, in the
+    // same yawed frame, centred on the outline's own span along the wall.
+    const outline = wallOutline(wall, ends, uStart, uEnd);
+    const us = outline.map(([u]) => u);
+    const lo = Math.min(...us);
+    const hi = Math.max(...us);
+    const centre = (lo + hi) / 2;
+    const box =
+      outline.length === 4 &&
+      outline.every(
+        ([u, across]) =>
+          (Math.abs(u - uStart) < EPSILON || Math.abs(u - uEnd) < EPSILON) &&
+          Math.abs(Math.abs(across) - halfThickness) < EPSILON,
+      );
     return {
       id: `wall:${wall.id}${suffix}`,
       source: "wall",
       entity: wall.id,
-      halfExtents: [du / 2, dv / 2, halfThickness],
-      position: [
-        midX + Math.cos(rotationY) * uCentre,
-        level.elevation + vCentre,
-        midZ - Math.sin(rotationY) * uCentre,
-      ],
+      halfExtents: [(hi - lo) / 2, dv / 2, halfThickness],
+      position: at(centre - length / 2),
       rotationY,
+      ...(box ? {} : { outline: outline.map(([u, across]): [number, number] => [u - centre, across]) }),
     };
   };
 

@@ -50,3 +50,13 @@ export const INK = {
 
 /** Where the section is taken, in metres above the floor. */
 export const CUT_HEIGHT = 1.2;
+
+/**
+ * The miter limit for wall outlines.
+ *
+ * A mitred wall end meets the outside face at 45° at a square corner, and
+ * sharper at a sharper one. SVG's default limit of 4 lets that join's point run
+ * 2.6 half-strokes past the corner, a spike outside every building. 2 bevels any
+ * join under 60° and keeps a 90° one square.
+ */
+export const MITER_LIMIT = 2;

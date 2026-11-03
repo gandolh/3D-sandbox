@@ -54,10 +54,32 @@ describe("the cached generator draws what the uncached one draws", () => {
     wall.start = [wall.start[0] + 0.25, wall.start[1]];
 
     const moved = fingerprint(edited, cache);
-    // Exactly one wall changed, so exactly one key is new.
-    expect(cache.misses - before.misses).toBe(1);
+    // W-01 moved, and its start left W-04's end, which is square now: two new
+    // keys. W-01 runs along x, so its far corner with W-02 is unchanged.
+    expect(cache.misses - before.misses).toBe(2);
     expect(cache.hits).toBeGreaterThan(before.hits);
     // And the drawn result matches a from-scratch build of the edited document.
+    expect(moved).toEqual(fingerprint(edited));
+    cache.dispose();
+  });
+
+  it("rebuilds the walls that meet a moved corner", () => {
+    const cache = new GeometryCache();
+    fingerprint(scene(), cache);
+    const before = cache.misses;
+
+    // Drag the corner W-01 and W-04 share. Both walls change, and so does
+    // W-03, whose corner with W-04 now meets W-04 at a new angle. W-02 keeps
+    // its key: its corner with W-01 is where it was, along the same line.
+    const edited = scene();
+    const walls = edited.subject.levels[0]!.walls;
+    const w01 = walls.find((w) => w.id === "W-01")!;
+    const w04 = walls.find((w) => w.id === "W-04")!;
+    w01.start = [w01.start[0] + 0.25, w01.start[1]];
+    w04.end = [w04.end[0] + 0.25, w04.end[1]];
+
+    const moved = fingerprint(edited, cache);
+    expect(cache.misses - before).toBe(3);
     expect(moved).toEqual(fingerprint(edited));
     cache.dispose();
   });

@@ -1,4 +1,4 @@
-import type { SceneDocument } from "@solstice/schema";
+import { type SceneDocument, wallEnds } from "@solstice/schema";
 import * as THREE from "three";
 import { Evaluator } from "three-bvh-csg";
 import type { AssetSource, MaterialSource } from "./assets.js";
@@ -178,10 +178,11 @@ export function generateScene(doc: SceneDocument, options: GenerateOptions = {})
     subject.add(levelGroup);
 
     for (const wall of level.walls) {
+      const ends = wallEnds(wall, level.walls);
       const geometry =
         options.cache === undefined
-          ? buildWall(wall, level, evaluator)
-          : options.cache.wall(wall, level, () => buildWall(wall, level, evaluator));
+          ? buildWall(wall, level, evaluator, ends)
+          : options.cache.wall(wall, level, ends, () => buildWall(wall, level, evaluator, ends));
       attach(levelGroup, stats.subject, geometry, wall.material, `wall:${wall.id}`);
     }
     for (const slab of level.slabs) {

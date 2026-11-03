@@ -1,7 +1,16 @@
-import { area, bounds, type Level, type Opening, type SceneDocument, type Wall } from "@solstice/schema";
+import {
+  area,
+  bounds,
+  type Level,
+  type Opening,
+  type SceneDocument,
+  type Wall,
+  type WallEnds,
+  wallEnds,
+} from "@solstice/schema";
 import { project, type Sheet, wallCorners } from "./geometry.js";
 import { openingMark, sweepFlag, wallSolids } from "./linework.js";
-import { CUT_HEIGHT, INK, WEIGHT } from "./style.js";
+import { CUT_HEIGHT, INK, MITER_LIMIT, WEIGHT } from "./style.js";
 
 export interface PlanOptions {
   /** Drawing scale denominator: 100 means 1:100. */
@@ -49,7 +58,11 @@ export function planSvg(doc: SceneDocument, options: PlanOptions = {}): string {
   const walls = subjectWalls(level);
   if (walls.length === 0) throw new Error("planSvg: the level has no walls");
 
-  const extent = bounds(walls.flatMap((w) => wallCorners(w)));
+  // Where each wall meets the others, among every wall on the level, as the
+  // mesh and the collider find them: a house wall that meets the plot's
+  // boundary wall is cut the same on paper as in the model.
+  const ends = new Map<Wall, WallEnds>(walls.map((w) => [w, wallEnds(w, level.walls)]));
+  const extent = bounds(walls.flatMap((w) => wallCorners(w, ends.get(w))));
   const mmPerM = 1000 / scale;
   const width = (extent.maxX - extent.minX) * mmPerM + margin * 2;
   const height = (extent.maxZ - extent.minZ) * mmPerM + margin * 2 + 22;
@@ -84,10 +97,10 @@ export function planSvg(doc: SceneDocument, options: PlanOptions = {}): string {
     // create. Capping the stroke keeps poché visible at every wall thickness.
     const drawn = wall.thickness * mmPerM;
     const stroke = Math.min(WEIGHT.cut, drawn / 3);
-    for (const piece of wallSolids(wall, cut)) {
+    for (const piece of wallSolids(wall, cut, ends.get(wall))) {
       const d = piece.map((c, i) => `${i === 0 ? "M" : "L"}${pts(p(c[0], c[1]))}`).join(" ");
       out.push(
-        `<path d="${d} Z" fill="${INK.poche}" stroke="${INK.line}" stroke-width="${n(stroke)}" stroke-linejoin="miter"/>`,
+        `<path d="${d} Z" fill="${INK.poche}" stroke="${INK.line}" stroke-width="${n(stroke)}" stroke-linejoin="miter" stroke-miterlimit="${MITER_LIMIT}"/>`,
       );
     }
   }

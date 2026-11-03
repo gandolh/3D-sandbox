@@ -1,4 +1,4 @@
-import type { Level, Wall } from "@solstice/schema";
+import type { Level, Wall, WallEnds } from "@solstice/schema";
 import type * as THREE from "three";
 
 /**
@@ -25,6 +25,10 @@ import type * as THREE from "three";
  *    `Wall` plus the two `Level` fields `buildWall` reads. Add a field to
  *    `Wall` tomorrow and it participates in the key without anyone
  *    remembering. The key costs 0.02 ms for 23 walls against 20 ms of CSG.
+ *    Since wall ends are mitred where walls meet (2026-11-03), the key also
+ *    holds the wall's `WallEnds`: moving a wall changes the ends of the walls it
+ *    meets, so they rebuild, while a neighbour's new opening or material,
+ *    which changes nothing here, does not.
  * 2. **Callers get a clone**, never the cached geometry. The scene disposes
  *    what it owns; the cache keeps its own copy. Handing out the original
  *    would let one generation's teardown blank the next one's walls.
@@ -52,8 +56,8 @@ export class GeometryCache {
    * `build` is passed in rather than imported so this file stays free of the
    * CSG evaluator and can be unit-tested without one.
    */
-  wall(wall: Wall, level: Level, build: () => THREE.BufferGeometry): THREE.BufferGeometry {
-    const key = JSON.stringify([wall, level.height, level.elevation]);
+  wall(wall: Wall, level: Level, ends: WallEnds, build: () => THREE.BufferGeometry): THREE.BufferGeometry {
+    const key = JSON.stringify([wall, level.height, level.elevation, ends]);
     const hit = this.walls.get(key);
     if (hit !== undefined) {
       this.hits++;

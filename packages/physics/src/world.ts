@@ -47,6 +47,22 @@ export const initPhysics = async (): Promise<void> => {
 };
 
 /**
+ * The box `halfExtents` describes, or, for a wall's mitred end piece, the hull
+ * of its outline between the box's bottom and top. Rapier refuses a hull it
+ * cannot build (fewer than four distinct points); the box is the fallback, and
+ * no outline the wall code makes is that degenerate.
+ */
+function shapeOf(collider: CuboidCollider): RAPIER.ColliderDesc {
+  if (collider.outline !== undefined) {
+    const hy = collider.halfExtents[1];
+    const points = new Float32Array(collider.outline.flatMap(([x, z]) => [x, -hy, z, x, hy, z]));
+    const hull = RAPIER.ColliderDesc.convexHull(points);
+    if (hull !== null) return hull;
+  }
+  return RAPIER.ColliderDesc.cuboid(...collider.halfExtents);
+}
+
+/**
  * A physics world derived from a scene document.
  *
  * Static geometry only — walls, slabs, terrain, neighbouring masses — because
@@ -72,9 +88,14 @@ export class PhysicsWorld {
           .setTranslation(...collider.position)
           .setRotation(quaternionFromY(collider.rotationY)),
       );
-      const created = this.world.createCollider(RAPIER.ColliderDesc.cuboid(...collider.halfExtents), body);
+      const created = this.world.createCollider(shapeOf(collider), body);
       this.byHandle.set(created.handle, collider);
     }
+    // Rapier's broad phase, which every query reads, is only built by a step.
+    // Until one ran, `overlaps` and every ray here answered "nothing" on a fresh
+    // world; the overlap tests passed only because the drop tests stepped first.
+    // Every body is fixed, so the step moves nothing.
+    this.world.step();
   }
 
   static async create(doc: SceneDocument, sizes?: PlacementSizes): Promise<PhysicsWorld> {

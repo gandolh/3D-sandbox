@@ -1,4 +1,13 @@
-import { type Opening, type Wall, wallAngle, wallLength } from "@solstice/schema";
+import {
+  type Opening,
+  squareEnds,
+  type Wall,
+  type WallEnds,
+  wallAngle,
+  wallLength,
+  wallOutline,
+  wallPoint,
+} from "@solstice/schema";
 
 /** A point on the sheet, in millimetres from the top-left. */
 export type Pt = readonly [number, number];
@@ -31,24 +40,17 @@ export const project = (sheet: Sheet, x: number, z: number): Pt => [
   sheet.margin + (z - sheet.originZ) * sheet.mmPerM,
 ];
 
-/** The four corners of a wall's plan rectangle, in world space. */
-export function wallCorners(wall: Wall): [number, number][] {
-  const angle = wallAngle(wall);
-  // `wallAngle` rotates +X onto the wall, so the direction is (cos, −sin) and
-  // the perpendicular is a quarter turn from it. Same convention as the mesh.
-  const dx = Math.cos(angle);
-  const dz = -Math.sin(angle);
-  const half = wall.thickness / 2;
-  const nx = -dz * half;
-  const nz = dx * half;
-  const [x1, z1] = wall.start;
-  const [x2, z2] = wall.end;
-  return [
-    [x1 + nx, z1 + nz],
-    [x2 + nx, z2 + nz],
-    [x2 - nx, z2 - nz],
-    [x1 - nx, z1 - nz],
-  ];
+/**
+ * A wall's plan outline, in world space: the four corners of a rectangle where
+ * it meets nothing, and the ends `wallEnds` cut where it meets another wall.
+ * The mesh is extruded from this outline and the collider is cut to it, so the
+ * plan cannot disagree with either about where a wall stops.
+ */
+export function wallCorners(wall: Wall, ends: WallEnds = squareEnds(wall)): [number, number][] {
+  return wallOutline(wall, ends).map(([along, across]) => {
+    const [x, z] = wallPoint(wall, along, across);
+    return [x, z];
+  });
 }
 
 /** Where an opening sits along its wall, in world space. */

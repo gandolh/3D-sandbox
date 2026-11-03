@@ -2,39 +2,40 @@ import {
   degToRad,
   type Level,
   type Opening,
+  squareEnds,
   type Wall,
+  type WallEnds,
   wallAngle,
   wallBearing,
   wallLength,
   wallMidpoint,
+  wallOutline,
+  wallPoint,
 } from "@solstice/schema";
 import * as THREE from "three";
 import { Brush, type Evaluator, SUBTRACTION } from "three-bvh-csg";
 import { ensureStandardAttributes } from "../attributes.js";
+import { extrudePolygon } from "../polygon.js";
 
 /**
- * A wall is a box centred on the line from `start` to `end`, `thickness` wide and
- * `height` tall, sitting on the level's floor.
+ * A wall is its plan outline, centred on the line from `start` to `end` and
+ * `thickness` wide, extruded `height` tall from the level's floor.
+ *
+ * The outline's ends come from `wallEnds`: square where the wall meets nothing,
+ * cut along the corner's bisector where it shares an end with another wall, so
+ * the two close the corner. A box with square ends left a notch half a
+ * thickness square outside every corner. The collider and the plan read the same
+ * outline, so the three cannot disagree about where a wall stops.
  *
  * Openings are subtracted rather than modelled, which is why the linter cares so
  * much that they fit: CSG against a void that pokes out of the solid produces
  * geometry that looks almost right, and "almost right" is the expensive kind of
  * wrong to notice later.
  */
-export function wallSolid(wall: Wall, level: Level): THREE.BufferGeometry {
-  const length = wallLength(wall);
-  const [midX, midZ] = wallMidpoint(wall);
+export function wallSolid(wall: Wall, level: Level, ends: WallEnds = squareEnds(wall)): THREE.BufferGeometry {
   const height = wall.height ?? level.height;
-
-  const geometry = new THREE.BoxGeometry(length, height, wall.thickness);
-  // Box is centred on the origin; move it so its base sits on the floor.
-  geometry.translate(0, height / 2, 0);
-  // Rotate into the wall's direction, then move to its midpoint. The angle is
-  // `wallAngle`'s and not a local `atan2`, because `packages/physics` rotates
-  // the collider for this same wall and the two must not be able to drift.
-  geometry.rotateY(wallAngle(wall));
-  geometry.translate(midX, level.elevation, midZ);
-  return geometry;
+  const outline = wallOutline(wall, ends).map(([along, across]) => wallPoint(wall, along, across));
+  return extrudePolygon(outline, level.elevation, height);
 }
 
 /** The void an opening cuts, in the same world frame as the wall solid. */
@@ -59,8 +60,13 @@ export function openingVoid(opening: Opening, wall: Wall, level: Level): THREE.B
  * A wall with its openings cut out. Returns the plain solid when there are none,
  * because the CSG evaluator is far from free and most walls are blank.
  */
-export function buildWall(wall: Wall, level: Level, evaluator: Evaluator): THREE.BufferGeometry {
-  const solid = wallSolid(wall, level);
+export function buildWall(
+  wall: Wall,
+  level: Level,
+  evaluator: Evaluator,
+  ends: WallEnds = squareEnds(wall),
+): THREE.BufferGeometry {
+  const solid = wallSolid(wall, level, ends);
   if (wall.openings.length === 0) return ensureStandardAttributes(solid);
 
   let current = new Brush(solid);

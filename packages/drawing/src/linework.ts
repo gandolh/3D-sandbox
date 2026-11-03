@@ -1,4 +1,4 @@
-import type { Opening, Wall } from "@solstice/schema";
+import { type Opening, squareEnds, type Wall, type WallEnds, wallOutline, wallPoint } from "@solstice/schema";
 import { cutsThrough, openingPlan, wallSpan } from "./geometry.js";
 
 /** A plan point in world metres, `[x, z]`. */
@@ -19,9 +19,11 @@ export type WorldPt = readonly [number, number];
 /**
  * The solid stretches of a wall: everything the section cuts that is not a hole.
  *
- * Each piece is a rectangle, four corners in world space.
+ * Each piece is the wall's outline over its stretch, in world space: a
+ * rectangle between openings, and the cut `wallEnds` gives an end where the
+ * wall meets another.
  */
-export function wallSolids(wall: Wall, cut: number): [number, number][][] {
+export function wallSolids(wall: Wall, cut: number, ends: WallEnds = squareEnds(wall)): [number, number][][] {
   const length = wallSpan(wall);
   const holes = wall.openings
     .filter((o) => cutsThrough(o, cut))
@@ -36,22 +38,17 @@ export function wallSolids(wall: Wall, cut: number): [number, number][][] {
   }
   if (cursor < length) spans.push([cursor, length]);
 
-  return spans.map(([from, to]) => sliceCorners(wall, from, to));
-}
-
-/** A wall's plan rectangle between two distances along it. */
-function sliceCorners(wall: Wall, from: number, to: number): [number, number][] {
-  const plan = openingPlan(wall, { offset: from, width: to - from } as Opening);
-  const [nx, nz] = plan.normal;
-  const h = plan.halfThickness;
-  const [ax, az] = plan.near;
-  const [bx, bz] = plan.far;
-  return [
-    [ax + nx * h, az + nz * h],
-    [bx + nx * h, bz + nz * h],
-    [bx - nx * h, bz - nz * h],
-    [ax - nx * h, az - nz * h],
-  ];
+  // Reversed, so a piece starts on the −across face, where the sheet started
+  // it before ends were mitred: the same polygon either way, and a wall that
+  // meets nothing keeps its path data byte for byte.
+  return spans.map(([from, to]) =>
+    wallOutline(wall, ends, from, to)
+      .reverse()
+      .map(([along, across]): [number, number] => {
+        const [x, z] = wallPoint(wall, along, across);
+        return [x, z];
+      }),
+  );
 }
 
 /**

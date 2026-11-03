@@ -1,13 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="124.4mm" height="173.4mm" viewBox="0 0 124.4 173.4" font-family="Helvetica, Arial, sans-serif">
 <rect width="124.4" height="173.4" fill="#ffffff"/>
-<path d="M29.7,120 L38.7,120 L38.7,123.4 L29.7,123.4 Z" fill="#b8b4ad" stroke="#111111" stroke-width="0.7" stroke-linejoin="miter"/>
-<path d="M49.7,120 L71.7,120 L71.7,123.4 L49.7,123.4 Z" fill="#b8b4ad" stroke="#111111" stroke-width="0.7" stroke-linejoin="miter"/>
-<path d="M82.7,120 L94.7,120 L94.7,123.4 L82.7,123.4 Z" fill="#b8b4ad" stroke="#111111" stroke-width="0.7" stroke-linejoin="miter"/>
-<path d="M93,121.7 L93,29.7 L96.4,29.7 L96.4,121.7 Z" fill="#b8b4ad" stroke="#111111" stroke-width="0.7" stroke-linejoin="miter"/>
-<path d="M94.7,31.4 L83.7,31.4 L83.7,28 L94.7,28 Z" fill="#b8b4ad" stroke="#111111" stroke-width="0.7" stroke-linejoin="miter"/>
-<path d="M72.7,31.4 L53.7,31.4 L53.7,28 L72.7,28 Z" fill="#b8b4ad" stroke="#111111" stroke-width="0.7" stroke-linejoin="miter"/>
-<path d="M42.7,31.4 L29.7,31.4 L29.7,28 L42.7,28 Z" fill="#b8b4ad" stroke="#111111" stroke-width="0.7" stroke-linejoin="miter"/>
-<path d="M31.4,29.7 L31.4,121.7 L28,121.7 L28,29.7 Z" fill="#b8b4ad" stroke="#111111" stroke-width="0.7" stroke-linejoin="miter"/>
+<path d="M31.4,120 L38.7,120 L38.7,123.4 L28,123.4 Z" fill="#b8b4ad" stroke="#111111" stroke-width="0.7" stroke-linejoin="miter" stroke-miterlimit="2"/>
+<path d="M49.7,120 L71.7,120 L71.7,123.4 L49.7,123.4 Z" fill="#b8b4ad" stroke="#111111" stroke-width="0.7" stroke-linejoin="miter" stroke-miterlimit="2"/>
+<path d="M82.7,120 L93,120 L96.4,123.4 L82.7,123.4 Z" fill="#b8b4ad" stroke="#111111" stroke-width="0.7" stroke-linejoin="miter" stroke-miterlimit="2"/>
+<path d="M93,120 L93,31.4 L96.4,28 L96.4,123.4 Z" fill="#b8b4ad" stroke="#111111" stroke-width="0.7" stroke-linejoin="miter" stroke-miterlimit="2"/>
+<path d="M93,31.4 L83.7,31.4 L83.7,28 L96.4,28 Z" fill="#b8b4ad" stroke="#111111" stroke-width="0.7" stroke-linejoin="miter" stroke-miterlimit="2"/>
+<path d="M72.7,31.4 L53.7,31.4 L53.7,28 L72.7,28 Z" fill="#b8b4ad" stroke="#111111" stroke-width="0.7" stroke-linejoin="miter" stroke-miterlimit="2"/>
+<path d="M42.7,31.4 L31.4,31.4 L28,28 L42.7,28 Z" fill="#b8b4ad" stroke="#111111" stroke-width="0.7" stroke-linejoin="miter" stroke-miterlimit="2"/>
+<path d="M31.4,31.4 L31.4,120 L28,123.4 L28,28 Z" fill="#b8b4ad" stroke="#111111" stroke-width="0.7" stroke-linejoin="miter" stroke-miterlimit="2"/>
 <path d="M38.7,120 L49.7,120 M38.7,123.4 L49.7,123.4" fill="none" stroke="#111111" stroke-width="0.35"/>
 <path d="M38.7,121.7 L49.7,121.7" fill="none" stroke="#7f9bb0" stroke-width="0.25"/>
 <path d="M71.7,120 L82.7,120 M71.7,123.4 L82.7,123.4" fill="none" stroke="#111111" stroke-width="0.35"/>

@@ -1,14 +1,21 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import {
+  area,
   doorOpening,
   rect,
   SceneDocument,
   type SceneDocumentInput,
+  type Wall,
+  wallEnds,
+  wallOutline,
+  wallPoint,
   wallsFromFootprint,
   withOpenings,
 } from "@solstice/schema";
 import { describe, expect, it } from "vitest";
+import { wallCorners } from "../src/geometry.js";
+import { wallSolids } from "../src/linework.js";
 import { planSvg } from "../src/plan.js";
 import { WEIGHT } from "../src/style.js";
 
@@ -239,5 +246,56 @@ describe("which way the sheet faces", () => {
 
   it("swings the south door up the sheet, north into the room", () => {
     expect(leafY).toBeLessThan(shutY);
+  });
+});
+
+describe("where walls meet", () => {
+  const wall = (
+    id: string,
+    start: [number, number],
+    end: [number, number],
+    openings: Wall["openings"] = [],
+  ): Wall => ({
+    id,
+    start,
+    end,
+    thickness: 0.24,
+    material: "m",
+    openings,
+  });
+
+  it("draws the outline the mesh stands on and the collider is cut to", () => {
+    const a = wall("a", [0, 0], [6, 0]);
+    const b = wall("b", [0, -4], [0, 0]);
+    const ends = wallEnds(a, [a, b]);
+    const outline = wallOutline(a, ends).map(([u, v]) => wallPoint(a, u, v));
+    expect(wallCorners(a, ends)).toEqual(outline.map(([x, z]) => [x, z]));
+    // A blank wall is one piece, the same polygon.
+    expect(wallSolids(a, 1.2, ends)).toEqual([[...wallCorners(a, ends)].reverse()]);
+  });
+
+  it("leaves the pieces beside a door in a sharp corner covering the wall once", () => {
+    // At 30° the inside face stops 0.45 m from the corner point, past the
+    // door's 250 mm; the hole between the pieces is the door's stretch.
+    const turn = (30 * Math.PI) / 180;
+    const a = wall(
+      "a",
+      [0, 0],
+      [4, 0],
+      [{ id: "d-1", kind: "door", offset: 0.25, width: 0.9, height: 2.1, sill: 0 }],
+    );
+    const b = wall("b", [0, 0], [3 * Math.cos(turn), 3 * Math.sin(turn)]);
+    const ends = wallEnds(a, [a, b]);
+    const pieces = wallSolids(a, 1.2, ends);
+    expect(pieces).toHaveLength(2);
+    const hole = wallOutline(a, ends, 0.25, 1.15).map(([u, v]) => wallPoint(a, u, v));
+    const covered = pieces.reduce((sum, piece) => sum + area(piece), 0) + area(hole);
+    expect(covered).toBeCloseTo(area(wallCorners(a, ends)), 9);
+  });
+
+  it("bevels a mitre's sharp join rather than spiking past the corner", () => {
+    // The outside face meets a square corner's mitre at 45°, where SVG's
+    // default miter limit would draw the join's point outside the building.
+    expect(svg).toMatch(/stroke-linejoin="miter" stroke-miterlimit="2"/);
   });
 });

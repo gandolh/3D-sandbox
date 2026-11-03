@@ -1,6 +1,6 @@
-import { degToRad, type SceneDocument } from "@solstice/schema";
+import { degToRad, type SceneDocument, Wall, wallEnds } from "@solstice/schema";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { deriveColliders } from "../src/colliders.js";
+import { deriveColliders, wallColliders } from "../src/colliders.js";
 import { initPhysics, PhysicsWorld } from "../src/world.js";
 import { baseScene } from "./fixtures.js";
 
@@ -111,6 +111,17 @@ describe("overlap queries", () => {
 
   it("reports an overlap below ground", () => {
     expect(world.overlaps([-20, -1, -20], [0.5, 0.5, 0.5])).toBe(true);
+  });
+
+  it("finds wall in the outside corner, where square ends left a notch", async () => {
+    const level = { id: "L1", name: "Ground", elevation: 0, height: 2.7, walls: [], slabs: [] };
+    const a = Wall.parse({ id: "W-a", start: [0, 0], end: [6, 0], thickness: 0.24, material: "m" });
+    const b = Wall.parse({ id: "W-b", start: [0, -4], end: [0, 0], thickness: 0.24, material: "m" });
+    const corner = await PhysicsWorld.fromColliders(
+      [a, b].flatMap((w) => wallColliders(w, level as never, wallEnds(w, [a, b]))),
+    );
+    expect(corner.overlaps([-0.08, 1.2, 0.04], [0.01, 0.1, 0.01])).toBe(true);
+    expect(corner.overlaps([-0.2, 1.2, 0.2], [0.01, 0.1, 0.01])).toBe(false);
   });
 });
 

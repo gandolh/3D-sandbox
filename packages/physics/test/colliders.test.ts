@@ -1,4 +1,4 @@
-import { Level, type SceneDocument, Wall } from "@solstice/schema";
+import { area, Level, type SceneDocument, Wall, wallEnds, wallOutline, wallPoint } from "@solstice/schema";
 import { describe, expect, it } from "vitest";
 import { type CuboidCollider, degToRad, deriveColliders, wallColliders } from "../src/colliders.js";
 import { baseScene } from "./fixtures.js";
@@ -108,6 +108,62 @@ describe("wall colliders", () => {
     expect(
       wallColliders(Wall.parse({ id: "W-0", start: [1, 1], end: [1, 1], material: "m" }), level),
     ).toEqual([]);
+  });
+
+  it("cuts the end that meets another wall the way the mesh is cut", () => {
+    const a = wall();
+    const b = Wall.parse({ id: "W-02", start: [0, -4], end: [0, 0], thickness: 0.24, material: "m" });
+    const ends = wallEnds(a, [a, b]);
+    const [piece] = wallColliders(a, level, ends);
+    expect(piece!.outline).toBeDefined();
+
+    // The outline, yawed and placed, is the wall's own plan outline.
+    const [cx, , cz] = piece!.position;
+    const yaw = piece!.rotationY;
+    const placed = piece!.outline!.map(([x, z]) => [
+      cx + x * Math.cos(yaw) + z * Math.sin(yaw),
+      cz - x * Math.sin(yaw) + z * Math.cos(yaw),
+    ]);
+    const expected = wallOutline(a, ends).map(([u, v]) => wallPoint(a, u, v));
+    placed.forEach((point, i) => {
+      expect(point[0]).toBeCloseTo(expected[i]![0], 9);
+      expect(point[1]).toBeCloseTo(expected[i]![1], 9);
+    });
+  });
+
+  it("cuts the pieces beside a door in a sharp corner's mitre to the wall's outline", () => {
+    // At 30° the inside face stops 0.45 m from the corner, past the door's
+    // 250 mm: the pier and the lintel both reach into the mitre.
+    const turn = (30 * Math.PI) / 180;
+    const a = Wall.parse({
+      id: "W-a",
+      start: [0, 0],
+      end: [4, 0],
+      thickness: 0.24,
+      material: "m",
+      openings: [{ id: "d-1", kind: "door", offset: 0.25, width: 0.9, height: 2.1, sill: 0 }],
+    });
+    const b = Wall.parse({
+      id: "W-b",
+      start: [0, 0],
+      end: [3 * Math.cos(turn), 3 * Math.sin(turn)],
+      material: "m",
+    });
+    const pieces = wallColliders(a, level, wallEnds(a, [a, b]));
+    const footprint = (c: CuboidCollider) =>
+      c.outline === undefined ? 4 * c.halfExtents[0] * c.halfExtents[2] : area(c.outline);
+    const [pier, lintel, rest] = pieces;
+    expect(pieces.map((c) => c.id)).toEqual(["wall:W-a:s0", "wall:W-a:a0", "wall:W-a:s1"]);
+    expect(pier!.outline).toBeDefined();
+    expect(lintel!.outline).toBeDefined();
+    expect(rest!.outline).toBeUndefined();
+    // Side by side along the wall, the three cover its outline exactly once.
+    const whole = wallOutline(a, wallEnds(a, [a, b]));
+    expect(footprint(pier!) + footprint(lintel!) + footprint(rest!)).toBeCloseTo(area(whole), 9);
+  });
+
+  it("keeps a free-standing wall a plain box", () => {
+    expect(wallColliders(wall(), level)[0]!.outline).toBeUndefined();
   });
 });
 
