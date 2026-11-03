@@ -1,6 +1,6 @@
 ---
 summary: Layer map, dependency direction, and the document-to-pixels pipeline — how a scene JSON file becomes a rendered image.
-updated: 2026-11-02
+updated: 2026-11-03
 ---
 
 # Architecture
@@ -37,8 +37,8 @@ overwrite (2026-10-27).
 
 `packages/schema` is the bottom of the stack and must stay free of three.js,
 React, and Fastify. Inside it, `src/derive/` is the home for any computation a
-**generator and its checker both need** — a wall's angle, a field's instance
-count, a scene's room areas — under two rules: no `three` import, and two
+**generator and its checker both need** — a wall's angle and its mitred
+outline, a field's instance count, a scene's room areas — under two rules: no `three` import, and two
 callers in different packages. See `decisions.md`; it exists because nine such
 computations had drifted into duplicate copies, each living in the code that
 checked the other.

@@ -1,5 +1,5 @@
 ---
-summary: How drawing the house in the browser works (built 2026-10-27) — the plan view and its shared linework, undo and redo with grouped steps, the Wall tool's exact corners and snap order, doors, windows, rooms and floors (the linter as the fit check, faces from split walls), and New house with scenes read from the API; the calls made while building and the known corner notch.
+summary: How drawing the house in the browser works (built 2026-10-27) — the plan view and its shared linework, undo and redo with grouped steps, the Wall tool's exact corners and snap order, doors, windows, rooms and floors (the linter as the fit check, faces from split walls), and New house with scenes read from the API; the calls made while building, and how walls meet at their ends (mitred, 2026-11-03).
 updated: 2026-11-03
 ---
 
@@ -73,9 +73,35 @@ but pan and zoom).
   parse. Grips move every wall end within 1e-6 m of the corner; moving a
   `start` slides that wall's openings, since offsets run from `start`.
 
-**Known issue:** walls leave a square notch at every outside corner, because each
-wall's mesh stops square at its end
-(brief 01 mitres the ends, [decisions-geometry.md](decisions-geometry.md)).
+## Where walls meet
+
+Since 2026-11-03 a wall's end is mitred where it shares the end with another
+wall ([decisions-geometry.md](decisions-geometry.md)); before, each wall stopped
+square and left a notch outside every corner.
+
+- **One outline, three readers.** `wallEnds` in `packages/schema/src/derive/walls.ts`
+  finds the walls sharing each end (within 1e-6 m, which the Wall tool's exact
+  corners meet), and `wallOutline` turns that into the wall's plan outline. The
+  mesh is extruded from it, the collider is cut to it (a convex hull for any
+  piece that is not a rectangle) and `wallCorners` / `wallSolids` draw it.
+  Neighbours always come from the whole level, as the mesh finds them, even
+  where the sheet draws only the house.
+- **Two walls** cut each end on the line through the two points where their faces
+  cross: the bisector when they are equally thick, and still closed when not.
+- **Three or more**: each face meets the nearest wall on its own side, and the
+  end bends through the centreline point, so the walls tile the junction like
+  slices. Elmsgate's yard walls and Greenhollow's hall partitions meet that way.
+  A wall running straight on stays square, and so does one too short for both
+  its mitres.
+- **A stretch between openings** is the outline clipped square. A mitre can reach
+  past an opening's edge (0.9 m along the inside face at a 15° corner, against
+  the linter's 250 mm), and four points would have drawn that stretch as a bow
+  tie.
+- **The poché's stroke has a miter limit of 2** (`MITER_LIMIT`, sheet and plan
+  view). The outside face meets a square corner's mitre at 45°, and SVG's
+  default limit drew the join's point as a spike outside every corner.
+- The mitre shows as a joint line across the poché, where the overlapping boxes
+  drew their edges before.
 
 ## Doors, windows, rooms and floors
 

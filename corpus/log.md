@@ -1391,3 +1391,33 @@ wall's thickness, which is right only at 90°. Recorded in
 [decisions.md](wiki/decisions.md) with the geometry cache's entry, which passed 200 lines. The todo
 `walls-leave-a-notch-at-every-outside-corner` is now
 [brief 01](briefs/todo/01-wall-ends-are-mitred.md) and is deleted.
+
+## [2026-11-03] done | Brief 01 — Wall ends are mitred where walls meet
+
+[Brief 01](briefs/done/01-wall-ends-are-mitred.md). A remote session built the schema, mesh, cache
+and collider halves and was killed before committing; this session checked that work, fixed it and
+finished the drawing half. Where walls share an end, each end is cut where the faces cross, in the
+mesh, the collider and the plan, from one outline in `derive/walls.ts`
+([drawing.md](wiki/drawing.md#where-walls-meet)). **At three or more walls** each face meets the
+nearest wall on its own side and the end bends through the centreline point. Dragging a corner
+rebuilds exactly the walls whose ends change: three, for W-01 and W-04's corner.
+
+**Found on the way, fixed:**
+- A fresh `PhysicsWorld` answered every overlap and ray query "nothing": Rapier builds its broad
+  phase on a step. The overlap tests passed only because the drop tests had stepped the world
+  first. It now steps once when built.
+- A stretch beside an opening inside a sharp corner's mitre came out a bow tie in the collider and
+  the plan; `wallOutline` now clips the whole outline instead.
+- Looking at the regenerated sheets showed the poché stroke's 45° miter join as a spike outside
+  every corner; the stroke now has a miter limit of 2.
+
+**Outside the brief's file list:** `physics/src/world.ts` (the step), and the web app's
+`LevelDrawing.tsx` and `plan-view.ts`, so the plan view and Fit read the mitred ends too. The Wall
+tool's ghost stays square: it meets nothing until it is committed.
+
+**The four plan snapshots were regenerated once.** Only wall poché paths changed; the sheet sizes,
+dimensions, openings and labels are byte for byte the same. Sampled around every changed corner:
+no overlap and no gap, and the filled area is exactly the notches (Elmsgate's first floor,
+4 × 1.7² = 11.56 mm² at 1:100). Greenhollow's plan view in the browser shows its corners closed;
+the 3D viewport could not be captured headless (the screenshot times out on the WebGL canvas), so
+the mesh rests on its tests. No render series or timing runs. 691 → 712 tests.

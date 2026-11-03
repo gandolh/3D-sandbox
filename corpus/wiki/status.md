@@ -114,14 +114,13 @@ earlier ones, and the right way round.
 On 2026-10-21 the owner chose to draw the house in Solstice, Revit-style, with
 building parts only; on 2026-10-27 the plan view, undo, walls, openings, rooms,
 floors and New house were built ([drawing.md](drawing.md)). Roofs come later.
+On 2026-11-03 wall ends were mitred where walls meet, which closed the notch at
+every outside corner in the mesh, the collider and the plan alike.
 
 The two unbaked conifers were dropped from villa's forest on 2026-10-06.
 
 ## Open
 
-- **Walls leave a notch at every outside corner**
-  Brief 01 (written 2026-11-03) mitres the ends along the corner's bisector
-  ([decisions-geometry.md](decisions-geometry.md)).
 - **Roofs** cannot be drawn in the browser yet.
 - **Schema migrations**, deliberately open in [open-questions.md](open-questions.md).
 - **Path tracing needs the real GPU.** A headless browser under WSL2 falls back
