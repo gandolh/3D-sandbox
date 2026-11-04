@@ -1421,3 +1421,9 @@ no overlap and no gap, and the filled area is exactly the notches (Elmsgate's fi
 4 × 1.7² = 11.56 mm² at 1:100). Greenhollow's plan view in the browser shows its corners closed;
 the 3D viewport could not be captured headless (the screenshot times out on the WebGL canvas), so
 the mesh rests on its tests. No render series or timing runs. 691 → 712 tests.
+
+## [2026-11-04] decision | Schema migrations are no longer an open question
+
+In an estate-wide grill the owner dropped the parked migrations question. open-questions.md has
+nothing open and status.md no longer lists it; decisions-scene.md still says what counts as a
+schema bump.

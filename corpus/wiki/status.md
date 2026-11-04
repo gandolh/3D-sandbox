@@ -1,6 +1,6 @@
 ---
 summary: Dated snapshot (2026-11-02) of Solstice — what runs (three scenes, five packages, the API, the plan drawing), the audits of 2026-09-12 to 2026-10-01 and what they changed, the right-handed compass (2026-10-07), drawing the house in the browser (2026-10-27), what cannot be exercised on this machine, and what is open.
-updated: 2026-11-03
+updated: 2026-11-04
 ---
 
 # Status — 2026-11-02
@@ -122,7 +122,6 @@ The two unbaked conifers were dropped from villa's forest on 2026-10-06.
 ## Open
 
 - **Roofs** cannot be drawn in the browser yet.
-- **Schema migrations**, deliberately open in [open-questions.md](open-questions.md).
 - **Path tracing needs the real GPU.** A headless browser under WSL2 falls back
   to software, where the path tracer's shader compile does not finish; the
   flags that reach the GPU through X11 are in

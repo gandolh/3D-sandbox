@@ -1,14 +1,11 @@
 ---
 summary: Genuinely unresolved questions — deleted the moment they are answered.
-updated: 2026-11-02
+updated: 2026-11-04
 ---
 
 # Open questions
 
-- **Schema migrations.** There is still no migration mechanism and no second
-  version to migrate from. What *counts* as a bump is now settled — see
-  [decisions.md](decisions.md) — so this stays deferred deliberately rather than
-  by accident, until a change actually removes or redefines a field.
+Nothing is open.
 
 _Vine density was settled on 2026-09-11. The denoiser closed the same day: the
 denoiser work measured
