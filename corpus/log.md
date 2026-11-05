@@ -1427,3 +1427,16 @@ the mesh rests on its tests. No render series or timing runs. 691 → 712 tests.
 In an estate-wide grill the owner dropped the parked migrations question. open-questions.md has
 nothing open and status.md no longer lists it; decisions-scene.md still says what counts as a
 schema bump.
+
+## [2026-11-06] brief | SolidCraft and CADCraft against Solstice; brief 02
+
+The owner asked for one brief comparing SolidCraft, CADCraft and Solstice. The research was done
+on the day from each project's own repository and docs, pinned at SolidCraft `28dcbbc` and CADCraft
+`fc157ea`, and it lives in [brief 02](briefs/todo/02-solidcraft-and-cadcraft-against-solstice.md).
+That follows brief 74's shape. SolidCraft is B-rep solid CAD for mechanical parts, and its
+browser app is 101 MB of WASM. CADCraft is still 2D drafting with 3D at 2%, and it has doubled its
+commits since brief 74. The CADCraft link given with the request (a Codeberg repository) does not
+exist; the project is `storytold/cadcraft`. Neither has code worth taking. The idea worth taking is
+their command registry served to a headless CLI and MCP. The brief proposes a small `lint` and
+`plan` CLI first, with MCP, plan DXF export and glTF export left as owner decisions. Nothing was
+built.
