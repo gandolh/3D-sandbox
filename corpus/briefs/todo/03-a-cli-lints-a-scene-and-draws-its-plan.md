@@ -25,32 +25,45 @@ Code in the repo) runs.
 ## Owner decisions
 
 Settled on 2026-11-06 with brief 02: the CLI only, no MCP yet; no new
-dependency. Two smaller calls, with the default this brief builds:
+dependency. The two smaller calls, answered the same day:
 
-1. **Where it lives.** Default: a workspace of its own, `apps/cli`
-   (`@solstice/cli`), run with plain `node` as `scenes/build.ts` is (Node
-   22.12+ strips the types), plus a root script `npm run solstice --`.
-2. **What it checks against.** Default: the same options `scenes/build.ts`
-   passes, so the CLI and the build report the same findings for the same
-   file. If sharing them means moving that setup out of `build.ts`, move it
-   into the schema package's or the assets' module, not a copy.
+1. **Where it lives.** **A package for the shared work, and a minimal
+   CLI on top** (the owner's shape). A new workspace package (say
+   `packages/scene-tools`, `@solstice/scene-tools`) holds reading a scene
+   file, linting it with the build's options, and writing a level's plan.
+   `apps/cli` (`@solstice/cli`) only parses arguments, calls the package
+   and prints; it runs with plain `node`, as `scenes/build.ts` does, behind
+   a root script `npm run solstice --`. A later MCP server would call the
+   same package.
+2. **What it checks against.** **The same options `scenes/build.ts`
+   passes**, the real-asset list included, so the CLI and `npm run scenes`
+   report the same findings for the same file. That setup moves into the
+   package, and `scenes/build.ts` imports it from there instead of keeping
+   its own copy.
 
 ## What to do
 
-1. `lint <file>`: read the JSON, run `loadScene` with the build's options,
-   print each finding with `formatFinding`, then a one-line count. Exit 0
+0. The package: `lintSceneFile(path)` (read, parse, `loadScene` with the
+   build's options; never throws for a bad file, returns why) and
+   `planSceneFile(path, levelId?)` (refuses a scene with lint errors,
+   returns the SVG), plus the build's lint options moved out of
+   `scenes/build.ts`, which then imports them. Its own tests.
+1. `lint <file>`: through the package; print each finding with
+   `formatFinding`, then a one-line count. Exit 0
    with no errors (warnings allowed), 1 with errors, 2 when the file can't
    be read or isn't JSON. `--json` prints the findings as JSON instead,
    for an agent.
-2. `plan <file> [--level <id>] [--out <path>]`: write `planSvg` for the
-   level (the first by default) to `--out`, or to stdout. Refuse a file
-   with lint errors, printing them, since a plan of a broken scene
-   misleads.
+2. `plan <file> [--level <id>] [--out <path>]`: through the package; write
+   the level's plan (the first by default) to `--out`, or to stdout. A file
+   with lint errors is refused with them printed, since a plan of a broken
+   scene misleads.
 3. `--help` and an unknown command print the usage; a missing argument
    says which.
-4. Tests (Vitest): each command on one builder scene and one fixture with a
-   known error, the exit codes, `--json`, and a plan that matches
-   `planSvg`'s output for the same input.
+4. Tests (Vitest): the package's two functions on one builder scene and
+   one fixture with a known error; the CLI's exit codes and `--json`
+   through a thin test of argument handling; a plan that matches
+   `planSvg`'s output for the same input; `npm run scenes` unchanged after
+   the options move.
 5. Docs: a short section in the README's development part, and a page or
    section in `corpus/wiki/` naming the loop an agent runs (edit the JSON,
    `lint`, `plan`, look at the SVG). Log entry.

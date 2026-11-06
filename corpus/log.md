@@ -1449,3 +1449,10 @@ the CLI first for agents. Brief 02 moved to `done/`; brief 03 (a CLI that
 lints a scene file and draws its plan) is filed as 3D-sandbox-03. Recorded
 in [decisions.md](wiki/decisions.md), "Agents get a CLI; no constraint
 solver".
+
+## [2026-11-06] decision | Brief 03: a shared package and a minimal CLI
+
+The owner took both of brief 03's calls with one change of shape: the work
+lives in a new package (reading, linting with the build's options, drawing
+a plan), which `scenes/build.ts` and a later MCP server can use too, and
+`apps/cli` stays a thin wrapper over it.
