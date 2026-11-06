@@ -170,3 +170,15 @@ cache, mitred ends) live in [decisions-geometry.md](decisions-geometry.md).
 Decisions about **how a scene is modelled and authored** — roof association,
 material colour, plot orientation, the asset manifest, schema versioning — live
 in [decisions-scene.md](decisions-scene.md). This page is the stack.
+
+## Agents get a CLI; no constraint solver
+_2026-11-06_ — Of SolidCraft and CADCraft (compared in brief 02), Solstice
+takes one idea: a scene reachable from outside the app, starting with a
+headless CLI that lints a scene file and draws its plan (brief 03). An MCP
+server over it is a later "if wanted". Rejected: forking, vendoring or
+depending on either project; a constraint solver (dimension-driven walls
+would go to a grill first); DXF plan export and glTF export until someone
+needs them. **Why**: the document is already the tool vocabulary ("No LLM
+inside the application"), so an agent needs a checked loop, not a second
+kernel; both projects were about four weeks old and growing by agents at
+high speed.

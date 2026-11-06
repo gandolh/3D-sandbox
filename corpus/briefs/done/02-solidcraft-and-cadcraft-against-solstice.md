@@ -189,3 +189,18 @@ within a month. Neither is something to depend on. Both are good to read for how
 - The owner has answered the five decisions, and the answers are in this brief's outcome.
 - Each yes has a build brief in `briefs/todo/`.
 - Any new or revisited decision is in `decisions.md` with its date and why, plus a `log.md` note.
+
+## Outcome (2026-11-06)
+
+The owner answered the five decisions, each with the recommendation:
+
+1. SolidCraft and CADCraft stay **references only**: no fork, no crate, no
+   dependency.
+2. **No constraint solver.**
+3. **Agent interface: the CLI first.** Brief 03 (`lint` and `plan`). MCP
+   stays a later "if wanted", not briefed.
+4. **No DXF plan export** until someone needs to send a plan elsewhere.
+5. **No glTF export**, the same.
+
+Recorded in [decisions.md](../../wiki/decisions.md), "Agents get a CLI;
+no constraint solver", and in `log.md`.

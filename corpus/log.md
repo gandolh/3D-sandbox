@@ -1440,3 +1440,12 @@ exist; the project is `storytold/cadcraft`. Neither has code worth taking. The i
 their command registry served to a headless CLI and MCP. The brief proposes a small `lint` and
 `plan` CLI first, with MCP, plan DXF export and glTF export left as owner decisions. Nothing was
 built.
+
+## [2026-11-06] decision | SolidCraft and CADCraft answered; brief 03, a CLI
+
+The owner answered brief 02's five decisions with its recommendations:
+references only, no constraint solver, no DXF or glTF export for now, and
+the CLI first for agents. Brief 02 moved to `done/`; brief 03 (a CLI that
+lints a scene file and draws its plan) is filed as 3D-sandbox-03. Recorded
+in [decisions.md](wiki/decisions.md), "Agents get a CLI; no constraint
+solver".
