@@ -1456,3 +1456,30 @@ The owner took both of brief 03's calls with one change of shape: the work
 lives in a new package (reading, linting with the build's options, drawing
 a plan), which `scenes/build.ts` and a later MCP server can use too, and
 `apps/cli` stays a thin wrapper over it.
+
+## [2026-11-06] build | Brief 03: a CLI lints a scene file and draws its plan
+
+`npm run solstice -- lint <file>` and `plan <file>` work on any scene file,
+including a drawn one with no builder, which nothing outside the browser and
+the API checked before. The shared work is a new package,
+`@solstice/scene-tools`: `lintSceneFile`, `planSceneFile` and
+`sceneLintOptions`, the asset lists that moved out of `scenes/build.ts`.
+The build now imports them, and its output and the three scene files are
+unchanged. `apps/cli` parses arguments with `parseArgs`, calls the package
+and prints; no new dependency. The loop for an agent, the exit codes and the
+npm traps are in [scene-tools.md](wiki/scene-tools.md).
+
+**Decided while building.** The package ships TypeScript source run by
+Node's type-stripping, as `scenes/build.ts` is, rather than a `dist/`: it
+reads `assets/manifest.ts` and `assets/verified.json` where they are, and a
+compiled package cannot import outside its `src/`. A new
+`npm run typecheck:tools` covers it and the CLI, and `npm run check` runs
+it. Usage mistakes exit 2, with unreadable files, so exit 1 always means
+"fix the scene". `plan --level` with an id the scene lacks is refused;
+`planSvg` would have drawn the first level.
+
+24 tests added, in `packages/scene-tools/test/` and `apps/cli/test/`. Run:
+lint, `typecheck`, `typecheck:scenes`, `typecheck:tools`, `npm run scenes`,
+the new tests and two neighbours, the corpus lint, and the acceptance by
+hand. Not run: the full `npm test` and `build:web`, to spare the shared
+machine; the change touches neither the web app nor the existing packages.

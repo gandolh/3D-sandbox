@@ -1,6 +1,6 @@
 ---
 summary: Locked technical and design calls with the reasons behind them — read before proposing an alternative, so settled trade-offs are not relitigated.
-updated: 2026-11-03
+updated: 2026-11-06
 ---
 
 # Decisions
@@ -182,3 +182,6 @@ needs them. **Why**: the document is already the tool vocabulary ("No LLM
 inside the application"), so an agent needs a checked loop, not a second
 kernel; both projects were about four weeks old and growing by agents at
 high speed.
+- *Built* 2026-11-06: `npm run solstice -- lint|plan <file>` over a shared
+  package, `@solstice/scene-tools`, which the scene build uses too
+  ([scene-tools.md](scene-tools.md)).

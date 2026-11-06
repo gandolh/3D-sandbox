@@ -1,6 +1,6 @@
 ---
 summary: What Solstice is, who authors what, and the top-level layout — read this first if you have never seen the project.
-updated: 2026-10-21
+updated: 2026-11-06
 ---
 
 # Overview
@@ -36,6 +36,7 @@ a language model and the thing reading it is a geometry generator.
 | `packages/physics/` | Colliders derived from the document; drop-to-rest |
 | `apps/web/` | Browser editor and path-traced renderer |
 | `apps/api/` | Fastify persistence API |
+| `packages/scene-tools/`, `apps/cli/` | A scene file linted and its plan drawn outside the app: `npm run solstice -- lint\|plan` ([scene-tools.md](scene-tools.md)) |
 | `assets/` | Manifest, download-list generator, impostor bake harness |
 | `corpus/` | This wiki |
 

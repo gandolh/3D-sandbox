@@ -1,6 +1,6 @@
 ---
 summary: Layer map, dependency direction, and the document-to-pixels pipeline — how a scene JSON file becomes a rendered image.
-updated: 2026-11-03
+updated: 2026-11-06
 ---
 
 # Architecture
@@ -23,6 +23,10 @@ packages/schema          ← depends on nothing but zod
       │         │
       │         └──► apps/web  (the four above → WebGL2 → path tracer)
       │
+      ├──► packages/scene-tools  (a scene file → lint with the build's options,
+      │         │                  plan SVG; reads assets/; source, not dist/)
+      │         └──► scenes/build.ts, apps/cli  (npm run solstice -- lint|plan)
+      │
       └──► apps/api            (Fastify; validates on write, never stores invalid)
 
 assets/                  ← manifest, download list, impostor bake harness
@@ -34,6 +38,11 @@ bundled at build time when it does not, so the static deploy still works. A
 scene drawn in the browser has no builder; the listing's `hasBuilder` is how
 the editor knows to warn before drawing in one the next scene build would
 overwrite (2026-10-27).
+
+`packages/scene-tools` works on a scene *file* for callers outside the app,
+and ships TypeScript source run by Node rather than a `dist/`, because it reads
+the asset lists in `assets/` where they are (2026-11-06,
+[scene-tools.md](scene-tools.md)).
 
 `packages/schema` is the bottom of the stack and must stay free of three.js,
 React, and Fastify. Inside it, `src/derive/` is the home for any computation a

@@ -1,6 +1,6 @@
 ---
-summary: Dated snapshot (2026-11-02) of Solstice — what runs (three scenes, five packages, the API, the plan drawing), the audits of 2026-09-12 to 2026-10-01 and what they changed, the right-handed compass (2026-10-07), drawing the house in the browser (2026-10-27), what cannot be exercised on this machine, and what is open.
-updated: 2026-11-04
+summary: Dated snapshot (2026-11-02) of Solstice — what runs (three scenes, five packages, the API, the plan drawing), the audits of 2026-09-12 to 2026-10-01 and what they changed, the right-handed compass (2026-10-07), drawing the house in the browser (2026-10-27), the scene CLI (2026-11-06), what cannot be exercised on this machine, and what is open.
+updated: 2026-11-06
 ---
 
 # Status — 2026-11-02
@@ -116,6 +116,12 @@ building parts only; on 2026-10-27 the plan view, undo, walls, openings, rooms,
 floors and New house were built ([drawing.md](drawing.md)). Roofs come later.
 On 2026-11-03 wall ends were mitred where walls meet, which closed the notch at
 every outside corner in the mesh, the collider and the plan alike.
+
+On 2026-11-06 a scene file became checkable outside the app:
+`npm run solstice -- lint` and `plan`, over the `@solstice/scene-tools`
+package that `npm run scenes` now shares, so a drawn scene with no builder
+gets the same lint as a built one ([scene-tools.md](scene-tools.md)). No MCP
+server yet.
 
 The two unbaked conifers were dropped from villa's forest on 2026-10-06.
 

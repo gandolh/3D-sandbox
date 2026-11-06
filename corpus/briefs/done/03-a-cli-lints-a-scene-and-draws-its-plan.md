@@ -77,3 +77,38 @@ dependency. The two smaller calls, answered the same day:
   writes an SVG that opens in a browser.
 - A copy of a scene with an opening wider than its wall exits 1 with that
   finding named.
+
+## Outcome (2026-11-06)
+
+Built in `57e091d`. `npm run solstice -- lint <file>` (with `--json`) and
+`plan <file> [--level <id>] [--out <path>]` run over a new package,
+`@solstice/scene-tools` (`lintSceneFile`, `planSceneFile`,
+`sceneLintOptions`), and `scenes/build.ts` imports its lint options from
+there. `npm run scenes` printed the same lines before and after, and the
+three scene files did not change. The loop for an agent is in
+[scene-tools.md](../../wiki/scene-tools.md).
+
+Decided while building:
+
+- **The package ships source, not `dist/`.** It reads
+  `assets/manifest.ts` and `assets/verified.json` where they are, one copy
+  of each, and a compiled package cannot import outside its `src/`; so it
+  runs under Node's type-stripping as `scenes/build.ts` does, with `.ts`
+  relative imports. `npm run typecheck:tools` checks it and `apps/cli`, and
+  `npm run check` now runs that.
+- **Exit 2 also covers usage mistakes**, so exit 1 always means the scene
+  needs fixing.
+- **`plan` refuses an unknown `--level`.** `planSvg` falls back to the
+  first level, which would draw the wrong plan without a word.
+- **Run through npm with `-s` to read stdout**: npm prints its header on
+  stdout. Relative paths resolve against the folder the command was typed
+  in (`INIT_CWD`).
+
+Acceptance, by hand: `lint scenes/greenhollow.scene.json` prints the same
+(zero) findings as `npm run scenes` and exits 0; `plan ... --out` writes an
+SVG that parses as SVG and equals `planSvg`'s output; a copy of Greenhollow
+with `d-living` wider than its wall exits 1 naming `opening-fits-wall`.
+`npm run check`'s light parts pass (lint, the four typechecks minus
+`typecheck:web`, `npm run scenes`, the new tests, the corpus lint). Not run:
+`typecheck:web`, the full `npm test` and `build:web`, to spare the shared
+machine; nothing in the web app changed.
