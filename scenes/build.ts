@@ -10,7 +10,7 @@
 import { readdir, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-
+import { sceneLintOptions } from "@solstice/scene-tools";
 import {
   formatFinding,
   loadScene,
@@ -19,43 +19,13 @@ import {
   scheduleOfAreas,
   serializeScene,
 } from "@solstice/schema";
-import { knownAssets } from "../assets/manifest.ts";
-import verified from "../assets/verified.json" with { type: "json" };
 
-/**
- * What `asset-resolves` is checked against: everything known to be **real**,
- * whether or not it is on this machine.
- *
- * The rule that matters is *this slug exists*. Eight of Greenhollow's were
- * invented and nothing caught them, because the rule had never been armed at
- * all. Whether a file has been fetched is a different question, and not one a
- * scene document can be wrong about.
- *
- * An earlier version made "downloaded" the stricter standard: if anything was
- * present, a scene could only name what was present. That is incoherent here,
- * because *not* downloading some assets is the designed state — Poly Haven's
- * three trees are 1.5 GB of mesh and `download.sh` deliberately skips them. The
- * strict rule and the heavy-asset split were written an hour apart and
- * contradicted each other; every build failed.
- *
- * A missing *file* is the generator's problem, and it already has an answer:
- * fall back to the proxy. A missing *asset* is the author's problem, and that
- * is what this catches.
- */
-const downloaded = await knownAssets();
-const assets = new Set([...verified.assets, ...downloaded]);
+// The asset lists `asset-resolves` and `material-slug-resolves` check against,
+// shared with the CLI so both report the same findings for the same scene.
+const lint = await sceneLintOptions();
 console.log(
-  `  manifest: ${downloaded.size} downloaded, ${verified.assets.length} verified — ${assets.size} known`,
+  `  manifest: ${lint.downloaded} downloaded, ${lint.verified} verified — ${lint.options.knownAssets.size} known`,
 );
-
-/**
- * The same, for `material-slug-resolves`. The manifest does not tell models from
- * materials, so `downloaded` is shared; a material slug that only exists as a
- * model directory is not a case worth a second scan. A scene that adds a
- * material fails here until `npm run assets` has verified it, which is how
- * `ambientcg/PavingStones137` went missing from `verified.json` unnoticed.
- */
-const materials = new Set([...verified.materials, ...downloaded]);
 
 const here = dirname(fileURLToPath(import.meta.url));
 const srcDir = join(here, "src");
@@ -80,7 +50,7 @@ for (const entry of entries) {
   }
 
   try {
-    const { document, findings } = loadScene(mod.default, { knownAssets: assets, knownMaterials: materials });
+    const { document, findings } = loadScene(mod.default, lint.options);
     const out = join(here, `${document.id}.scene.json`);
     await writeFile(out, serializeScene(document), "utf8");
 

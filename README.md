@@ -48,6 +48,17 @@ Then open <http://localhost:5173>. Greenhollow opens first. Until you fetch the 
 
 Editing a scene, the optional API, assets, GPU flags and env vars: [docs/getting-started.md](docs/getting-started.md).
 
+## Lint a scene and draw its plan
+
+Any scene file can be checked without the app, including one drawn in the browser, which has no builder for `npm run scenes` to check:
+
+```bash
+npm run solstice -- lint scenes/greenhollow.scene.json
+npm run solstice -- plan scenes/greenhollow.scene.json --out /tmp/greenhollow.svg
+```
+
+`lint` uses the options `npm run scenes` uses, real-asset list included, so both report the same findings; `--json` prints them as JSON. `plan` draws a level's floor plan as SVG, the first level unless `--level <id>` names another, and refuses a scene with lint errors. Exit codes: 0 no errors (warnings allowed), 1 lint errors or no plan drawn, 2 the file can't be read or isn't JSON, or a usage mistake. Add `-s` (`npm run -s solstice -- ...`) when you read stdout, so npm's header stays out of the JSON or the SVG. An agent's loop is: edit the JSON, `lint`, `plan`, look at the SVG.
+
 ## Project layout
 
 | Path | What lives there |
@@ -58,8 +69,10 @@ Editing a scene, the optional API, assets, GPU flags and env vars: [docs/getting
 | `packages/physics` | Colliders derived from the document, and drop-to-rest |
 | `packages/drawing` | Document to an SVG floor plan, with no GPU or DOM |
 | `packages/animation` | Timeline tracks, evaluated headlessly |
+| `packages/scene-tools` | A scene file read, linted with the build's options, and its plan drawn; used by the scene build and the CLI |
 | `apps/web` | The editor and renderer: Vite, React and three.js |
 | `apps/api` | Optional Fastify API; scene files are the truth, SQLite only indexes them |
+| `apps/cli` | `npm run solstice --`: `lint` and `plan` for a scene file |
 | `scenes` | The three scenes: TypeScript sources and the generated `.scene.json` |
 | `assets` | Asset manifest, download-list generator and the impostor bake harness |
 | `assets-src` | Download scripts and list; the downloads themselves are gitignored |

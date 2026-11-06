@@ -1,0 +1,13 @@
+{
+  "name": "@solstice/scene-tools",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@solstice/drawing": "0.1.0",
+    "@solstice/schema": "0.1.0"
+  }
+}
