@@ -1483,3 +1483,8 @@ lint, `typecheck`, `typecheck:scenes`, `typecheck:tools`, `npm run scenes`,
 the new tests and two neighbours, the corpus lint, and the acceptance by
 hand. Not run: the full `npm test` and `build:web`, to spare the shared
 machine; the change touches neither the web app nor the existing packages.
+
+## [2026-11-10] brief | 04 Base UI 1.9.0 built
+
+`@base-ui/react` 1.8.0 to 1.9.0, pinned exactly in `apps/web/package.json` (f9a65a7). Lockfile moved only Base UI's
+own tree. Typecheck, 261 web tests and the web build pass; no source change. The 1.8.0 entry above stays as history.

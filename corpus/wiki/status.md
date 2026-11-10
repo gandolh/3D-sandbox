@@ -9,6 +9,7 @@ updated: 2026-11-06
 briefs reset) are not pushed. `npm run check` is the gate and runs by hand.
 Brief numbering restarted at 01 on 2026-11-02 (see [log.md](../log.md),
 "Briefs reset"); brief 01 is open (2026-11-03).
+Base UI is on 1.9.0, pinned exactly (brief 04, 2026-11-10).
 
 ## Where things stand
 

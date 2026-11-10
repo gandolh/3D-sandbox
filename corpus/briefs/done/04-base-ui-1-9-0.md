@@ -88,3 +88,12 @@ One commit for the whole bump, after step 1 is recorded.
 
 - Brief 06 builds on 1.9.0, so its wrappers are written against the 1.9.0 types.
 - The bump is a one-line dependency change in a game repo. It needs no deploy: the static client is published by the estate's deploy repo, by the owner.
+
+## Outcome (2026-11-10)
+
+Commit f9a65a7, `chore(deps): @base-ui/react 1.9.0`. `apps/web/package.json` pins `1.9.0` exactly; the lockfile
+stays hoisted with one copy, and the diff is the 26 lines the brief predicted (`@base-ui/utils` 0.4.0 to 0.5.0 and the
+range changes). Baseline on 1.8.0 and after: `typecheck:web` exit 0, `vitest run apps/web` 22 files and 261 tests,
+`build:web` exit 0. The OTP/`sanitizeValue` grep prints nothing. Not done: the changelog read (GitHub unreachable)
+and the browser look at the `ScrollArea` thumb in the Inspector and scene tree. Board: moved to done, since the
+brief says it needs no deploy; the static client carries 1.9.0 at the next estate publish.
