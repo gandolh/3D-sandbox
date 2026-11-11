@@ -1,3 +1,4 @@
+import { serializerCompiler, validatorCompiler } from "@fastify/type-provider-zod";
 import Fastify, { type FastifyInstance, type FastifyServerOptions } from "fastify";
 import type { Config } from "./config.js";
 import { healthRoutes } from "./features/health/index.js";
@@ -21,7 +22,7 @@ export interface BuildAppOptions {
  * rebuildable cache beside them; it stores nothing authoritative and re-implements none of the validation that
  * already lives in `@solstice/schema`.
  *
- * It registers in a fixed order: the app's own plugins (CORS, errors), then each feature, handed the config
+ * It registers in a fixed order: the zod compilers, the app's own plugins (CORS, errors), then each feature, handed the config
  * and the index as its options. Closing it closes the index.
  */
 export async function buildApp(config: Config, options: BuildAppOptions = {}): Promise<BuiltApp> {
@@ -29,6 +30,9 @@ export async function buildApp(config: Config, options: BuildAppOptions = {}): P
   await index.reindex(config.scenesDir);
 
   const app = Fastify(options.server);
+  // Zod checks each request and encodes each reply, in every plugin registered below.
+  app.setValidatorCompiler(validatorCompiler);
+  app.setSerializerCompiler(serializerCompiler);
 
   // The app's own plugins, fastify-plugin wrapped so they reach every feature.
   await app.register(corsPolicy, { allowedOrigins: config.allowedOrigins });

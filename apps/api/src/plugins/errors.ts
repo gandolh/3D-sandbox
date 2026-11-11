@@ -1,3 +1,4 @@
+import { ResponseSerializationError } from "@fastify/type-provider-zod";
 import { SceneValidationError } from "@solstice/schema";
 import type { FastifyPluginAsync } from "fastify";
 import fp from "fastify-plugin";
@@ -26,7 +27,8 @@ function statusOf(error: unknown): number | undefined {
  * - A 4xx that Fastify raised (an empty or malformed JSON body, a body over the limit) keeps its status and
  *   its message, which Fastify writes for clients.
  * - Anything else is a 500 with a fixed message, logged with the request. Its own message is as likely to be a
- *   filesystem path or a stack detail as anything a caller can act on, so it never reaches the client.
+ *   filesystem path or a stack detail as anything a caller can act on, so it never reaches the client. A reply
+ *   its response schema refuses is such a 500, logged with the schema's issues.
  */
 const errorHandling: FastifyPluginAsync = async (app) => {
   app.setErrorHandler((error: unknown, request, reply) => {
@@ -45,7 +47,15 @@ const errorHandling: FastifyPluginAsync = async (app) => {
       const message = error instanceof Error ? error.message : "The request is not valid.";
       return reply.code(status).send({ error: clientErrorCode(status), message });
     }
-    request.log.error({ err: error }, "unhandled error");
+    if (error instanceof ResponseSerializationError) {
+      // A handler sent what its response schema doesn't allow: a bug to fix, never the client's fault.
+      request.log.error(
+        { err: error, issues: error.cause.issues },
+        `${error.method} ${error.url}: the reply doesn't match its schema`,
+      );
+    } else {
+      request.log.error({ err: error }, "unhandled error");
+    }
     return reply.code(ERROR_STATUS.internal).send({ error: "internal", message: "The API failed; its log says why." });
   });
 
