@@ -42,5 +42,6 @@ export const randomBetween = (rng: () => number, min: number, max: number): numb
 
 export const pick = <T>(rng: () => number, items: readonly T[]): T => {
   if (items.length === 0) throw new Error("pick: empty list");
-  return items[Math.min(items.length - 1, Math.floor(rng() * items.length))]!;
+  return itemAt(items, Math.min(items.length - 1, Math.floor(rng() * items.length)));
 };
+import { itemAt } from "../item-at.js";
