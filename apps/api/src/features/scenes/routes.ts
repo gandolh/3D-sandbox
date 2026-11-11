@@ -1,8 +1,9 @@
-import type { FastifyPluginAsync } from "fastify";
+import type { FastifyPluginAsyncZod } from "@fastify/type-provider-zod";
 import type { Config } from "../../config.js";
 import { SceneNotFoundError, UnsafeIdError } from "./errors.js";
 import { deleteSceneFile, hasBuilder, readSceneFile, sceneMtime, writeSceneFile } from "./files.js";
 import { type SceneIndex, summarize } from "./index-db.js";
+import { sceneListSchema } from "./schemas.js";
 
 /** What the scene routes take from the app: where the scene files are, and the index over them. */
 export interface ScenesOptions {
@@ -14,12 +15,12 @@ export interface ScenesOptions {
  * Six routes over the scene files: list, read, create, replace, delete and rescan. They read and write JSON
  * files and keep the index beside them current; validation is `loadScene`'s, in the file store.
  */
-export const sceneRoutes: FastifyPluginAsync<ScenesOptions> = async (app, { config, index }) => {
+export const sceneRoutes: FastifyPluginAsyncZod<ScenesOptions> = async (app, { config, index }) => {
   /**
    * The index, plus `hasBuilder` per scene: whether `npm run scenes` would
    * overwrite it. The browser warns before drawing in one that it would.
    */
-  app.get("/api/scenes", async () => ({
+  app.get("/api/scenes", { schema: { response: { 200: sceneListSchema } } }, async () => ({
     scenes: await Promise.all(
       index.list().map(async (scene) => ({ ...scene, hasBuilder: await hasBuilder(config.scenesDir, scene.id) })),
     ),
