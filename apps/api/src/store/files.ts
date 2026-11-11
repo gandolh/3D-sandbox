@@ -1,38 +1,10 @@
 import { type FileHandle, open, readdir, readFile, rename, rm, stat, unlink } from "node:fs/promises";
 import { basename, join, resolve, sep } from "node:path";
 import { loadScene, type SceneDocument, SceneValidationError, serializeScene } from "@solstice/schema";
+import { SceneNotFoundError, StalePreconditionError, UnsafeIdError } from "../features/scenes/errors.js";
 
 const SLUG = /^[A-Za-z][A-Za-z0-9_-]*$/;
 const SUFFIX = ".scene.json";
-
-export class UnsafeIdError extends Error {
-  constructor(id: string) {
-    super(`"${id}" is not a valid scene id — letters, digits, hyphen and underscore only`);
-    this.name = "UnsafeIdError";
-  }
-}
-
-export class StalePreconditionError extends Error {
-  // Not parameter properties: they need code generated for the assignments,
-  // and this package is run straight from source by `npm run api`, where
-  // Node strips types rather than compiling them.
-  readonly id: string;
-  readonly current: number;
-
-  constructor(id: string, current: number) {
-    super(`Scene "${id}" has changed on disk since you read it`);
-    this.name = "StalePreconditionError";
-    this.id = id;
-    this.current = current;
-  }
-}
-
-export class SceneNotFoundError extends Error {
-  constructor(id: string) {
-    super(`No scene "${id}"`);
-    this.name = "SceneNotFoundError";
-  }
-}
 
 /**
  * An id becomes a filename, so this is the security boundary, not a nicety.

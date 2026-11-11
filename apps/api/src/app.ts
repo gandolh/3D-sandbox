@@ -1,17 +1,9 @@
 import cors from "@fastify/cors";
-import { SceneValidationError } from "@solstice/schema";
-import Fastify, { type FastifyInstance } from "fastify";
+import Fastify, { type FastifyInstance, type FastifyServerOptions } from "fastify";
 import type { Config } from "./config.js";
-import {
-  deleteSceneFile,
-  hasBuilder,
-  readSceneFile,
-  SceneNotFoundError,
-  StalePreconditionError,
-  sceneMtime,
-  UnsafeIdError,
-  writeSceneFile,
-} from "./store/files.js";
+import { SceneNotFoundError, UnsafeIdError } from "./features/scenes/errors.js";
+import { errors } from "./plugins/errors.js";
+import { deleteSceneFile, hasBuilder, readSceneFile, sceneMtime, writeSceneFile } from "./store/files.js";
 import { SceneIndex, summarize } from "./store/index-db.js";
 
 /** The app, and the index it serves, which tests read to check what a route changed. */
@@ -20,16 +12,21 @@ export interface BuiltApp {
   index: SceneIndex;
 }
 
+export interface BuildAppOptions {
+  /** Fastify's options that belong to the process: server.ts sets the logger, and a test leaves it out. */
+  server?: Pick<FastifyServerOptions, "logger">;
+}
+
 /**
  * Seven routes. The service reads and writes JSON files and keeps a rebuildable
  * cache beside them; it stores nothing authoritative and re-implements none of
  * the validation that already lives in `@solstice/schema`.
  */
-export async function buildApp(config: Config): Promise<BuiltApp> {
+export async function buildApp(config: Config, options: BuildAppOptions = {}): Promise<BuiltApp> {
   const index = new SceneIndex(config.databasePath);
   await index.reindex(config.scenesDir);
 
-  const app = Fastify({ logger: false });
+  const app = Fastify(options.server);
 
   /**
    * One named origin, not `true`.
@@ -48,30 +45,7 @@ export async function buildApp(config: Config): Promise<BuiltApp> {
    */
   await app.register(cors, { origin: config.allowedOrigins });
 
-  app.setErrorHandler((error, _request, reply) => {
-    if (error instanceof SceneValidationError) {
-      return reply.code(422).send({ error: "invalid_document", findings: error.findings });
-    }
-    if (error instanceof UnsafeIdError) {
-      return reply.code(400).send({ error: "invalid_id", message: error.message });
-    }
-    if (error instanceof StalePreconditionError) {
-      return reply.code(409).send({ error: "stale", message: error.message, mtime: error.current });
-    }
-    if (error instanceof SceneNotFoundError) {
-      return reply.code(404).send({ error: "not_found", message: error.message });
-    }
-    if (error instanceof SyntaxError) {
-      return reply.code(400).send({ error: "invalid_json", message: error.message });
-    }
-    // Everything above this line is the API deliberately explaining itself —
-    // lint findings, a bad id, a missing scene. Below it is a failure nobody
-    // anticipated, whose message is as likely to be a filesystem path or a
-    // stack detail as anything a caller can act on. Logged in full, reported as
-    // a fact.
-    app.log.error(error);
-    return reply.code(500).send({ error: "internal" });
-  });
+  await app.register(errors);
 
   // No `scenesDir`: a health check that publishes an absolute filesystem path
   // is telling an unauthenticated caller the layout of the host. Whether one is
