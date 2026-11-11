@@ -1,3 +1,4 @@
+import { itemAt } from "@solstice/schema";
 import * as THREE from "three";
 import type { ScatterInstance } from "./scatter.js";
 
@@ -116,9 +117,9 @@ export function buildImpostorGeometry(
       const nz = Math.cos(angle);
 
       for (const corner of [0, 1, 2, 0, 2, 3]) {
-        positions.push(...corners[corner]!);
+        positions.push(...itemAt(corners, corner));
         normals.push(nx, 0, nz);
-        uvs.push(...uv[corner]!);
+        uvs.push(...itemAt(uv, corner));
       }
     }
   }
