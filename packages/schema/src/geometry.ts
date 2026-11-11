@@ -1,3 +1,4 @@
+import { itemAt } from "./item-at.js";
 import type { M } from "./units.js";
 
 /** A point on the ground plane. Y-up means plan space is XZ. */
@@ -19,8 +20,8 @@ export const length = (a: Plan, b: Plan): M => Math.hypot(b[0] - a[0], b[1] - a[
 export function signedArea(poly: Polygon): number {
   let sum = 0;
   for (let i = 0; i < poly.length; i++) {
-    const p = poly[i]!;
-    const q = poly[(i + 1) % poly.length]!;
+    const p = itemAt(poly, i);
+    const q = itemAt(poly, (i + 1) % poly.length);
     sum += p[0] * q[1] - q[0] * p[1];
   }
   return sum / 2;
@@ -39,8 +40,8 @@ export function pointInPolygon(point: Plan, polygon: Polygon): boolean {
   const [x, z] = point;
   let inside = false;
   for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
-    const a = polygon[i]!;
-    const b = polygon[j]!;
+    const a = itemAt(polygon, i);
+    const b = itemAt(polygon, j);
     const intersects = a[1] > z !== b[1] > z && x < ((b[0] - a[0]) * (z - a[1])) / (b[1] - a[1]) + a[0];
     if (intersects) inside = !inside;
   }
@@ -117,7 +118,7 @@ export function polygonNetArea(outer: Polygon, holes: readonly Polygon[]): numbe
   const edges = all.flatMap(edgesOf);
   for (let i = 0; i < edges.length; i++) {
     for (let j = i + 1; j < edges.length; j++) {
-      const z = crossingZ(edges[i]!, edges[j]!);
+      const z = crossingZ(itemAt(edges, i), itemAt(edges, j));
       if (z !== null) zs.add(z);
     }
   }
@@ -125,8 +126,8 @@ export function polygonNetArea(outer: Polygon, holes: readonly Polygon[]): numbe
   const sorted = [...zs].sort((a, b) => a - b);
   let total = 0;
   for (let i = 1; i < sorted.length; i++) {
-    const z0 = sorted[i - 1]!;
-    const z1 = sorted[i]!;
+    const z0 = itemAt(sorted, i - 1);
+    const z1 = itemAt(sorted, i);
     const height = z1 - z0;
     if (height <= 0) continue;
     const covered = coveredAt(outer, holes, (z0 + z1) / 2);
@@ -137,7 +138,7 @@ export function polygonNetArea(outer: Polygon, holes: readonly Polygon[]): numbe
 
 type Edge = readonly [Plan, Plan];
 
-const edgesOf = (poly: Polygon): Edge[] => poly.map((p, i) => [p, poly[(i + 1) % poly.length]!] as Edge);
+const edgesOf = (poly: Polygon): Edge[] => poly.map((p, i) => [p, itemAt(poly, (i + 1) % poly.length)] as Edge);
 
 /** The z where two segments properly cross, or null. */
 function crossingZ(a: Edge, b: Edge): number | null {
@@ -178,7 +179,7 @@ function spansAt(poly: Polygon, z: number): Span[] {
   }
   xs.sort((a, b) => a - b);
   const out: Span[] = [];
-  for (let i = 0; i + 1 < xs.length; i += 2) out.push([xs[i]!, xs[i + 1]!]);
+  for (let i = 0; i + 1 < xs.length; i += 2) out.push([itemAt(xs, i), itemAt(xs, i + 1)]);
   return out;
 }
 
