@@ -1,3 +1,4 @@
+import { itemAt } from "../../item-at.js";
 import { POST_WIDTH } from "../../derive/constants.js";
 import type { RawFinding, Rule } from "../types.js";
 
@@ -18,8 +19,8 @@ export const runIsWellFormed: Rule = {
       const path = `subject.runs[${i}]`;
       let length = 0;
       for (let j = 1; j < run.path.length; j++) {
-        const a = run.path[j - 1]!;
-        const b = run.path[j]!;
+        const a = itemAt(run.path, j - 1);
+        const b = itemAt(run.path, j);
         const step = Math.hypot(b[0] - a[0], b[1] - a[1]);
         if (step < 1e-3) {
           out.push({
