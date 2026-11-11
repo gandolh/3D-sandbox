@@ -257,10 +257,15 @@ export class SandboxEngine {
     this.ambient.intensity = lighting.ambientIntensity;
 
     const uniforms = this.sky.material.uniforms;
-    uniforms.turbidity!.value = lighting.sky.turbidity;
-    uniforms.rayleigh!.value = lighting.sky.rayleigh;
-    uniforms.mieCoefficient!.value = 0.005;
-    uniforms.mieDirectionalG!.value = 0.8;
+    const uniform = (name: string) => {
+      const found = uniforms[name];
+      if (found === undefined) throw new Error(`The sky shader has no "${name}" uniform`);
+      return found;
+    };
+    uniform("turbidity").value = lighting.sky.turbidity;
+    uniform("rayleigh").value = lighting.sky.rayleigh;
+    uniform("mieCoefficient").value = 0.005;
+    uniform("mieDirectionalG").value = 0.8;
     // The **true** direction, not the light's clamped one.
     //
     // These were the same vector, and that is the bug: the clamp exists to keep
@@ -271,7 +276,7 @@ export class SandboxEngine {
     // tracer's environment, built from the same unclamped direction the render
     // path uses, correctly saw night. Scrub past sunset, see dusk, press
     // Render, get night.
-    uniforms.sunPosition!.value.set(direction.x, direction.y, direction.z).normalize();
+    uniform("sunPosition").value.set(direction.x, direction.y, direction.z).normalize();
 
     // Below the horizon three's `Sky` drives its whole result from
     // `sunIntensity(dot(sun, up))`, which is 0 there — so the dome would paint
@@ -368,7 +373,7 @@ export class SandboxEngine {
 
     const hits = this.raycaster.intersectObject(this.generated.subject, true);
     const first = hits[0]?.object;
-    const id = first?.name.includes(":") === true ? first.name.split(":")[1]! : null;
+    const id = first?.name.includes(":") === true ? (first.name.split(":")[1] ?? null) : null;
     this.events.onSelect(id);
   };
 
