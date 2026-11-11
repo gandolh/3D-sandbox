@@ -1,3 +1,4 @@
+import { itemAt } from "../../item-at.js";
 import { wallAngle, wallLength } from "../../derive/walls.js";
 import type { Level, Room, Wall } from "../../document.js";
 import { area, bounds, boundsContain, pointInPolygon, polygonNetArea } from "../../geometry.js";
@@ -96,8 +97,8 @@ export const roomsAreHabitable: Rule = {
       // have overlapping bounds and share no floor.
       for (let a = 0; a < level.rooms.length; a++) {
         for (let b = a + 1; b < level.rooms.length; b++) {
-          const first = level.rooms[a]!;
-          const second = level.rooms[b]!;
+          const first = itemAt(level.rooms, a);
+          const second = itemAt(level.rooms, b);
           const shared = area(first.polygon) - polygonNetArea(first.polygon, [second.polygon]);
           if (shared <= 1e-3) continue;
           out.push({
