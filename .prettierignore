@@ -1,0 +1,13 @@
+# Markdown stays out of Prettier (decided 2026-11-10).
+*.md
+
+# The vendored house-style copy is generated.
+vendor/house-style/
+
+# Generated scenes (the scene build writes them), downloaded assets, the lockfile, build output, local data.
+scenes/*.scene.json
+assets-src/
+package-lock.json
+**/dist/
+apps/api/.data/
+coverage/

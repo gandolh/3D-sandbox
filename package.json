@@ -28,12 +28,25 @@
     "typecheck:web": "tsc --noEmit -p apps/web/tsconfig.json",
     "assets": "node assets/download-list.ts",
     "lint": "biome check .",
-    "format": "biome check --write ."
+    "format:check": "prettier --check .",
+    "house-style:sync": "node vendor/house-style/bin/sync.mjs",
+    "format": "prettier --write ."
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.13",
+    "@eslint/js": "10.0.1",
     "@types/node": "24.13.4",
+    "@vitest/eslint-plugin": "1.6.28",
+    "dependency-cruiser": "18.7.2",
+    "eslint": "10.9.1",
+    "eslint-plugin-better-tailwindcss": "4.10.0",
+    "eslint-plugin-import-x": "4.18.1",
+    "eslint-plugin-n": "18.5.0",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "knip": "6.44.2",
+    "prettier": "3.9.10",
     "typescript": "6.0.3",
+    "typescript-eslint": "8.72.2",
     "vitest": "5.0.5"
   }
 }
