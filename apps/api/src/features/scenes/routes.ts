@@ -4,7 +4,7 @@ import type { Config } from "../../config.js";
 import { SceneNotFoundError, UnsafeIdError } from "./errors.js";
 import { deleteSceneFile, hasBuilder, readSceneFile, sceneMtime, writeSceneFile } from "./files.js";
 import { type SceneIndex, summarize } from "./index-db.js";
-import { sceneListSchema, sceneParamsSchema } from "./schemas.js";
+import { errorReplySchema, sceneBodySchema, sceneListSchema, sceneParamsSchema } from "./schemas.js";
 
 /** What the scene routes take from the app: where the scene files are, and the index over them. */
 export interface ScenesOptions {
@@ -70,19 +70,23 @@ export const sceneRoutes: FastifyPluginAsyncZod<ScenesOptions> = async (app, { c
    * earlier read to be stale against, and the existence check above it is the
    * only guard it needs.
    */
-  app.post<{ Body: unknown }>("/api/scenes", async (request, reply) => {
-    const body = request.body as { id?: unknown };
-    const id = typeof body?.id === "string" ? body.id : "";
-    if (await onDisk(id)) {
-      return reply.code(409).send({ error: "exists", message: `Scene "${id}" already exists` });
-    }
-    const { document, bytes } = await writeSceneFile(config.scenesDir, id, request.body);
-    index.upsert(await summarize(config.scenesDir, id, document, bytes));
-    // The version the creator now holds, as a read would hand it out, so its
-    // first save can be conditional like every later one.
-    reply.header("x-scene-mtime", String(await sceneMtime(config.scenesDir, id)));
-    return reply.code(201).send(document);
-  });
+  app.post(
+    "/api/scenes",
+    { schema: { body: sceneBodySchema, response: { 201: SceneDocument, 409: errorReplySchema } } },
+    async (request, reply) => {
+      const body = request.body as { id?: unknown };
+      const id = typeof body?.id === "string" ? body.id : "";
+      if (await onDisk(id)) {
+        return reply.code(409).send({ error: "exists", message: `Scene "${id}" already exists` });
+      }
+      const { document, bytes } = await writeSceneFile(config.scenesDir, id, request.body);
+      index.upsert(await summarize(config.scenesDir, id, document, bytes));
+      // The version the creator now holds, as a read would hand it out, so its
+      // first save can be conditional like every later one.
+      reply.header("x-scene-mtime", String(await sceneMtime(config.scenesDir, id)));
+      return reply.code(201).send(document);
+    },
+  );
 
   /**
    * Replace a scene that exists. It does not create one.

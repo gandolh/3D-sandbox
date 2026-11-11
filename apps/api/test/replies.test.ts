@@ -30,8 +30,8 @@ afterAll(async () => {
   await rm(dir, { recursive: true, force: true });
 });
 
-const loaded = async (file: string) =>
-  JSON.stringify(loadScene(JSON.parse(await readFile(join(SCENES, file), "utf8")) as unknown).document);
+const read = async (file: string) => JSON.parse(await readFile(join(SCENES, file), "utf8")) as Record<string, unknown>;
+const loaded = async (file: string) => JSON.stringify(loadScene(await read(file)).document);
 
 describe("the scene replies through their response schemas", () => {
   it("cover the three scenes", () => {
@@ -42,5 +42,16 @@ describe("the scene replies through their response schemas", () => {
     const res = await app.inject({ method: "GET", url: `/api/scenes/${file.replace(".scene.json", "")}` });
     expect(res.statusCode).toBe(200);
     expect(res.body).toBe(await loaded(file));
+  });
+
+  it.each(FILES)("POST of a copy of %s returns the created document byte for byte", async (file) => {
+    const copy = { ...(await read(file)), id: `copy-of-${file.replace(".scene.json", "")}` };
+    const res = await app.inject({ method: "POST", url: "/api/scenes", payload: copy });
+    expect(res.statusCode).toBe(201);
+    expect(res.body).toBe(JSON.stringify(loadScene(copy).document));
+
+    const again = await app.inject({ method: "POST", url: "/api/scenes", payload: copy });
+    expect(again.statusCode).toBe(409);
+    expect(again.body).toBe(JSON.stringify({ error: "exists", message: `Scene "${copy.id}" already exists` }));
   });
 });
