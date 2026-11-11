@@ -2,7 +2,7 @@
 // re-exported here because every caller in this package already imports from
 // this module, and two import sites for one predicate is how the copy came
 // back last time.
-import { type Plan, pointInPolygon } from "@solstice/schema";
+import { type Plan, pointInPolygon, itemAt } from "@solstice/schema";
 import * as THREE from "three";
 
 import { ensureStandardAttributes } from "./attributes.js";
@@ -23,7 +23,7 @@ export function shapeFromPolygon(polygon: readonly Plan[]): THREE.Shape {
   if (first === undefined) throw new Error("shapeFromPolygon: empty polygon");
   shape.moveTo(first[0], first[1]);
   for (let i = 1; i < polygon.length; i++) {
-    const p = polygon[i]!;
+    const p = itemAt(polygon, i);
     shape.lineTo(p[0], p[1]);
   }
   shape.closePath();
