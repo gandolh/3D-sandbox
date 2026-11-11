@@ -1,3 +1,4 @@
+import { itemAt } from "../item-at.js";
 import type { Wall } from "../document.js";
 import type { Plan } from "../geometry.js";
 import type { M } from "../units.js";
@@ -245,7 +246,7 @@ export function wallOutline(wall: Wall, ends: WallEnds, from = 0, to = wallLengt
 function clipAlong(outline: readonly (readonly [M, M])[], at: M, side: 1 | -1): [M, M][] {
   const out: [M, M][] = [];
   outline.forEach((a, i) => {
-    const b = outline[(i + 1) % outline.length]!;
+    const b = itemAt(outline, (i + 1) % outline.length);
     const da = side * (a[0] - at);
     const db = side * (b[0] - at);
     if (da >= 0) out.push([a[0], a[1]]);
