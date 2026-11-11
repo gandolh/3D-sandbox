@@ -185,3 +185,16 @@ high speed.
 - *Built* 2026-11-06: `npm run solstice -- lint|plan <file>` over a shared
   package, `@solstice/scene-tools`, which the scene build uses too
   ([scene-tools.md](scene-tools.md)).
+
+## One toolchain: Prettier and ESLint replace Biome
+_2026-11-11_ — The repo moved to the estate's harness (the vendored `house-style` copy): Prettier at width 120
+(trailing commas), typed ESLint with typescript-eslint, TypeScript 6.0.3, knip and dependency-cruiser in
+`npm run check:conventions`, and a root `CLAUDE.md` with `.claude/rules/`. `@biomejs/biome` and `biome.json` are gone.
+**Why**: the estate keeps one toolchain. **Gained**: the six typed rules, the React compiler rules, the vitest
+rules, `no-process-env`, `no-console`, default-export and TODO rules, `!` as an error in source, and a typecheck
+of the tests, asset scripts and Vitest config (`typecheck:tests`, which found three errors). **Lost**: lint in
+0.2 s (now about 28 s), `organizeImports` (import order is not enforced; `simple-import-sort` would reorder 105
+files), the `noArrayIndexKey` and `useIndexOf` checks, and `jsx-a11y` (no ESLint 10 support), so the `autoFocus`
+uses are caught by a `no-restricted-syntax` selector. `useButtonType` and `noDangerouslySetInnerHtml` carry over
+as selectors. Source `!` is replaced by `itemAt` from `@solstice/schema`. The plan tools' compiler-rule findings
+(18) are warnings until the tools are reworked.

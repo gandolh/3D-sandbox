@@ -179,3 +179,27 @@ One commit per step. After each: `npm run typecheck`, `npm test` and the lint of
 
 - Brief 06 deletes the seven a11y disables and turns `check-base-ui` from `--warn-only` to enforcing. Brief 07 does the same for `check-structure` and adds dependency-cruiser. `n/no-process-env` is an error from step 4 on `apps/api/src` outside `config.ts` and tests: the server has no stray reader today, and `apps/cli/src/solstice.ts:15` and `apps/web/vite.config.ts` are exempt as a CLI and build-time config.
 - Brief 06's theme switch changes `apps/web/src/styles.css`, which this brief only reformats.
+
+## Outcome (2026-11-11)
+
+Built on `main`, 28 commits from a57f3b4 to dac41f0 (the reformat is e46515c, in `.git-blame-ignore-revs` through 9354223). `npm run check` exits 0 (55 s warm); `check:fast` with one changed file takes 6-8 s; `npx eslint .` takes 28 s. `npx tsc --version` prints 6.0.3, `typecheck:tests` exits 0, `house-style:sync -- --check` exits 0 and `npx prettier --check .` passes.
+
+- **Typecheck:** TypeScript 6.0.3 needed only `types: ["node"]` in `packages/geometry`; every typecheck was clean before and after. `tsconfig.tests.json` found the three errors the brief predicted and they are fixed (`rooms: []` and `height: 6` in two test fixtures, a `size` field on a download type).
+- **Reformat:** 80 files. The bundle compare (esbuild minify of every ts, tsx, js and css file, parsed json, whitespace-collapsed html) showed no difference at all. `git diff -w` still lists the 80 files because lines were rewrapped.
+- **Lint counts, before then after:** `no-non-null-assertion` 97 source errors to 0, 544 test warnings to 540; `no-unnecessary-type-assertion` 40 to 0 (4 source, 36 test, the tests by autofix, 19 of them as a type argument such as `json<T>()`; one autofix, in `asset-loader.test.ts`, was wrong and became `new THREE.Texture<HTMLImageElement>()`); `no-console` 2 library calls got an inline disable with a reason; `consistent-type-imports` 0; `no-process-env` 0 (config files and the scripts folders are exempt); default exports 0; `valid-title` and `no-standalone-expect` 1 each, fixed; `no-conditional-expect` is off in the house config (8 before). New with ESLint 10, fixed: `no-undef` 6 (the bake page, given browser globals), `preserve-caught-error` 1, `no-useless-assignment` 1. React compiler rules: 18 warnings in the four plan-tool hooks, as decision 10 says (`refs` 13, `set-state-in-effect` 4, `immutability` 1).
+- **Checkers:** `check-base-ui` 0 errors and 4 warnings (rule 3 once, rule 6 three times), `check-structure` 11 (rule 6 seven times, rule 11 four times); both stay `--warn-only`. dependency-cruiser found one cycle (`packages/solar` sky-map and index), lowered to a warning. knip reports nothing as an error; 36 unused exports and types and one duplicate are warnings.
+- **Source `!`:** replaced by `itemAt` in `@solstice/schema` (new, with a test) where it indexed an array, and by narrowing elsewhere. The masses quad and triangle take tuples. `npm run scenes` left the three scene files unchanged after every file, and the full Vitest suite passed.
+- **Deliberate violations:** an enum, a `console.log` in `packages/schema/src/index.ts`, a `// TODO`, a `!`, an `export default`, an unawaited promise and a `<button>` with no type each made lint exit 1; all reverted.
+
+**Deviations.**
+
+- `eslint-plugin-jsx-a11y` is not installed: its peer range stops at ESLint 9. The five `autoFocus` uses are caught by a `no-restricted-syntax` selector and carry that disable; the two `no-noninteractive-element-interactions` sites are not flagged. Briefs 06 and 07 have a dated line saying so.
+- The tsconfig base was not changed (it keeps every flag it had and adds none); it does not extend the vendored one.
+- The Tailwind rules are off (`tailwind` option unset): they flag 3 deprecated classes whose fix belongs to brief 06.
+- `knip.config.js` lists entries knip cannot follow, and ignores `happy-dom`, `three` (browser import map) and `@dimforge/rapier3d-compat` in `packages/geometry`, which declares it and never imports it. Removing it would touch the lockfile.
+- `typed.project` lists the tsconfigs (the tests live in `tsconfig.tests.json`, which `projectService` does not find).
+- Console: `scenes/build.ts` and `apps/api/src/server.ts` are in `console`; `assets` and `apps/cli` are in `scripts`.
+- Left to the plugin update: the live Stop and formatter hook check. The test suite failed once in about ten full runs with one unnamed failure, right after the scene build under load; it passed on every rerun.
+- `docs/getting-started.md` named Biome and is updated.
+
+**Owner steps:** `git config blame.ignoreRevsFile .git-blame-ignore-revs`; the client publishes with the estate (stack `solstice`).

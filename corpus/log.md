@@ -1488,3 +1488,11 @@ machine; the change touches neither the web app nor the existing packages.
 
 `@base-ui/react` 1.8.0 to 1.9.0, pinned exactly in `apps/web/package.json` (f9a65a7). Lockfile moved only Base UI's
 own tree. Typecheck, 261 web tests and the web build pass; no source change. The 1.8.0 entry above stays as history.
+
+## [2026-11-11] build | 05 The house style and the quality harness
+
+Prettier 3.9.10 at width 120 replaces Biome 2.5.13; ESLint 10.9.1 with the vendored house config, TypeScript 6.0.3,
+knip and dependency-cruiser in `check:conventions`, `check:fast`, a root `CLAUDE.md` and `.claude/rules/`. The
+reformat is its own commit (80 files, whitespace and wrapping only; the bundle compare of every file shows no
+difference) and is in `.git-blame-ignore-revs`. 97 source `!` removed, one file per commit, scenes byte-identical
+after each. Details in the brief's outcome note.

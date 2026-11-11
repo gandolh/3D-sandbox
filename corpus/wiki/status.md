@@ -10,6 +10,7 @@ briefs reset) are not pushed. `npm run check` is the gate and runs by hand.
 Brief numbering restarted at 01 on 2026-11-02 (see [log.md](../log.md),
 "Briefs reset"); brief 01 is open (2026-11-03).
 Base UI is on 1.9.0, pinned exactly (brief 04, 2026-11-10).
+The house style harness is in (brief 05, 2026-11-11): Prettier at width 120, typed ESLint, TypeScript 6.0.3, `check` and `check:fast`.
 
 ## Where things stand
 
@@ -49,7 +50,7 @@ An engineering audit on 2026-09-13 (performance, practices, structure) filed
 ten briefs from 18 raw findings, plus one filed mid-run when `npm run api`
 turned out not to start at all. All eleven were done the same day.
 
-The repo gained a lint and format gate (Biome), CI (since removed, 2026-09-26 —
+The repo gained a lint and format gate (Biome, replaced by Prettier and ESLint on 2026-11-11), CI (since removed, 2026-09-26 —
 `npm run check` is now run by hand), a React testing
 environment, `erasableSyntaxOnly`, and a wall-geometry cache. Greenhollow's
 edit path went from **98 ms per keystroke** to **5.8 ms per committed edit**.

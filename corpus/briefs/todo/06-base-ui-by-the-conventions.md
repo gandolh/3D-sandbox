@@ -139,3 +139,5 @@ One commit per step. After each: `npm run check` green, and `npm run build:web` 
 
 - Do the six selects, two sliders, two checkboxes and the plan toolbar move to Base UI, or does any stay native because this is a desktop editor?
 - Do the `title=` hints become `Tooltip`s where the control is enabled?
+
+- 2026-11-11, from brief 05: `eslint-plugin-jsx-a11y` does not support ESLint 10 (its peer range stops at 9), so it is not installed. The `autoFocus` uses carry `eslint-disable-next-line no-restricted-syntax` (a selector in `eslint.config.js`), not a `jsx-a11y` disable, and the two `no-noninteractive-element-interactions` sites (`SceneDialogs.tsx`, `useAreaTools.tsx`) are not flagged at all. The grep above should look for `no-restricted-syntax` disables too. Also open for this brief: the `better-tailwindcss` rules are off (`tailwind` option unset); with them on, 3 deprecated classes are flagged (`backdrop-blur` in `RenderOverlay.tsx`, `rounded` twice in `Scroll.tsx`). `check-base-ui` runs `--warn-only` with 4 findings (rule 3 once, rule 6 three times); drop the flag here.

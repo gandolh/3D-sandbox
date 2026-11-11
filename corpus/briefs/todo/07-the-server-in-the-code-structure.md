@@ -118,3 +118,5 @@ One commit per step. After each: `npm run typecheck`, `npx vitest run apps/api` 
 
 - Does the dev server get a logger (decision 8), or stay silent?
 - Should the unknown-route body change from Fastify's own shape to `{ error, message }`? It changes what a mistyped URL returns, and nothing in the repo reads it.
+
+- 2026-11-11, from brief 05: dependency-cruiser and the knip config landed there (`.dependency-cruiser.cjs`, `knip.config.js`, both in `check:conventions`). Step 5 here keeps only dropping `--warn-only` on `check-structure` (11 findings: rule 6 seven times, rule 11 four times) and the cross-feature check. `no-circular` is lowered to a warning for one cycle in `packages/solar`; remove that entry when it is fixed.

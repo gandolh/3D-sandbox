@@ -86,7 +86,7 @@ Everything works without the downloads. Materials fall back to their declared co
 npm run check
 ```
 
-That runs Biome, the four typechecks, the Vitest suite, the scene build, the web build and the corpus lint, in that order. There is no CI, so run it by hand before committing. The pieces are also separate scripts: `npm run lint`, `npm run typecheck`, `npm test`, `npm run scenes`, `npm run build:web` and `npm run lint:corpus`. `npm run format` applies Biome's fixes.
+That runs ESLint, the Prettier check, the five typechecks, the convention checks, the Vitest suite, the scene build, the web build and the corpus lint, in that order. There is no CI, so run it by hand before committing. The pieces are also separate scripts: `npm run lint`, `npm run typecheck`, `npm test`, `npm run scenes`, `npm run build:web` and `npm run lint:corpus`. `npm run format` applies Prettier.
 
 ## Rendering on a GPU
 
