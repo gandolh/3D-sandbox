@@ -3,7 +3,7 @@ import { findEntity, setWallBearing, setWallLength } from "../lib/entities.js";
 import { physicsFor, physicsReady } from "../lib/physics.js";
 import { editDocument, getState, setStatus, useStore } from "../state/store.js";
 import { Divider, Field, PanelTitle } from "./primitives.jsx";
-import { Scroll } from "./Scroll.jsx";
+import { Scroll } from "../components/ui/Scroll.jsx";
 
 export function Inspector() {
   const doc = useStore((s) => s.document);

@@ -17,8 +17,10 @@
     "@solstice/schema": "0.1.0",
     "@solstice/solar": "0.1.0",
     "animejs": "4.5.0",
+    "clsx": "2.1.1",
     "react": "19.3.0",
     "react-dom": "19.3.0",
+    "tailwind-merge": "3.7.0",
     "three": "0.185.1",
     "three-gpu-pathtracer": "0.0.24",
     "three-mesh-bvh": "0.9.15"

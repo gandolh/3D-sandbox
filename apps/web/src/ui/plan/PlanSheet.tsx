@@ -1,7 +1,7 @@
 import { planSvg } from "@solstice/drawing";
 import type { SceneDocument } from "@solstice/schema";
 import { useMemo } from "react";
-import { Scroll } from "../Scroll.jsx";
+import { Scroll } from "../../components/ui/Scroll.jsx";
 
 /**
  * The 1:100 sheet of one level, behind the plan view's Sheet toggle.

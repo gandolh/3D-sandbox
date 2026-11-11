@@ -1,5 +1,6 @@
 import { ScrollArea } from "@base-ui/react/scroll-area";
 import type { ReactNode } from "react";
+import { cn } from "../../lib/cn.js";
 
 /**
  * Every panel that can outgrow its space gets one of these.
@@ -15,9 +16,12 @@ export function Scroll({ children }: { children: ReactNode }) {
       <ScrollArea.Viewport className="h-full w-full overscroll-contain">{children}</ScrollArea.Viewport>
       <ScrollArea.Scrollbar
         orientation="vertical"
-        className="m-0.5 flex w-1.5 justify-center rounded opacity-0 transition-opacity delay-150 data-[hovering]:opacity-100 data-[hovering]:delay-0 data-[scrolling]:opacity-100 data-[scrolling]:delay-0"
+        className={cn(
+          "m-0.5 flex w-1.5 justify-center rounded-sm opacity-0 transition-opacity delay-150",
+          "data-hovering:opacity-100 data-hovering:delay-0 data-scrolling:opacity-100 data-scrolling:delay-0",
+        )}
       >
-        <ScrollArea.Thumb className="w-full rounded bg-faint/60" />
+        <ScrollArea.Thumb className="w-full rounded-sm bg-faint/60" />
       </ScrollArea.Scrollbar>
     </ScrollArea.Root>
   );

@@ -3,7 +3,7 @@ import type { Run } from "@solstice/schema";
 import { Fragment, useRef } from "react";
 import { select, useStore } from "../state/store.js";
 import { PanelTitle } from "./primitives.jsx";
-import { Scroll } from "./Scroll.jsx";
+import { Scroll } from "../components/ui/Scroll.jsx";
 
 const RUN_GLYPH: Record<Run["kind"], string> = {
   hedge: "❖",

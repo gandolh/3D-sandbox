@@ -130,7 +130,7 @@ export function Timeline() {
       <div className="relative h-6">
         <div className="absolute inset-0 overflow-hidden rounded-sm border border-line bg-viewport">
           <div
-            className="absolute inset-y-0 bg-gradient-to-r from-[#20283a] via-[#6b4e1e] to-[#2a2436]"
+            className="absolute inset-y-0 bg-gradient-to-r from-band-dawn via-band-day to-band-dusk"
             style={{ left: `${bandStart}%`, right: `${100 - bandEnd}%` }}
           />
         </div>

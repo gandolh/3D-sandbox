@@ -63,7 +63,7 @@ export function RenderOverlay({ progress, onCancel }: { progress: RenderProgress
   const pct = building ? progress.build * 100 : (progress.samples / Math.max(1, progress.targetSamples)) * 100;
 
   return (
-    <div className="pointer-events-auto absolute inset-x-0 bottom-0 flex items-center gap-4 border-t border-line bg-chrome/95 px-4 py-3 backdrop-blur">
+    <div className="pointer-events-auto absolute inset-x-0 bottom-0 flex items-center gap-4 border-t border-line bg-chrome/95 px-4 py-3 backdrop-blur-sm">
       <span role="status" aria-live="polite" aria-atomic="true" className="sr-only">
         {announcement}
       </span>

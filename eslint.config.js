@@ -11,6 +11,7 @@ export default [
   ...houseStyle({
     root: import.meta.dirname,
     web,
+    tailwind: { css: "apps/web/src/styles.css" },
     server: "apps/api/src",
     // Run by hand, so they print and read the environment: the asset downloader and baker, and the scene CLI.
     scripts: ["assets", "apps/cli"],
