@@ -72,4 +72,11 @@ describe("the scene replies through their response schemas", () => {
     const bytes = Buffer.byteLength(await readFile(join(SCENES, file)));
     expect(res.body).toBe(JSON.stringify({ ok: true, id, bytes, warnings: 0 }));
   });
+
+  it.each(FILES)("DELETE of the copy of %s answers the id it removed", async (file) => {
+    const id = `copy-of-${file.replace(".scene.json", "")}`;
+    const res = await app.inject({ method: "DELETE", url: `/api/scenes/${id}` });
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toBe(JSON.stringify({ ok: true, id }));
+  });
 });

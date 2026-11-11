@@ -5,6 +5,7 @@ import { SceneNotFoundError, UnsafeIdError } from "./errors.js";
 import { deleteSceneFile, hasBuilder, readSceneFile, sceneMtime, writeSceneFile } from "./files.js";
 import { type SceneIndex, summarize } from "./index-db.js";
 import {
+  deletedSchema,
   errorReplySchema,
   preconditionHeadersSchema,
   savedSchema,
@@ -142,12 +143,16 @@ export const sceneRoutes: FastifyPluginAsyncZod<ScenesOptions> = async (app, { c
     },
   );
 
-  app.delete<{ Params: { id: string } }>("/api/scenes/:id", async (request) => {
-    const { id } = request.params;
-    await deleteSceneFile(config.scenesDir, id);
-    index.remove(id);
-    return { ok: true, id };
-  });
+  app.delete(
+    "/api/scenes/:id",
+    { schema: { params: sceneParamsSchema, response: { 200: deletedSchema } } },
+    async (request) => {
+      const { id } = request.params;
+      await deleteSceneFile(config.scenesDir, id);
+      index.remove(id);
+      return { ok: true as const, id };
+    },
+  );
 
   /**
    * Rescan. The reason this route exists at all: scene files are edited outside

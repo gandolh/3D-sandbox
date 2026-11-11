@@ -57,3 +57,6 @@ export const savedSchema = z.object({
   bytes: z.number().int(),
   warnings: z.number().int(),
 });
+
+/** `DELETE`: the scene removed. */
+export const deletedSchema = z.object({ ok: z.literal(true), id: z.string() });
