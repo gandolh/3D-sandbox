@@ -39,7 +39,7 @@ export function ToggleToolbar<Value extends string>({
         onValueChange={(next) => {
           const chosen = next[0];
           // Pressing the chosen tool again would leave none chosen.
-          if (chosen !== undefined) onValueChange(chosen as Value);
+          if (chosen !== undefined) onValueChange(chosen);
         }}
         className="flex"
       >

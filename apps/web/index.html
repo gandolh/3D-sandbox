@@ -4,6 +4,18 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Solstice</title>
+    <script>
+      // The theme before the first paint, so a stored choice never flashes the other palette. A first visit
+      // is dark (DEFAULT_THEME in src/state/store.ts: keep the two in step). `system` asks the operating system.
+      try {
+        var choice = localStorage.getItem("theme");
+        var dark =
+          choice === "light" ? false : choice === "system" ? matchMedia("(prefers-color-scheme: dark)").matches : true;
+        document.documentElement.dataset.theme = dark ? "dark" : "light";
+      } catch (error) {
+        document.documentElement.dataset.theme = "dark";
+      }
+    </script>
   </head>
   <body>
     <div class="root" id="root"></div>

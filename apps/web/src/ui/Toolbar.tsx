@@ -2,6 +2,7 @@ import { estimateQueue, formatDuration, pickRenderDirectory, renderQueue } from 
 import type { RenderRequest } from "../engine/SandboxEngine.js";
 import { Checkbox } from "../components/ui/Checkbox.jsx";
 import { Select } from "../components/ui/Select.jsx";
+import { ThemeSwitch } from "../components/ui/ThemeSwitch.jsx";
 import { openScene } from "../lib/scene-source.js";
 import {
   redo,
@@ -11,7 +12,6 @@ import {
   setShowContext,
   setShowPlan,
   setStatus,
-  setTheme,
   undo,
   useStore,
 } from "../state/store.js";
@@ -33,7 +33,6 @@ export function newHouseTitle(apiState: "checking" | "none" | "down" | "up"): st
 
 export function Toolbar({ onSave }: { onSave: () => void }) {
   const doc = useStore((s) => s.document);
-  const theme = useStore((s) => s.theme);
   const showContext = useStore((s) => s.showContext);
   const showColliders = useStore((s) => s.showColliders);
   const showPlan = useStore((s) => s.showPlan);
@@ -121,13 +120,7 @@ export function Toolbar({ onSave }: { onSave: () => void }) {
         className="font-mono text-[10px] tracking-wider text-muted uppercase"
       />
 
-      <button
-        type="button"
-        onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-        className="rounded-sm border border-line bg-panel px-2.5 py-1.5 font-mono text-[10px] tracking-wider text-muted uppercase hover:text-ink"
-      >
-        {theme === "dark" ? "Light" : "Dark"}
-      </button>
+      <ThemeSwitch />
 
       {/*
         The plan is a different *drawing* of the same document, not a different

@@ -3,5 +3,14 @@
   "web": ["apps/web/src"],
   "server": ["apps/api/src"],
   "shared": ["packages/schema/src"],
-  "stylesheet": "styles.css"
+  "stylesheet": "styles.css",
+  "exceptions": [
+    {
+      "check": "base-ui",
+      "rule": 5,
+      "path": "apps/web/src/ui/Inspector.tsx",
+      "match": "style",
+      "reason": "The wall's swatch takes its colour from the scene document's material (a data colour a token cannot name), so it is an inline style, like a calendar's event colours."
+    }
+  ]
 }

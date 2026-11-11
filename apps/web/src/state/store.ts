@@ -4,6 +4,38 @@ import { apiBase } from "../lib/api.js";
 import type { ViewTransform } from "../lib/plan-view.js";
 import { DEFAULT_SCENE_ID, SCENES } from "../scenes.js";
 
+/** The two palettes. `data-theme` on `<html>` holds one of them and styles.css keys off it. */
+export type Theme = "dark" | "light";
+/** What the user picks: a palette, or the operating system's. */
+export type ThemeChoice = Theme | "system";
+
+/**
+ * What a first visit shows. Solstice stays dark (the Darkroom decision: a path-traced render cannot be judged
+ * for exposure against a light surround), which is the one place it bends the estate's light default. The
+ * boot script in `index.html` repeats this value, and a test keeps the two in step.
+ */
+export const DEFAULT_THEME: Theme = "dark";
+
+const THEME_KEY = "theme";
+const DARK_QUERY = "(prefers-color-scheme: dark)";
+
+/** The stored choice, or the default: storage can be missing or blocked, and the app works without it. */
+export function readThemeChoice(): ThemeChoice {
+  try {
+    const value = localStorage.getItem(THEME_KEY);
+    return value === "light" || value === "dark" || value === "system" ? value : DEFAULT_THEME;
+  } catch {
+    return DEFAULT_THEME;
+  }
+}
+
+/** The palette a choice means right now. `system` asks the operating system. */
+export function resolveTheme(choice: ThemeChoice): Theme {
+  if (choice !== "system") return choice;
+  if (typeof window === "undefined" || typeof window.matchMedia !== "function") return DEFAULT_THEME;
+  return window.matchMedia(DARK_QUERY).matches ? "dark" : "light";
+}
+
 /**
  * A ~50-line store on `useSyncExternalStore`.
  *
@@ -34,7 +66,10 @@ export interface AppState {
    * placement with no size as having no collider rather than guessing one.
    */
   assetSizes: ReadonlyMap<string, readonly [number, number, number]>;
-  theme: "dark" | "light";
+  /** What the user picked. `system` follows the operating system, live. */
+  themeChoice: ThemeChoice;
+  /** The palette in force, which `data-theme` on `<html>` carries. */
+  theme: Theme;
   status: string;
   /**
    * Why there is no document, when there is none.
@@ -193,7 +228,8 @@ let state: AppState = {
   playhead: 0,
   playing: false,
   assetSizes: new Map(),
-  theme: "dark",
+  themeChoice: DEFAULT_THEME,
+  theme: DEFAULT_THEME,
   status: "Loading…",
   loadError: null,
   alert: null,
@@ -301,10 +337,39 @@ export const setLoadError = (loadError: string): void => {
 
 export const select = (selection: string | null): void => set({ selection });
 
-export const setTheme = (theme: "dark" | "light"): void => {
-  document.documentElement.dataset.theme = theme;
-  set({ theme });
+let stopFollowingSystem: (() => void) | null = null;
+
+/**
+ * Applies a theme choice: keeps it on this device, sets `data-theme` on `<html>`, and, for `system`, follows the
+ * operating system's setting until another choice is made. The attribute is the only mechanism: styles.css reads
+ * it, and nothing else decides the palette.
+ */
+export const setThemeChoice = (themeChoice: ThemeChoice, { persist = true }: { persist?: boolean } = {}): void => {
+  stopFollowingSystem?.();
+  stopFollowingSystem = null;
+  if (persist) {
+    try {
+      localStorage.setItem(THEME_KEY, themeChoice);
+    } catch {
+      // Storage is blocked: the choice lasts until the tab closes.
+    }
+  }
+  const apply = (): void => {
+    const theme = resolveTheme(themeChoice);
+    if (typeof document !== "undefined") document.documentElement.dataset.theme = theme;
+    set({ themeChoice, theme });
+  };
+  apply();
+  if (themeChoice === "system" && typeof window !== "undefined" && typeof window.matchMedia === "function") {
+    const query = window.matchMedia(DARK_QUERY);
+    query.addEventListener("change", apply);
+    stopFollowingSystem = () => query.removeEventListener("change", apply);
+  }
 };
+
+// The boot script has set `data-theme` before the first paint; this brings the store, and a `system` listener,
+// in line with it.
+if (typeof document !== "undefined") setThemeChoice(readThemeChoice(), { persist: false });
 
 export const setShowColliders = (showColliders: boolean): void => set({ showColliders });
 
