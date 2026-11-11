@@ -7,6 +7,7 @@
  * runtime still consumes inert data.
  */
 
+import { itemAt } from "../item-at.js";
 import type { SceneDocumentInput } from "../document.js";
 import type { Plan } from "../geometry.js";
 
@@ -90,7 +91,7 @@ export function wallsFromFootprint(
 ): WallSpec[] {
   const prefix = options.prefix ?? "W";
   return footprint.map((start, i): WallSpec => {
-    const end = footprint[(i + 1) % footprint.length]!;
+    const end = itemAt(footprint, (i + 1) % footprint.length);
     const wall: WallSpec = {
       id: `${prefix}-${String(i + 1).padStart(2, "0")}`,
       start: [start[0], start[1]],
