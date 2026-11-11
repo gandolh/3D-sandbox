@@ -1,6 +1,7 @@
 import { openingPlan } from "@solstice/drawing";
 import type { Opening } from "@solstice/schema";
 import { useEffect, useRef, useState } from "react";
+import { PointPopover } from "../../components/ui/Popover.jsx";
 import {
   nextOpeningId,
   offsetAt,
@@ -185,15 +186,16 @@ export function useOpeningTool(kind: Opening["kind"], { doc, level, view, active
       ),
     html:
       !active || typing === null || hover === null ? null : (
-        <div
-          data-testid="typed-field"
-          style={{ left: hover.pointer.screen[0] + 16, top: hover.pointer.screen[1] + 16 }}
-          className="absolute z-10 flex items-center gap-1.5 rounded-sm border border-line bg-chrome px-2 py-1 shadow-lg"
+        <PointPopover
+          at={[hover.pointer.screen[0] + 16, hover.pointer.screen[1] + 16]}
+          label={`${label} from the nearer end`}
+          onClose={() => setTyping(null)}
+          testId="typed-field"
+          className="flex items-center gap-1.5 px-2 py-1"
         >
           <span className="text-[10px] tracking-wider text-muted uppercase">{label} from the nearer end</span>
           <input
-            // eslint-disable-next-line no-restricted-syntax -- opened by typing, so the typing has to land here
-            autoFocus
+            data-autofocus
             type="text"
             inputMode="decimal"
             aria-label="Distance from the nearer end"
@@ -219,7 +221,7 @@ export function useOpeningTool(kind: Opening["kind"], { doc, level, view, active
             className="w-[64px] rounded-sm border border-line bg-input px-1.5 py-[2px] text-right font-mono text-[11.5px] text-ink"
           />
           <span className="font-mono text-[10px] text-subtle">m</span>
-        </div>
+        </PointPopover>
       ),
   };
 }

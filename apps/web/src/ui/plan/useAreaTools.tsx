@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { floorOutline, roomOutline } from "../../lib/drawing/faces.js";
 import { defaultWallMaterial, nextId } from "../../lib/drawing/walls.js";
 import { toScreen, type ViewTransform } from "../../lib/plan-view.js";
+import { PointPopover } from "../../components/ui/Popover.jsx";
 import { Select } from "../../components/ui/Select.jsx";
 import { editDocument, getState, setPlanTool, setStatus, useStore } from "../../state/store.js";
 import { editsText } from "../useUndoKeys.js";
@@ -144,65 +145,63 @@ function RoomPopover({
     if (name.trim() !== "") onAdd(name.trim(), use);
   };
   return (
-    <form
-      data-testid="room-popover"
-      aria-label="New room"
-      style={{ left: at[0] + 12, top: at[1] + 12 }}
-      className="absolute z-10 flex w-[220px] flex-col gap-2 rounded-sm border border-line bg-chrome p-2.5 shadow-lg"
-      onSubmit={(event) => {
-        event.preventDefault();
-        submit();
-      }}
-      onKeyDown={(event) => {
-        if (event.key === "Escape") {
-          event.preventDefault();
-          event.stopPropagation();
-          onCancel();
-        }
-      }}
+    <PointPopover
+      at={[at[0] + 12, at[1] + 12]}
+      label="New room"
+      onClose={onCancel}
+      testId="room-popover"
+      className="w-[220px]"
     >
-      <span className="font-mono text-[9.5px] tracking-[0.12em] text-subtle uppercase">
-        New room · {floor.toFixed(1)} m²
-      </span>
-      <label className="flex items-center justify-between gap-2">
-        <span className="text-[11px] text-muted">Name</span>
-        <input
-          // eslint-disable-next-line no-restricted-syntax -- the popover exists to ask for this
-          autoFocus
-          type="text"
-          aria-label="Room name"
-          value={name}
-          onFocus={(event) => event.currentTarget.select()}
-          onChange={(event) => setName(event.target.value)}
-          className="w-[130px] rounded-sm border border-line bg-input px-1.5 py-[2px] text-[11.5px] text-ink"
-        />
-      </label>
-      <label className="flex items-center justify-between gap-2">
-        <span className="text-[11px] text-muted">Use</span>
-        <Select
-          label="Room use"
-          items={ROOM_USES.map((u) => ({ value: u.use, label: u.label }))}
-          value={use}
-          onValueChange={setUse}
-          className="w-[130px] bg-input px-1 py-[2px] text-[11.5px] text-ink"
-        />
-      </label>
-      <div className="flex justify-end gap-1.5">
-        <button
-          type="button"
-          onClick={onCancel}
-          className="rounded-sm border border-line bg-panel px-2 py-[3px] text-[11px] text-muted"
-        >
-          Cancel
-        </button>
-        <button
-          type="submit"
-          className="rounded-sm border border-accent bg-accent px-2 py-[3px] text-[11px] font-medium text-accent-ink"
-        >
-          Add room
-        </button>
-      </div>
-    </form>
+      <form
+        aria-label="New room"
+        className="flex flex-col gap-2"
+        onSubmit={(event) => {
+          event.preventDefault();
+          submit();
+        }}
+      >
+        <span className="font-mono text-[9.5px] tracking-[0.12em] text-subtle uppercase">
+          New room · {floor.toFixed(1)} m²
+        </span>
+        <label className="flex items-center justify-between gap-2">
+          <span className="text-[11px] text-muted">Name</span>
+          <input
+            data-autofocus
+            type="text"
+            aria-label="Room name"
+            value={name}
+            onFocus={(event) => event.currentTarget.select()}
+            onChange={(event) => setName(event.target.value)}
+            className="w-[130px] rounded-sm border border-line bg-input px-1.5 py-[2px] text-[11.5px] text-ink"
+          />
+        </label>
+        <label className="flex items-center justify-between gap-2">
+          <span className="text-[11px] text-muted">Use</span>
+          <Select
+            label="Room use"
+            items={ROOM_USES.map((u) => ({ value: u.use, label: u.label }))}
+            value={use}
+            onValueChange={setUse}
+            className="w-[130px] bg-input px-1 py-[2px] text-[11.5px] text-ink"
+          />
+        </label>
+        <div className="flex justify-end gap-1.5">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="rounded-sm border border-line bg-panel px-2 py-[3px] text-[11px] text-muted"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="rounded-sm border border-accent bg-accent px-2 py-[3px] text-[11px] font-medium text-accent-ink"
+          >
+            Add room
+          </button>
+        </div>
+      </form>
+    </PointPopover>
   );
 }
 
