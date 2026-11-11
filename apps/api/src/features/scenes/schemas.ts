@@ -22,3 +22,9 @@ const sceneListItemSchema = z.object({
 
 /** `GET /api/scenes`. */
 export const sceneListSchema = z.object({ scenes: z.array(sceneListItemSchema) });
+
+/**
+ * `:id`. A plain string: whether it is a safe id is the file store's question, answered with a 400
+ * `invalid_id` before any path is built.
+ */
+export const sceneParamsSchema = z.object({ id: z.string() });

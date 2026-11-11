@@ -1,9 +1,10 @@
 import type { FastifyPluginAsyncZod } from "@fastify/type-provider-zod";
+import { SceneDocument } from "@solstice/schema";
 import type { Config } from "../../config.js";
 import { SceneNotFoundError, UnsafeIdError } from "./errors.js";
 import { deleteSceneFile, hasBuilder, readSceneFile, sceneMtime, writeSceneFile } from "./files.js";
 import { type SceneIndex, summarize } from "./index-db.js";
-import { sceneListSchema } from "./schemas.js";
+import { sceneListSchema, sceneParamsSchema } from "./schemas.js";
 
 /** What the scene routes take from the app: where the scene files are, and the index over them. */
 export interface ScenesOptions {
@@ -33,12 +34,16 @@ export const sceneRoutes: FastifyPluginAsyncZod<ScenesOptions> = async (app, { c
    * `SceneDocument` and has to stay exactly that — it is parsed by the schema
    * on the way back in, and a stray field would be a lint finding.
    */
-  app.get<{ Params: { id: string } }>("/api/scenes/:id", async (request, reply) => {
-    const { id } = request.params;
-    const document = await readSceneFile(config.scenesDir, id);
-    reply.header("x-scene-mtime", String(await sceneMtime(config.scenesDir, id)));
-    return document;
-  });
+  app.get(
+    "/api/scenes/:id",
+    { schema: { params: sceneParamsSchema, response: { 200: SceneDocument } } },
+    async (request, reply) => {
+      const { id } = request.params;
+      const document = await readSceneFile(config.scenesDir, id);
+      reply.header("x-scene-mtime", String(await sceneMtime(config.scenesDir, id)));
+      return document;
+    },
+  );
 
   /**
    * Whether a scene file is on disk — asked of the disk, the way `PUT` asks,
