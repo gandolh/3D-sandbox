@@ -1,6 +1,6 @@
 ---
 summary: Dated snapshot (2026-11-02) of Solstice — what runs (three scenes, five packages, the API, the plan drawing), the audits of 2026-09-12 to 2026-10-01 and what they changed, the right-handed compass (2026-10-07), drawing the house in the browser (2026-10-27), the scene CLI (2026-11-06), what cannot be exercised on this machine, and what is open.
-updated: 2026-11-06
+updated: 2026-11-11
 ---
 
 # Status — 2026-11-02
@@ -11,6 +11,7 @@ Brief numbering restarted at 01 on 2026-11-02 (see [log.md](../log.md),
 "Briefs reset"); brief 01 is open (2026-11-03).
 Base UI is on 1.9.0, pinned exactly (brief 04, 2026-11-10).
 The house style harness is in (brief 05, 2026-11-11): Prettier at width 120, typed ESLint, TypeScript 6.0.3, `check` and `check:fast`.
+The API is in the estate's code structure (brief 07, 2026-11-11): `features/`, `plugins/`, zod route schemas, `check-structure` strict; see [decisions-api.md](decisions-api.md).
 
 ## Where things stand
 

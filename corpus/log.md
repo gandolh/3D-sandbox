@@ -1496,3 +1496,21 @@ knip and dependency-cruiser in `check:conventions`, `check:fast`, a root `CLAUDE
 reformat is its own commit (80 files, whitespace and wrapping only; the bundle compare of every file shows no
 difference) and is in `.git-blame-ignore-revs`. 97 source `!` removed, one file per commit, scenes byte-identical
 after each. Details in the brief's outcome note.
+
+## [2026-11-11] build | 07 The server in the house code structure
+
+`apps/api` follows the estate's code-structure skill: `server.ts` listens, `app.ts` builds, `config.ts` parses the
+environment with zod and names each bad variable, `plugins/` holds CORS and the error handlers, `features/scenes/`
+and `features/health/` hold the seven routes, `lib/api-error.ts` holds the one `ApiError`. Every route declares its
+schemas through `@fastify/type-provider-zod` 1.0.3, and `check-structure` runs strict. The decisions, and what waits
+for the day the API is exposed, are in [decisions-api.md](wiki/decisions-api.md).
+
+**Before and after.** A capture of 40 replies over a copy of the three scenes, taken before the first commit: steps 1
+and 3 changed none of them. Step 2 changed five on purpose: an empty or malformed JSON body (POST and PUT) went from
+500 `{"error":"internal"}` to 400 `bad_request`, a 1.1 MB body to 413 `too_large`, and an unknown route from
+Fastify's `{ message, error, statusCode }` to `{ error: "not_found", message }`. A 500 now carries a fixed `message`
+and is logged (pino at `warn` in `server.ts`; under `logger: false` it was not). The capture grew to 45 replies before
+the route schemas, and each schema left all 45 byte-identical but one: a `PUT` with no body reads "received null" in
+its 422 finding instead of "received undefined". No field was dropped, so there is no leak to note. The scene bodies
+through `SceneDocument` are byte-identical (greenhollow 17,306 bytes, elmsgate 8,108, villa-carpathia 4,640), and
+`apps/api/test/replies.test.ts` keeps that compare. API tests: 42 before, 72 after. `npm run check` exits 0.
