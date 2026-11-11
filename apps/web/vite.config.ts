@@ -44,21 +44,29 @@ function assetsSrc(): Plugin {
                 models: entries
                   .filter((e) => e.gltf !== undefined)
                   .map((e) => ({ id: e.id, path: `${e.source}/${e.slug}/${e.gltf}` })),
-                materials: entries
-                  .filter((e) => e.maps !== undefined)
-                  .map((e) => ({
-                    id: e.id,
-                    maps: Object.fromEntries(
-                      Object.entries(e.maps!).map(([role, file]) => [role, `${e.source}/${e.slug}/${file}`]),
-                    ),
-                  })),
-                impostors: entries
-                  .filter((e) => e.impostor !== undefined)
-                  .map((e) => ({
-                    id: e.id,
-                    atlas: `${e.source}/${e.slug}/${e.impostor!.atlas}`,
-                    meta: `${e.source}/${e.slug}/${e.impostor!.meta}`,
-                  })),
+                materials: entries.flatMap(({ id, source, slug, maps }) =>
+                  maps === undefined
+                    ? []
+                    : [
+                        {
+                          id,
+                          maps: Object.fromEntries(
+                            Object.entries(maps).map(([role, file]) => [role, `${source}/${slug}/${file}`]),
+                          ),
+                        },
+                      ],
+                ),
+                impostors: entries.flatMap(({ id, source, slug, impostor }) =>
+                  impostor === undefined
+                    ? []
+                    : [
+                        {
+                          id,
+                          atlas: `${source}/${slug}/${impostor.atlas}`,
+                          meta: `${source}/${slug}/${impostor.meta}`,
+                        },
+                      ],
+                ),
               }),
             );
           });
