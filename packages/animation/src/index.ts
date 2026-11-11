@@ -1,3 +1,4 @@
+import { itemAt } from "@solstice/schema";
 import type { Animation, Easing, Track } from "@solstice/schema";
 
 /**
@@ -34,15 +35,15 @@ export function ease(kind: Easing, t: number): number {
  */
 export function evaluateTrack(track: Track, t: number): number {
   const keys = [...track.keyframes].sort((a, b) => a.at - b.at);
-  const first = keys[0]!;
-  const last = keys[keys.length - 1]!;
+  const first = itemAt(keys, 0);
+  const last = itemAt(keys, keys.length - 1);
 
   if (t <= first.at) return first.value;
   if (t >= last.at) return last.value;
 
   for (let i = 1; i < keys.length; i++) {
-    const from = keys[i - 1]!;
-    const to = keys[i]!;
+    const from = itemAt(keys, i - 1);
+    const to = itemAt(keys, i);
     if (t > to.at) continue;
     const span = to.at - from.at;
     // Two keyframes at the same instant are a step, not a division by zero.
