@@ -28,19 +28,10 @@ read more.
 
 Verify any path, symbol or command a page names before acting on it — pages drift.
 
-## Project invariants (do not "fix" these — they are deliberate)
+## Project invariants
 
-- **WebGL2 only.** No `three/webgpu`, no TSL. Forced by `three-gpu-pathtracer`.
-- **No React Three Fiber.** React renders chrome only; the scene graph is imperative.
-- **Exact version pins.** No `^` or `~` anywhere. `.npmrc` sets `save-exact=true`.
-- **No `@anthropic-ai/sdk` in the app.** Authoring is a repo-time activity.
-- **Scene JSON files are truth**; SQLite is a derived, rebuildable index.
-- **Degrees in documents, radians internally.** Metres, Y-up, right-handed:
-  +X is east and −Z is north, so bearings turn clockwise seen from above.
-- **ESM everywhere**, `"type": "module"`, `.js` extensions in relative imports
-  (NodeNext resolution).
-- **Zod: `.prefault()`, not `.default()`, for object defaults.** `.default({})`
-  returns the literal without re-parsing, so nested defaults silently never apply.
+They apply outside the corpus too, so they live in the root [CLAUDE.md](../CLAUDE.md)
+("Invariants"). Read them there; they are deliberate, so don't "fix" them.
 
 ## Workflow
 
