@@ -97,7 +97,7 @@ export const LevelDrawing = memo(function LevelDrawing({
           <g key={wall.id} data-entity={wall.id} data-selected={selected ? "true" : undefined}>
             {wallSolids(wall, cut, wallEnds(wall, level.walls)).map((piece, i) => (
               <path
-                // biome-ignore lint/suspicious/noArrayIndexKey: a wall's solid pieces have no identity beyond their order
+                // a wall's solid pieces have no identity beyond their order
                 key={i}
                 d={poly(piece)}
                 fill={selected ? SELECTED_FILL : INK.poche}

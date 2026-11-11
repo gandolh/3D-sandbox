@@ -290,7 +290,7 @@ describe("the tool bar", () => {
   it("turns the Wall tool off, and says why, when the scene has no materials", () => {
     const doc = SceneDocument.parse(sceneById("villa-carpathia")!.json);
     render(<ToolBar doc={{ ...doc, materials: {} }} />);
-    const wall = screen.getByRole("button", { name: "Wall" }) as HTMLButtonElement;
+    const wall = screen.getByRole<HTMLButtonElement>("button", { name: "Wall" });
     expect(wall.disabled).toBe(true);
     expect(wall.title).toMatch(/no materials/);
   });

@@ -84,7 +84,7 @@ export function useOpeningTool(kind: Opening["kind"], { doc, level, view, active
   const typingRef = useRef(typing);
   typingRef.current = typing;
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: reset on identity change only
+  // Reset on identity change only.
   useEffect(() => {
     setHover(null);
     setTyping(null);
@@ -192,7 +192,7 @@ export function useOpeningTool(kind: Opening["kind"], { doc, level, view, active
         >
           <span className="text-[10px] tracking-wider text-muted uppercase">{label} from the nearer end</span>
           <input
-            // biome-ignore lint/a11y/noAutofocus: opened by typing, so the typing has to land here
+            // eslint-disable-next-line no-restricted-syntax -- opened by typing, so the typing has to land here
             autoFocus
             type="text"
             inputMode="decimal"

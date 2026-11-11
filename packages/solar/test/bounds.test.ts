@@ -17,7 +17,7 @@ const SITE = {
  */
 describe("dayBounds", () => {
   it("is the same all day, whatever clock it is handed", () => {
-    const at = (time: string) => dayBounds(SITE, { date: "2026-06-21", time } as never);
+    const at = (time: string) => dayBounds(SITE, { date: "2026-06-21", time });
     const noon = JSON.stringify(at("12:00"));
     for (const time of ["00:00", "06:30", "17:42", "23:59"]) {
       expect(JSON.stringify(at(time)), time).toBe(noon);
@@ -25,8 +25,8 @@ describe("dayBounds", () => {
   });
 
   it("does change when the date does", () => {
-    const june = dayBounds(SITE, { date: "2026-06-21", time: "12:00" } as never);
-    const december = dayBounds(SITE, { date: "2026-12-21", time: "12:00" } as never);
+    const june = dayBounds(SITE, { date: "2026-06-21", time: "12:00" });
+    const december = dayBounds(SITE, { date: "2026-12-21", time: "12:00" });
     expect(december.labels.sunrise).not.toBe(june.labels.sunrise);
   });
 });

@@ -30,7 +30,7 @@ let source: string;
 const BODY = "x".repeat(4096);
 
 beforeAll(() => {
-  expect(helper).toMatch(/^fetch_one\(\) \{/);
+  if (!/^fetch_one\(\) \{/.test(helper)) throw new Error("download.sh no longer holds the fetch_one() helper");
   dir = mkdtempSync(join(tmpdir(), "solstice-dl-"));
   source = join(dir, "source.bin");
   writeFileSync(source, BODY);

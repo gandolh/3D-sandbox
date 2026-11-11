@@ -27,13 +27,12 @@
     "typecheck:tests": "tsc -p tsconfig.tests.json",
     "typecheck:web": "tsc --noEmit -p apps/web/tsconfig.json",
     "assets": "node assets/download-list.ts",
-    "lint": "biome check .",
+    "lint": "eslint .",
     "format:check": "prettier --check .",
     "house-style:sync": "node vendor/house-style/bin/sync.mjs",
     "format": "prettier --write ."
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.13",
     "@eslint/js": "10.0.1",
     "@types/node": "24.13.4",
     "@vitest/eslint-plugin": "1.6.28",

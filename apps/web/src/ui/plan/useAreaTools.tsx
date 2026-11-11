@@ -70,7 +70,7 @@ export function useRoomTool({ doc, level, view, active }: ToolContext): Tool {
   const busy = useRef(() => askingRef.current !== null).current;
   useEscapeToSelect(active, busy);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: reset on identity change only
+  // Reset on identity change only.
   useEffect(() => {
     setHover(null);
     setAsking(null);
@@ -166,7 +166,7 @@ function RoomPopover({
       <label className="flex items-center justify-between gap-2">
         <span className="text-[11px] text-muted">Name</span>
         <input
-          // biome-ignore lint/a11y/noAutofocus: the popover exists to ask for this
+          // eslint-disable-next-line no-restricted-syntax -- the popover exists to ask for this
           autoFocus
           type="text"
           aria-label="Room name"
@@ -242,7 +242,7 @@ export function useFloorTool({ doc, level, view, active }: ToolContext): Tool {
   useEscapeToSelect(active, busy);
   const material = options.material ?? defaultSlabMaterial(doc, level);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: reset on identity change only
+  // Reset on identity change only.
   useEffect(() => setHover(null), [doc.id, level.id, active]);
 
   return {

@@ -340,7 +340,7 @@ describe("a texture shared between roles", () => {
     const controller = new AbortController();
     const made: THREE.Texture[] = [];
     vi.spyOn(THREE.TextureLoader.prototype, "loadAsync").mockImplementation(async () => {
-      const texture = new THREE.Texture() as THREE.Texture<HTMLImageElement>;
+      const texture = new THREE.Texture<HTMLImageElement>();
       made.push(texture);
       controller.abort();
       return texture;

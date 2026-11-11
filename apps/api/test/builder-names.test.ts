@@ -20,7 +20,7 @@ describe("every scene builder is named for the document it builds", async () => 
   });
 
   for (const file of builders) {
-    it(file, async () => {
+    it(`${file}`, async () => {
       const mod = (await import(pathToFileURL(`${SRC}${file}`).href)) as { default?: { id?: unknown } };
       expect(mod.default?.id).toBe(basename(file, ".ts"));
     });

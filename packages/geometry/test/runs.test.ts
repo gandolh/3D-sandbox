@@ -50,7 +50,7 @@ const canopyBox = (canopy: Canopy) => {
   const position = canopy.geometry.getAttribute("position");
   for (const matrix of canopy.transforms) {
     for (let i = 0; i < position.count; i++) {
-      point.fromBufferAttribute(position as THREE.BufferAttribute, i).applyMatrix4(matrix);
+      point.fromBufferAttribute(position, i).applyMatrix4(matrix);
       box.expandByPoint(point);
     }
   }
@@ -196,9 +196,9 @@ describe("buildRun", () => {
     const b = new THREE.Vector3();
     const c = new THREE.Vector3();
     for (let i = 0; i < p.count; i += 3) {
-      a.fromBufferAttribute(p as THREE.BufferAttribute, i);
-      b.fromBufferAttribute(p as THREE.BufferAttribute, i + 1);
-      c.fromBufferAttribute(p as THREE.BufferAttribute, i + 2);
+      a.fromBufferAttribute(p, i);
+      b.fromBufferAttribute(p, i + 1);
+      c.fromBufferAttribute(p, i + 2);
       normals.push(b.clone().sub(a).cross(c.clone().sub(a)).normalize());
     }
     const across = normals.find((n) => Math.abs(n.dot(normals[0]!)) < 0.01);

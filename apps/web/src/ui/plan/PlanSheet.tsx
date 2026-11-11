@@ -49,7 +49,7 @@ export function PlanSheet({ doc, levelId }: { doc: SceneDocument; levelId: strin
             // The SVG is built by this repo from its own document — no user
             // HTML reaches it, and it is the only way to hand a browser a
             // vector drawing without re-implementing it as JSX.
-            // biome-ignore lint/security/noDangerouslySetInnerHtml: built by `planSvg` from this repo's own document; see above
+            // eslint-disable-next-line no-restricted-syntax -- built by `planSvg` from this repo's own document; see above
             dangerouslySetInnerHTML={{ __html: svg }}
           />
         </div>

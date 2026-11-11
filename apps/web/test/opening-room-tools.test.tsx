@@ -240,7 +240,7 @@ describe("editing openings, rooms and slabs", () => {
   it("shows a selected opening's offset in the Inspector, and takes a typed one", async () => {
     await doorAndWindows();
     act(() => select("w-23"));
-    const offset = screen.getByRole("spinbutton", { name: /^Offset/ }) as HTMLInputElement;
+    const offset = screen.getByRole<HTMLInputElement>("spinbutton", { name: /^Offset/ });
     expect(offset.value).toBe("5.3");
     await userEvent.clear(offset);
     await userEvent.type(offset, "4.8{Enter}");

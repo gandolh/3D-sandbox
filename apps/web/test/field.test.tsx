@@ -77,11 +77,11 @@ describe("Field", () => {
     // is not focused; the field has to show it rather than hold a stale draft.
     const { rerender } = render(<Field label="X" value={5} onCommit={vi.fn()} />);
     rerender(<Field label="X" value={8.25} onCommit={vi.fn()} />);
-    expect((screen.getByRole("spinbutton") as HTMLInputElement).value).toBe("8.25");
+    expect(screen.getByRole<HTMLInputElement>("spinbutton").value).toBe("8.25");
   });
 
   it("is read-only with no handler, so a derived value cannot be typed into", () => {
     render(<Field label="Area" value={31.6} />);
-    expect((screen.getByRole("spinbutton") as HTMLInputElement).disabled).toBe(true);
+    expect(screen.getByRole<HTMLInputElement>("spinbutton").disabled).toBe(true);
   });
 });

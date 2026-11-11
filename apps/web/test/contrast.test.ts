@@ -83,11 +83,11 @@ describe("the stylesheet's own claims", () => {
   it("does not use faint for text anywhere", () => {
     // The one thing a ratio cannot check: that the ornament token stayed
     // ornament.
-    const sources = import.meta.glob("../src/**/*.tsx", {
+    const sources = import.meta.glob<string>("../src/**/*.tsx", {
       eager: true,
       query: "?raw",
       import: "default",
-    }) as Record<string, string>;
+    });
     const offenders = Object.entries(sources)
       .filter(([, source]) => source.includes("text-faint"))
       .map(([path]) => path);

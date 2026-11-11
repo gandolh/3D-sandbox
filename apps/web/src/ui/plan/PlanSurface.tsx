@@ -170,7 +170,7 @@ export function PlanSurface({ doc, level }: { doc: SceneDocument; level: Level |
 
   const pointerOf = (event: React.PointerEvent | React.MouseEvent): ToolPointer => {
     const current = getState().planView ?? shown;
-    const rect = (svg.current ?? (event.currentTarget as Element)).getBoundingClientRect();
+    const rect = (svg.current ?? event.currentTarget).getBoundingClientRect();
     const screen: [number, number] = [event.clientX - rect.left, event.clientY - rect.top];
     return {
       world: toWorld(current, screen),

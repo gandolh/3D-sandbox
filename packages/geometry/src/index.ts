@@ -257,6 +257,7 @@ export function generateScene(doc: SceneDocument, options: GenerateOptions = {})
       if (!(error instanceof UnsupportedRoofError)) throw error;
       // A roof kind we cannot build yet is skipped, loudly, rather than
       // silently producing something wrong that looks plausible.
+      // eslint-disable-next-line no-console -- the package has no logger; a skipped roof has to be heard
       console.warn(`[geometry] ${error.message}`);
     }
   }

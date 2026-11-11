@@ -17,7 +17,7 @@ const thicken = (label: string): void =>
       { label },
     ),
   );
-const button = (name: "Undo" | "Redo") => screen.getByRole("button", { name }) as HTMLButtonElement;
+const button = (name: "Undo" | "Redo") => screen.getByRole<HTMLButtonElement>("button", { name });
 
 beforeEach(() => {
   setRendering(false);

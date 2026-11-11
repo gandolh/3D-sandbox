@@ -36,9 +36,9 @@ describe("health and listing", () => {
   });
 
   it("summarises each scene without re-reading the file", async () => {
-    const { scenes } = (await get("/api/scenes")).json() as {
+    const { scenes } = (await get("/api/scenes")).json<{
       scenes: Array<Record<string, number | string>>;
-    };
+    }>();
     expect(scenes).toHaveLength(1);
     expect(scenes[0]).toMatchObject({
       id: "villa-carpathia",
@@ -83,8 +83,8 @@ describe("path traversal", () => {
 
 describe("writing", () => {
   it("accepts a valid document and updates the index", async () => {
-    const edited = structuredClone(reference) as Record<string, unknown>;
-    (edited.title as unknown) = "Villa Carpathia II";
+    const edited = structuredClone<Record<string, unknown>>(reference);
+    edited.title = "Villa Carpathia II";
 
     const res = await app.inject({ method: "PUT", url: "/api/scenes/villa-carpathia", payload: edited });
     expect(res.statusCode).toBe(200);
@@ -117,7 +117,7 @@ describe("writing", () => {
     const res = await app.inject({ method: "PUT", url: "/api/scenes/villa-carpathia", payload: broken });
     expect(res.statusCode).toBe(422);
     expect(res.json()).toMatchObject({ error: "invalid_document" });
-    expect((res.json() as { findings: unknown[] }).findings.length).toBeGreaterThan(0);
+    expect(res.json<{ findings: unknown[] }>().findings.length).toBeGreaterThan(0);
 
     expect(await readFile(path, "utf8")).toBe(before);
   });
@@ -189,7 +189,7 @@ describe("the index is derived, not authoritative", () => {
 
     const res = await app.inject({ method: "POST", url: "/api/reindex" });
     expect(res.statusCode).toBe(200);
-    expect((res.json() as { indexed: string[] }).indexed).toContain("smuggled");
+    expect(res.json<{ indexed: string[] }>().indexed).toContain("smuggled");
     expect(index.get("smuggled")?.title).toBe("Smuggled In");
   });
 
@@ -204,7 +204,7 @@ describe("the index is derived, not authoritative", () => {
   it("drops a broken file from the index instead of failing the whole rescan", async () => {
     await writeFile(join(dir, "broken.scene.json"), "{ not json", "utf8");
     const res = await app.inject({ method: "POST", url: "/api/reindex" });
-    const body = res.json() as { indexed: string[]; failed: string[] };
+    const body = res.json<{ indexed: string[]; failed: string[] }>();
     expect(body.failed).toContain("broken");
     expect(body.indexed).toContain("villa-carpathia");
   });
@@ -295,7 +295,7 @@ describe("writing a scene", () => {
 
     // And it changed nothing: the other person's title is still on disk.
     const after = await read();
-    expect((after.json() as { title: string }).title).toBe("Changed by someone else");
+    expect(after.json<{ title: string }>().title).toBe("Changed by someone else");
   });
 
   it("accepts a write that carries the current version", async () => {
@@ -307,7 +307,7 @@ describe("writing a scene", () => {
       payload: { ...reference, title: "Edited" },
     });
     expect(res.statusCode).toBe(200);
-    expect(((await read()).json() as { title: string }).title).toBe("Edited");
+    expect((await read()).json<{ title: string }>().title).toBe("Edited");
   });
 
   it("does not create a scene through PUT", async () => {
@@ -339,7 +339,7 @@ describe("which scenes have a builder", () => {
     const drawn = { ...reference, id: "test-cottage", title: "Test Cottage" };
     expect((await app.inject({ method: "POST", url: "/api/scenes", payload: drawn })).statusCode).toBe(201);
 
-    const { scenes } = (await get("/api/scenes")).json() as { scenes: { id: string; hasBuilder: boolean }[] };
+    const { scenes } = (await get("/api/scenes")).json<{ scenes: { id: string; hasBuilder: boolean }[] }>();
     expect(scenes.map((s) => [s.id, s.hasBuilder])).toEqual([
       ["test-cottage", false],
       ["villa-carpathia", true],
@@ -347,11 +347,11 @@ describe("which scenes have a builder", () => {
   });
 
   it("notices a builder added after boot, because it is never stored", async () => {
-    const before = (await get("/api/scenes")).json() as { scenes: { hasBuilder: boolean }[] };
+    const before = (await get("/api/scenes")).json<{ scenes: { hasBuilder: boolean }[] }>();
     expect(before.scenes[0]!.hasBuilder).toBe(false);
     await mkdir(join(dir, "src"));
     await writeFile(join(dir, "src", "villa-carpathia.ts"), "export default {};\n", "utf8");
-    const after = (await get("/api/scenes")).json() as { scenes: { hasBuilder: boolean }[] };
+    const after = (await get("/api/scenes")).json<{ scenes: { hasBuilder: boolean }[] }>();
     expect(after.scenes[0]!.hasBuilder).toBe(true);
     // And the index itself holds no such column.
     expect(Object.keys(index.list()[0]!)).not.toContain("hasBuilder");
@@ -359,7 +359,7 @@ describe("which scenes have a builder", () => {
 
   it("does not count a directory named like a builder", async () => {
     await mkdir(join(dir, "src", "villa-carpathia.ts"), { recursive: true });
-    const { scenes } = (await get("/api/scenes")).json() as { scenes: { hasBuilder: boolean }[] };
+    const { scenes } = (await get("/api/scenes")).json<{ scenes: { hasBuilder: boolean }[] }>();
     expect(scenes[0]!.hasBuilder).toBe(false);
   });
 });

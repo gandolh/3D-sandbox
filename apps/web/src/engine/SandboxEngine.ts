@@ -414,7 +414,7 @@ export class SandboxEngine {
       this.events.onRenderLoading?.();
       tracer = await import("./PathTracer.js");
     } catch (error) {
-      throw new Error(`Could not load the renderer: ${(error as Error).message}`);
+      throw new Error(`Could not load the renderer: ${(error as Error).message}`, { cause: error });
     }
 
     // A shot's solar override is the whole reason `garden-elevation` differs

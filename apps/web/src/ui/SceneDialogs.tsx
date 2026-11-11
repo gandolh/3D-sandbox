@@ -88,7 +88,7 @@ function BuilderWarning({ tool }: { tool: PlanTool }) {
         </button>
         <button
           type="button"
-          // biome-ignore lint/a11y/noAutofocus: a modal's first control takes focus
+          // eslint-disable-next-line no-restricted-syntax -- a modal's first control takes focus
           autoFocus
           onClick={() => {
             allowDrawing(doc.id);
@@ -135,7 +135,7 @@ function NewHouse({ copy, tool, error }: { copy: boolean; tool?: PlanTool | unde
         <label className="mb-1 flex items-center gap-2">
           <span className="w-10 text-[11.5px] text-muted">Title</span>
           <input
-            // biome-ignore lint/a11y/noAutofocus: the dialog exists to ask for this
+            // eslint-disable-next-line no-restricted-syntax -- the dialog exists to ask for this
             autoFocus
             type="text"
             aria-label="Title"
@@ -186,7 +186,7 @@ function StaleSave() {
         </button>
         <button
           type="button"
-          // biome-ignore lint/a11y/noAutofocus: a modal's first control takes focus
+          // eslint-disable-next-line no-restricted-syntax -- a modal's first control takes focus
           autoFocus
           onClick={() => {
             close();

@@ -34,10 +34,7 @@ const disposableUniforms = (material: THREE.ShaderMaterial): Disposable[] =>
     .map((uniform) => uniform.value as unknown)
     .filter(
       (value): value is Disposable =>
-        typeof value === "object" &&
-        value !== null &&
-        "dispose" in value &&
-        typeof (value as { dispose: unknown }).dispose === "function",
+        typeof value === "object" && value !== null && "dispose" in value && typeof value.dispose === "function",
     );
 
 describe("the path tracer's teardown", () => {

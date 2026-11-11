@@ -249,7 +249,7 @@ export function Toolbar({ onSave }: { onSave: () => void }) {
             // downstream of it. Also the one honest moment to ask: before an
             // hour of GPU, not after the first image is already lost.
             void (async () => {
-              let directory: FileSystemDirectoryHandle | null = null;
+              let directory: FileSystemDirectoryHandle | null;
               try {
                 directory = await pickRenderDirectory();
               } catch {

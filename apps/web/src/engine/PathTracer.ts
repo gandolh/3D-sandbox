@@ -216,6 +216,7 @@ export class PathTraceSession {
       // Reaching into a library's privates must never be able to fail a
       // render's teardown. The cost of this going wrong is the leak we already
       // had; the cost of it throwing was the whole engine.
+      // eslint-disable-next-line no-console -- a teardown that cannot throw has nowhere else to report
       console.warn("Could not free the path tracer's internals", error);
     }
     this.bvhWorker.dispose();
@@ -303,12 +304,7 @@ export function disposeUniformValues(material: THREE.ShaderMaterial): number {
   let freed = 0;
   for (const uniform of Object.values(material.uniforms)) {
     const value: unknown = uniform.value;
-    if (
-      typeof value === "object" &&
-      value !== null &&
-      "dispose" in value &&
-      typeof (value as { dispose: unknown }).dispose === "function"
-    ) {
+    if (typeof value === "object" && value !== null && "dispose" in value && typeof value.dispose === "function") {
       (value as { dispose: () => void }).dispose();
       freed++;
     }

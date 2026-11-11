@@ -679,7 +679,7 @@ describe("hand-wound surfaces face outward", () => {
     [-3.25, 10.6],
   ];
 
-  const road = (path: [number, number][]) => buildRoad({ id: "r", path, width: 6, material: "asphalt" } as never);
+  const road = (path: [number, number][]) => buildRoad({ id: "r", path, width: 6, material: "asphalt" });
 
   it("lays a road face-up, straight and round a bend", () => {
     // The shipped winding produced (0, −1, 0) on every triangle, and every road
@@ -719,7 +719,7 @@ describe("hand-wound surfaces face outward", () => {
     // bounding box is identical either way. The scene would read as "we forgot
     // to pave the yard" rather than as a winding bug.
     const paved = (polygon: [number, number][]) =>
-      buildPaving({ id: "p", polygon, material: "brick", thickness: 0.04 } as never);
+      buildPaving({ id: "p", polygon, material: "brick", thickness: 0.04 });
 
     const shapes: [string, [number, number][]][] = [
       ["a rectangle", rect],
@@ -763,7 +763,7 @@ describe("hand-wound surfaces face outward", () => {
       polygon: rect,
       material: "brick",
       thickness: 0.04,
-    } as never);
+    });
     const box = new THREE.Box3().setFromBufferAttribute(geometry.getAttribute("position") as THREE.BufferAttribute);
     expect(box.max.y).toBeCloseTo(0.04, 6);
     expect(box.min.y).toBeCloseTo(0, 6);

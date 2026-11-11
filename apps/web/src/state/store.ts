@@ -407,7 +407,7 @@ export interface EditOptions {
 export function editDocument(mutate: (draft: SceneDocument) => void, options: EditOptions = {}): void {
   const previous = state.document;
   if (previous === null) return;
-  const draft = structuredClone(previous) as SceneDocument;
+  const draft = structuredClone<SceneDocument>(previous);
   mutate(draft);
 
   const parsed = SceneDocument.safeParse(draft);

@@ -70,7 +70,7 @@ export function useWallTool({ doc, level, view, active }: ToolContext): Tool {
 
   // A different level or scene, or another tool: the chain was about walls
   // that are not here any more.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: reset on identity change only
+  // Reset on identity change only.
   useEffect(() => {
     setChain(null);
     setTyping(null);

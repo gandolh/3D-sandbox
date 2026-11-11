@@ -948,7 +948,7 @@ const greenhollow: SceneDocumentInput = {
         height: 0.5,
         scaleRange: [0.95, 1.05],
         material: "vegetable-green",
-        exclude: keepOff(rect(-10.5, -42.6, 6, 7.2) as [number, number][]),
+        exclude: keepOff(rect(-10.5, -42.6, 6, 7.2)),
       },
       // The orchard, planted in rows — which is the whole reason rows exist.
       {

@@ -185,7 +185,7 @@ describe("New house", () => {
     await refreshScenes();
     loadDocument(bundled("greenhollow"));
     render(<Toolbar onSave={vi.fn()} />);
-    const button = screen.getByRole("button", { name: "New house" }) as HTMLButtonElement;
+    const button = screen.getByRole<HTMLButtonElement>("button", { name: "New house" });
     expect(button.disabled).toBe(true);
     expect(button.title).toMatch(/no API/);
   });
@@ -197,7 +197,7 @@ describe("New house", () => {
     );
     await refreshScenes();
     render(<Toolbar onSave={vi.fn()} />);
-    expect((screen.getByRole("button", { name: "New house" }) as HTMLButtonElement).title).toMatch(/npm run api/);
+    expect(screen.getByRole<HTMLButtonElement>("button", { name: "New house" }).title).toMatch(/npm run api/);
   });
 
   it("creates the house, opens it in the plan view with the Wall tool, and lists it as drawn", async () => {

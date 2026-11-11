@@ -386,7 +386,7 @@ describe("references", () => {
 
   it("warns about a material nothing uses", () => {
     const doc = baseScene();
-    doc.materials!.spare = { label: "Spare", source: "procedural", baseColor: "#FFFFFF" };
+    doc.materials.spare = { label: "Spare", source: "procedural", baseColor: "#FFFFFF" };
     const found = lint(doc).filter((f) => f.rule === "materials-are-used");
     expect(found[0]!.severity).toBe("warning");
   });
@@ -408,7 +408,7 @@ describe("references", () => {
 describe("material-slug-resolves", () => {
   const textured = (slug: string): SceneDocumentInput => {
     const doc = baseScene();
-    doc.materials!.wall = { label: "Wall", source: "ambientcg", slug, baseColor: "#C9C3B6" };
+    doc.materials.wall = { label: "Wall", source: "ambientcg", slug, baseColor: "#C9C3B6" };
     return doc;
   };
   const known = new Set(["ambientcg/Concrete034"]);
@@ -502,7 +502,7 @@ describe("loadScene", () => {
 
   it("returns warnings without throwing", () => {
     const doc = baseScene();
-    doc.materials!.spare = { label: "Spare", source: "procedural", baseColor: "#FFFFFF" };
+    doc.materials.spare = { label: "Spare", source: "procedural", baseColor: "#FFFFFF" };
     const { findings } = loadScene(doc);
     expect(hasErrors(findings)).toBe(false);
     expect(findings).toHaveLength(1);
@@ -1022,7 +1022,7 @@ const FIRES: Record<string, () => LintFinding[]> = {
   },
   "material-slug-resolves": () => {
     const doc = baseScene();
-    doc.materials!.wall = {
+    doc.materials.wall = {
       label: "Wall",
       source: "polyhaven",
       slug: "not_a_real_slug",
