@@ -295,7 +295,9 @@ export function generateScene(doc: SceneDocument, options: GenerateOptions = {})
       }
 
       for (const [assetId, group] of baked) {
-        const impostor = options.assets!.impostor!(assetId)!;
+        const impostor = options.assets?.impostor?.(assetId);
+        // Every group here was baked above, so the lookup answers again.
+        if (impostor === undefined) continue;
         const geometry = buildImpostorGeometry(group, impostor, field.height);
         const mesh = new THREE.Mesh(geometry, impostorMaterial(impostor));
         mesh.name = `scatter:${field.id}:${assetId}`;
