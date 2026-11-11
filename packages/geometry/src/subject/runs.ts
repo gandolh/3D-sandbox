@@ -1,4 +1,4 @@
-import { type Plan, POST_WIDTH, type Run, wallAngle } from "@solstice/schema";
+import { type Plan, POST_WIDTH, type Run, wallAngle, itemAt } from "@solstice/schema";
 import * as THREE from "three";
 import { ensureStandardAttributes } from "../attributes.js";
 import { mergeSimple } from "../context/scatter.js";
@@ -21,8 +21,8 @@ interface Segment {
 function segments(path: readonly Plan[]): Segment[] {
   const out: Segment[] = [];
   for (let i = 1; i < path.length; i++) {
-    const from = path[i - 1]!;
-    const to = path[i]!;
+    const from = itemAt(path, i - 1);
+    const to = itemAt(path, i);
     const length = Math.hypot(to[0] - from[0], to[1] - from[1]);
     if (length < 1e-6) continue;
     // `wallAngle`, not a local `atan2`: a run stands against the walls, and the
