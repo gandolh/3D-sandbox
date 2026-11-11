@@ -291,8 +291,29 @@ describe("the tool bar", () => {
   it("turns the Wall tool off, and says why, when the scene has no materials", () => {
     const doc = SceneDocument.parse(sceneById("villa-carpathia")!.json);
     render(<ToolBar doc={{ ...doc, materials: {} }} />);
-    const wall = screen.getByRole<HTMLButtonElement>("button", { name: "Wall" });
-    expect(wall.disabled).toBe(true);
+    const wall = screen.getByRole("button", { name: "Wall" });
+    // A toolbar keeps a disabled button in its arrow-key ring, so it is aria-disabled, not `disabled`.
+    expect(wall.getAttribute("aria-disabled")).toBe("true");
     expect(wall.title).toMatch(/no materials/);
+  });
+
+  it("is one named toolbar, marks the chosen tool pressed, and keeps it when pressed again", async () => {
+    const doc = SceneDocument.parse(sceneById("villa-carpathia")!.json);
+    render(<ToolBar doc={doc} />);
+    expect(screen.getByRole("toolbar", { name: "Plan tools" })).toBeTruthy();
+    const select = screen.getByRole("button", { name: "Select" });
+    expect(select.getAttribute("aria-pressed")).toBe("true");
+    await userEvent.click(select);
+    expect(getState().planTool).toBe("select");
+    expect(screen.getByRole("button", { name: "Select" }).getAttribute("aria-pressed")).toBe("true");
+  });
+
+  it("is one Tab stop, and a disabled tool cannot be chosen", async () => {
+    const doc = SceneDocument.parse(sceneById("villa-carpathia")!.json);
+    render(<ToolBar doc={{ ...doc, materials: {} }} />);
+    await userEvent.click(screen.getByRole("button", { name: "Wall" }));
+    expect(getState().planTool).toBe("select");
+    const tabbable = screen.getAllByRole("button").filter((b) => b.getAttribute("tabindex") !== "-1");
+    expect(tabbable.length).toBe(1);
   });
 });

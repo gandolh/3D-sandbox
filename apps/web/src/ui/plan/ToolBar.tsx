@@ -1,6 +1,7 @@
 import type { Level, SceneDocument } from "@solstice/schema";
 import { useState } from "react";
 import { Select } from "../../components/ui/Select.jsx";
+import { ToggleToolbar } from "../../components/ui/ToggleToolbar.jsx";
 import { parseDecimal } from "../../lib/drawing/walls.js";
 import {
   type PlanTool,
@@ -11,11 +12,6 @@ import {
   useStore,
 } from "../../state/store.js";
 import { defaultSlabMaterial } from "./useAreaTools.jsx";
-
-const toolButton = (on: boolean): string =>
-  `rounded-sm border px-2 py-[3px] font-mono text-[10px] tracking-wider uppercase disabled:cursor-default disabled:opacity-40 ${
-    on ? "border-accent bg-accent text-accent-ink" : "border-line bg-panel text-muted hover:text-ink"
-  }`;
 
 /** Why a tool is off, or null when it is available. */
 export function toolUnavailable(tool: PlanTool, doc: SceneDocument): string | null {
@@ -50,26 +46,17 @@ export function ToolBar({ doc }: { doc: SceneDocument }) {
     { id: "floor", label: "Floor", title: "Click inside a building to lay a floor slab under it" },
   ];
   return (
-    <div role="toolbar" aria-label="Plan tools" className="flex">
-      {tools.map((t, i) => {
+    <ToggleToolbar
+      label="Plan tools"
+      items={tools.map((t) => {
         const why = toolUnavailable(t.id, doc);
-        return (
-          <button
-            key={t.id}
-            type="button"
-            aria-pressed={tool === t.id}
-            disabled={why !== null}
-            title={why ?? t.title}
-            // Through `pickTool`, which warns before drawing in a scene the
-            // next build would overwrite.
-            onClick={() => pickTool(t.id)}
-            className={`${toolButton(tool === t.id)} ${i > 0 ? "-ml-px" : ""}`}
-          >
-            {t.label}
-          </button>
-        );
+        return { value: t.id, label: t.label, title: why ?? t.title, disabled: why !== null };
       })}
-    </div>
+      value={tool}
+      // Through `pickTool`, which warns before drawing in a scene the
+      // next build would overwrite.
+      onValueChange={pickTool}
+    />
   );
 }
 
