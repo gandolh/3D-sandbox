@@ -16,6 +16,7 @@ const field = (over: Partial<ScatterField> = {}): ScatterField => ({
   scaleRange: [0.9, 1.1],
   arrangement: "rows",
   rowSpacing: [6, 5],
+  height: 6,
   exclude: [],
   ...over,
 });

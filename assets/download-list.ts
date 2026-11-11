@@ -154,7 +154,7 @@ async function resolveAmbientCg(w: Wanted): Promise<Resolved> {
         {
           downloadFiletypeCategories?: Record<
             string,
-            { downloads?: { attribute?: string; downloadLink?: string }[] }
+            { downloads?: { attribute?: string; downloadLink?: string; size?: number }[] }
           >;
         }
       >;

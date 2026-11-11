@@ -1,0 +1,12 @@
+{
+  // Typechecks what no workspace tsconfig includes: the package and API tests, the asset scripts and the
+  // Vitest config. `npm run typecheck` reads only each package's src/.
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": ["node"],
+    "allowImportingTsExtensions": true,
+    "rewriteRelativeImportExtensions": true
+  },
+  "include": ["packages/*/test/**/*.ts", "apps/api/test/**/*.ts", "assets/**/*.ts", "vitest.config.ts"]
+}

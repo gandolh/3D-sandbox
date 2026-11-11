@@ -43,6 +43,7 @@ const level = (): Level => ({
   height: 2.7,
   walls: [],
   slabs: [],
+  rooms: [],
 });
 
 const wall = (openings: Wall["openings"] = []): Wall => ({
