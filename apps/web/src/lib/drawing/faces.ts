@@ -1,4 +1,4 @@
-import { pointInPolygon, signedArea, type Wall } from "@solstice/schema";
+import { pointInPolygon, signedArea, type Wall, itemAt } from "@solstice/schema";
 import { clean, type Pt } from "./snap.js";
 
 /**
@@ -101,8 +101,8 @@ export function planarFaces(walls: readonly Wall[]): Face[] {
     // is exactly the corner the walls share.
     const ids = ts.map((t) => (t === 0 ? vertex(wall.start) : t === 1 ? vertex(wall.end) : vertex(at(t))));
     for (let i = 0; i + 1 < ids.length; i++) {
-      const from = ids[i]!;
-      const to = ids[i + 1]!;
+      const from = itemAt(ids, i);
+      const to = itemAt(ids, i + 1);
       if (from === to) continue;
       const key = from < to ? `${from}:${to}` : `${to}:${from}`;
       // Two walls laid along the same stretch: keep the first.
@@ -120,11 +120,11 @@ export function planarFaces(walls: readonly Wall[]): Face[] {
 
   // Outgoing half-edges at each vertex, anticlockwise by angle.
   const out: number[][] = vertices.map(() => []);
-  half.forEach((h, i) => out[h.from]!.push(i));
+  half.forEach((h, i) => itemAt(out, h.from).push(i));
   const angle = (i: number): number => {
-    const h = half[i]!;
-    const [fx, fz] = vertices[h.from]!;
-    const [tx, tz] = vertices[h.to]!;
+    const h = itemAt(half, i);
+    const [fx, fz] = itemAt(vertices, h.from);
+    const [tx, tz] = itemAt(vertices, h.to);
     return Math.atan2(tz - fz, tx - fx);
   };
   for (const list of out) list.sort((p, q) => angle(p) - angle(q));
@@ -132,7 +132,7 @@ export function planarFaces(walls: readonly Wall[]): Face[] {
   // Connected groups, for telling which outside belongs to which building.
   const parent = vertices.map((_, i) => i);
   const find = (i: number): number => {
-    while (parent[i] !== i) i = parent[i] = parent[parent[i]!]!;
+    while (parent[i] !== i) i = parent[i] = itemAt(parent, itemAt(parent, i));
     return i;
   };
   for (const e of edges) parent[find(e.from)] = find(e.to);
@@ -140,10 +140,10 @@ export function planarFaces(walls: readonly Wall[]): Face[] {
   // Walk: after arriving at v along u → v, leave by the edge just clockwise
   // of v → u. That keeps the face on the left.
   const next = (i: number): number => {
-    const h = half[i]!;
-    const list = out[h.to]!;
+    const h = itemAt(half, i);
+    const list = itemAt(out, h.to);
     const k = list.indexOf(h.twin);
-    return list[(k - 1 + list.length) % list.length]!;
+    return itemAt(list, (k - 1 + list.length) % list.length);
   };
 
   const faces: Face[] = [];
@@ -160,12 +160,12 @@ export function planarFaces(walls: readonly Wall[]): Face[] {
 
     const trimmed = withoutSpikes(cycle, half);
     if (trimmed.length < 3) continue;
-    const polygon = trimmed.map((k) => vertices[half[k]!.from]!);
+    const polygon = trimmed.map((k) => itemAt(vertices, itemAt(half, k).from));
     faces.push({
       polygon,
-      walls: trimmed.map((k) => half[k]!.wall),
+      walls: trimmed.map((k) => itemAt(half, k).wall),
       area: signedArea(polygon),
-      group: find(half[start]!.from),
+      group: find(itemAt(half, start).from),
     });
   }
   return faces;
@@ -181,9 +181,9 @@ function withoutSpikes(cycle: number[], half: HalfEdge[]): number[] {
   while (changed && list.length >= 2) {
     changed = false;
     for (let k = 0; k < list.length; k++) {
-      const a = list[k]!;
-      const b = list[(k + 1) % list.length]!;
-      if (half[a]!.twin === b) {
+      const a = itemAt(list, k);
+      const b = itemAt(list, (k + 1) % list.length);
+      if (itemAt(half, a).twin === b) {
         if (k + 1 < list.length) {
           list.splice(k, 2);
         } else {
@@ -221,10 +221,10 @@ export function faceAt(walls: readonly Wall[], point: Pt): Face | null {
 export function offsetFace(face: Face): [number, number][] {
   const n = face.polygon.length;
   const lines = face.polygon.map((p, i) => {
-    const q = face.polygon[(i + 1) % n]!;
+    const q = itemAt(face.polygon, (i + 1) % n);
     const len = Math.hypot(q[0] - p[0], q[1] - p[1]);
     const d: [number, number] = [(q[0] - p[0]) / len, (q[1] - p[1]) / len];
-    const h = face.walls[i]!.thickness / 2;
+    const h = itemAt(face.walls, i).thickness / 2;
     // Left of the direction of travel, in the plane's own frame.
     const left: [number, number] = [-d[1], d[0]];
     return { p: [p[0] + left[0] * h, p[1] + left[1] * h] as [number, number], d, h, left };
@@ -232,14 +232,14 @@ export function offsetFace(face: Face): [number, number][] {
 
   const out: [number, number][] = [];
   for (let i = 0; i < n; i++) {
-    const a = lines[(i - 1 + n) % n]!;
-    const b = lines[i]!;
+    const a = itemAt(lines, (i - 1 + n) % n);
+    const b = itemAt(lines, i);
     const denom = cross(a.d[0], a.d[1], b.d[0], b.d[1]);
     if (Math.abs(denom) < 1e-9) {
       // Straight on. The same thickness carries straight through; a
       // different one steps across at the joint.
       if (Math.abs(a.h - b.h) < EPS) continue;
-      const v = face.polygon[i]!;
+      const v = itemAt(face.polygon, i);
       out.push([v[0] + a.left[0] * a.h, v[1] + a.left[1] * a.h], [v[0] + b.left[0] * b.h, v[1] + b.left[1] * b.h]);
       continue;
     }
