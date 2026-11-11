@@ -1,3 +1,4 @@
+import { itemAt } from "@solstice/schema";
 import type { Level, SceneDocument, Wall } from "@solstice/schema";
 import { clean, directionOf, type Pt } from "./snap.js";
 
@@ -42,10 +43,10 @@ export function placePoint(chain: Chain | null, point: Pt): Placement {
   if (chain === null || chain.points.length === 0) {
     return { kind: "started", chain: { points: [[point[0], point[1]]], wallIds: [] } };
   }
-  const last = chain.points[chain.points.length - 1]!;
+  const last = itemAt(chain.points, chain.points.length - 1);
   if (samePoint(point, last)) return { kind: "ignored", reason: "same point" };
 
-  const first = chain.points[0]!;
+  const first = itemAt(chain.points, 0);
   const start: [number, number] = [last[0], last[1]];
   if (samePoint(point, first)) {
     // Back to the start after one wall would lay a second wall on the first.
@@ -73,7 +74,7 @@ export const recordWall = (chain: Chain, id: string): Chain => ({
  */
 export function trimChain(chain: Chain, exists: (id: string) => boolean): Chain | null {
   let { points, wallIds } = chain;
-  while (wallIds.length > 0 && !exists(wallIds[wallIds.length - 1]!)) {
+  while (wallIds.length > 0 && !exists(itemAt(wallIds, wallIds.length - 1))) {
     wallIds = wallIds.slice(0, -1);
     points = points.slice(0, -1);
   }
