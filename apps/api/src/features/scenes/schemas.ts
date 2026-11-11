@@ -42,3 +42,18 @@ export const sceneBodySchema = z.unknown();
  * carry, and no literal code.
  */
 export const errorReplySchema = z.object({ error: z.string(), message: z.string() });
+
+/**
+ * `PUT`'s precondition: the `mtimeMs` the client read, echoed back. A string, as every header is; the handler
+ * answers 400 `invalid_precondition` when it is not a number. A loose object, because Fastify replaces
+ * `request.headers` with what the schema returns, and a plain object would strip every other header.
+ */
+export const preconditionHeadersSchema = z.looseObject({ "x-scene-mtime": z.string().optional() });
+
+/** `PUT`: the scene saved, its size on disk, and how many warnings it lints with. */
+export const savedSchema = z.object({
+  ok: z.literal(true),
+  id: z.string(),
+  bytes: z.number().int(),
+  warnings: z.number().int(),
+});

@@ -4,7 +4,14 @@ import type { Config } from "../../config.js";
 import { SceneNotFoundError, UnsafeIdError } from "./errors.js";
 import { deleteSceneFile, hasBuilder, readSceneFile, sceneMtime, writeSceneFile } from "./files.js";
 import { type SceneIndex, summarize } from "./index-db.js";
-import { errorReplySchema, sceneBodySchema, sceneListSchema, sceneParamsSchema } from "./schemas.js";
+import {
+  errorReplySchema,
+  preconditionHeadersSchema,
+  savedSchema,
+  sceneBodySchema,
+  sceneListSchema,
+  sceneParamsSchema,
+} from "./schemas.js";
 
 /** What the scene routes take from the app: where the scene files are, and the index over them. */
 export interface ScenesOptions {
@@ -103,26 +110,37 @@ export const sceneRoutes: FastifyPluginAsyncZod<ScenesOptions> = async (app, { c
    * the write proceeds — a caller that never read the file has nothing to be
    * stale about, and scripts that generate scenes wholesale are legitimate.
    */
-  app.put<{ Params: { id: string }; Body: unknown }>("/api/scenes/:id", async (request, reply) => {
-    const { id } = request.params;
-    const header = request.headers["x-scene-mtime"];
-    const expected = typeof header === "string" && header !== "" ? Number(header) : undefined;
-    if (expected !== undefined && !Number.isFinite(expected)) {
-      return reply.code(400).send({ error: "invalid_precondition", message: "x-scene-mtime must be a number" });
-    }
+  app.put(
+    "/api/scenes/:id",
+    {
+      schema: {
+        params: sceneParamsSchema,
+        headers: preconditionHeadersSchema,
+        body: sceneBodySchema,
+        response: { 200: savedSchema, 400: errorReplySchema },
+      },
+    },
+    async (request, reply) => {
+      const { id } = request.params;
+      const header = request.headers["x-scene-mtime"];
+      const expected = typeof header === "string" && header !== "" ? Number(header) : undefined;
+      if (expected !== undefined && !Number.isFinite(expected)) {
+        return reply.code(400).send({ error: "invalid_precondition", message: "x-scene-mtime must be a number" });
+      }
 
-    // Existence is checked here rather than inferred from a failed write, and
-    // against the disk rather than the index — see `onDisk`. A file that is
-    // present but does not load fails here too, which is right for a replace.
-    await readSceneFile(config.scenesDir, id);
+      // Existence is checked here rather than inferred from a failed write, and
+      // against the disk rather than the index — see `onDisk`. A file that is
+      // present but does not load fails here too, which is right for a replace.
+      await readSceneFile(config.scenesDir, id);
 
-    const { document, bytes } = await writeSceneFile(config.scenesDir, id, request.body, expected);
-    index.upsert(await summarize(config.scenesDir, id, document, bytes));
-    // The new version. Without it a client holding the mtime it read would
-    // find its own second save refused as stale.
-    reply.header("x-scene-mtime", String(await sceneMtime(config.scenesDir, id)));
-    return { ok: true, id, bytes, warnings: index.get(id)?.warnings ?? 0 };
-  });
+      const { document, bytes } = await writeSceneFile(config.scenesDir, id, request.body, expected);
+      index.upsert(await summarize(config.scenesDir, id, document, bytes));
+      // The new version. Without it a client holding the mtime it read would
+      // find its own second save refused as stale.
+      reply.header("x-scene-mtime", String(await sceneMtime(config.scenesDir, id)));
+      return { ok: true as const, id, bytes, warnings: index.get(id)?.warnings ?? 0 };
+    },
+  );
 
   app.delete<{ Params: { id: string } }>("/api/scenes/:id", async (request) => {
     const { id } = request.params;

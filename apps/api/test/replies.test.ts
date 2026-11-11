@@ -54,4 +54,22 @@ describe("the scene replies through their response schemas", () => {
     expect(again.statusCode).toBe(409);
     expect(again.body).toBe(JSON.stringify({ error: "exists", message: `Scene "${copy.id}" already exists` }));
   });
+
+  it.each(FILES)("PUT of %s answers the saved summary, and a bad precondition 400", async (file) => {
+    const id = file.replace(".scene.json", "");
+    const document = await read(file);
+    const bad = await app.inject({
+      method: "PUT",
+      url: `/api/scenes/${id}`,
+      headers: { "x-scene-mtime": "yesterday" },
+      payload: document,
+    });
+    expect(bad.statusCode).toBe(400);
+    expect(bad.body).toBe('{"error":"invalid_precondition","message":"x-scene-mtime must be a number"}');
+
+    const res = await app.inject({ method: "PUT", url: `/api/scenes/${id}`, payload: document });
+    expect(res.statusCode).toBe(200);
+    const bytes = Buffer.byteLength(await readFile(join(SCENES, file)));
+    expect(res.body).toBe(JSON.stringify({ ok: true, id, bytes, warnings: 0 }));
+  });
 });
