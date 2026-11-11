@@ -46,7 +46,8 @@ describe("the plan view opens every scene on every level", () => {
     render(<PlanView />);
     const picker = screen.getByRole("combobox", { name: "Level" });
     const upper = parse("elmsgate").subject.levels[1]!;
-    await userEvent.selectOptions(picker, upper.id);
+    await userEvent.click(picker);
+    await userEvent.click(await screen.findByRole("option", { name: upper.name }));
     expect(getState().planLevelId).toBe(upper.id);
     expect(entity(upper.walls[0]!.id)).toBeTruthy();
   });

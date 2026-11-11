@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { floorOutline, roomOutline } from "../../lib/drawing/faces.js";
 import { defaultWallMaterial, nextId } from "../../lib/drawing/walls.js";
 import { toScreen, type ViewTransform } from "../../lib/plan-view.js";
+import { Select } from "../../components/ui/Select.jsx";
 import { editDocument, getState, setPlanTool, setStatus, useStore } from "../../state/store.js";
 import { editsText } from "../useUndoKeys.js";
 import { SELECTED } from "./LevelDrawing.jsx";
@@ -178,18 +179,13 @@ function RoomPopover({
       </label>
       <label className="flex items-center justify-between gap-2">
         <span className="text-[11px] text-muted">Use</span>
-        <select
-          aria-label="Room use"
+        <Select
+          label="Room use"
+          items={ROOM_USES.map((u) => ({ value: u.use, label: u.label }))}
           value={use}
-          onChange={(event) => setUse(event.target.value as Room["use"])}
-          className="w-[130px] rounded-sm border border-line bg-input px-1 py-[2px] text-[11.5px] text-ink"
-        >
-          {ROOM_USES.map((u) => (
-            <option key={u.use} value={u.use}>
-              {u.label}
-            </option>
-          ))}
-        </select>
+          onValueChange={setUse}
+          className="w-[130px] bg-input px-1 py-[2px] text-[11.5px] text-ink"
+        />
       </label>
       <div className="flex justify-end gap-1.5">
         <button

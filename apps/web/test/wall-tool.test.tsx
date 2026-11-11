@@ -203,8 +203,9 @@ describe("drawing a box on an empty level", () => {
 
   it("uses the options bar's thickness, height and material", async () => {
     await pickWall();
-    const material = Object.keys(getState().document!.materials).at(-1)!;
-    await userEvent.selectOptions(screen.getByRole("combobox", { name: "Material" }), material);
+    const [material, { label }] = Object.entries(getState().document!.materials).at(-1)!;
+    await userEvent.click(screen.getByRole("combobox", { name: "Material" }));
+    await userEvent.click(await screen.findByRole("option", { name: label }));
     const thickness = screen.getByRole("textbox", { name: "Thickness" });
     await userEvent.clear(thickness);
     await userEvent.type(thickness, "0,3{Enter}");

@@ -1,5 +1,6 @@
 import type { Level, SceneDocument } from "@solstice/schema";
 import { useState } from "react";
+import { Select } from "../../components/ui/Select.jsx";
 import { parseDecimal } from "../../lib/drawing/walls.js";
 import {
   type PlanTool,
@@ -147,19 +148,16 @@ export function WallOptionsBar({ doc, levelHeight }: { doc: SceneDocument; level
       />
       <label className="flex items-center gap-1.5">
         <span className="text-[10.5px] text-muted">Material</span>
-        <select
-          aria-label="Material"
+        <Select
+          label="Material"
+          items={[
+            { value: "", label: "Most used on this level" },
+            ...materials.map(([id, material]) => ({ value: id, label: material.label })),
+          ]}
           value={options.material ?? ""}
-          onChange={(event) => setWallOptions({ material: event.target.value === "" ? null : event.target.value })}
-          className="max-w-[180px] rounded-sm border border-line bg-input px-1.5 py-[2px] text-[11px] text-ink"
-        >
-          <option value="">Most used on this level</option>
-          {materials.map(([id, material]) => (
-            <option key={id} value={id}>
-              {material.label}
-            </option>
-          ))}
-        </select>
+          onValueChange={(id) => setWallOptions({ material: id === "" ? null : id })}
+          className="max-w-[180px] bg-input px-1.5 py-[2px] text-[11px] text-ink"
+        />
       </label>
       <span className="ml-auto text-[10.5px] text-subtle">
         Type a length while drawing · Tab for bearing · Shift for ortho · Enter ends
@@ -204,21 +202,16 @@ export function FloorOptionsBar({ doc, level }: { doc: SceneDocument; level: Lev
       />
       <label className="flex items-center gap-1.5">
         <span className="text-[10.5px] text-muted">Material</span>
-        <select
-          aria-label="Material"
+        <Select
+          label="Material"
+          items={[
+            { value: "", label: fallback === null ? "None" : `Default: ${doc.materials[fallback]?.label ?? fallback}` },
+            ...Object.entries(doc.materials).map(([id, material]) => ({ value: id, label: material.label })),
+          ]}
           value={options.material ?? ""}
-          onChange={(event) => setSlabOptions({ material: event.target.value === "" ? null : event.target.value })}
-          className="max-w-[180px] rounded-sm border border-line bg-input px-1.5 py-[2px] text-[11px] text-ink"
-        >
-          <option value="">
-            {fallback === null ? "None" : `Default: ${doc.materials[fallback]?.label ?? fallback}`}
-          </option>
-          {Object.entries(doc.materials).map(([id, material]) => (
-            <option key={id} value={id}>
-              {material.label}
-            </option>
-          ))}
-        </select>
+          onValueChange={(id) => setSlabOptions({ material: id === "" ? null : id })}
+          className="max-w-[180px] bg-input px-1.5 py-[2px] text-[11px] text-ink"
+        />
       </label>
       <span className="ml-auto text-[10.5px] text-subtle">
         Click inside a building: the slab runs to the walls' outer faces

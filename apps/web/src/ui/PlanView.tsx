@@ -1,3 +1,4 @@
+import { Select } from "../components/ui/Select.jsx";
 import { formatMetres } from "../lib/plan-view.js";
 import { getState, setPlanLevelId, setPlanSheet, setPlanView, useStore } from "../state/store.js";
 import { PlanSheet } from "./plan/PlanSheet.jsx";
@@ -50,18 +51,13 @@ export function PlanView() {
     <div className="flex min-h-0 min-w-0 flex-1 flex-col bg-viewport">
       <div className="flex h-[34px] shrink-0 items-center gap-2 border-b border-line bg-chrome px-2.5">
         {levels.length > 1 ? (
-          <select
-            aria-label="Level"
+          <Select
+            label="Level"
+            items={levels.map((l) => ({ value: l.id, label: l.name }))}
             value={level?.id ?? ""}
-            onChange={(event) => setPlanLevelId(event.target.value)}
-            className="rounded-sm border border-line bg-panel px-2 py-[3px] text-[11.5px] text-ink"
-          >
-            {levels.map((l) => (
-              <option key={l.id} value={l.id}>
-                {l.name}
-              </option>
-            ))}
-          </select>
+            onValueChange={setPlanLevelId}
+            className="bg-panel px-2 py-[3px] text-[11.5px] text-ink"
+          />
         ) : (
           <span className="px-1 text-[11.5px] text-muted">{level?.name ?? "No levels"}</span>
         )}

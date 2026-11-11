@@ -1,5 +1,6 @@
 import { estimateQueue, formatDuration, pickRenderDirectory, renderQueue } from "../engine/queue.js";
 import type { RenderRequest } from "../engine/SandboxEngine.js";
+import { Select } from "../components/ui/Select.jsx";
 import { openScene } from "../lib/scene-source.js";
 import {
   redo,
@@ -67,24 +68,19 @@ export function Toolbar({ onSave }: { onSave: () => void }) {
     <header className="flex h-[46px] shrink-0 items-center gap-3 border-b border-line bg-chrome px-3.5">
       <span className="text-[14px] font-semibold tracking-tight text-ink">Solstice</span>
       {scenes.length > 1 ? (
-        <select
+        <Select
+          label="Scene"
+          // A drawn scene has no builder; it is worth seeing which is which.
+          items={scenes.map((s) => ({ value: s.id, label: `${s.id}.scene.json${s.hasBuilder ? "" : " · drawn"}` }))}
           value={sceneId}
-          onChange={(event) => void openScene(event.target.value)}
+          onValueChange={(id) => void openScene(id)}
           disabled={rendering}
-          aria-label="Scene"
           title={
             duringRender ??
             (apiState === "up" ? "Which scene is open — the files the API serves" : "Which scene is open")
           }
-          className="rounded-sm border border-line bg-panel px-2 py-[3px] font-mono text-[11.5px] text-muted disabled:opacity-40"
-        >
-          {scenes.map((s) => (
-            <option key={s.id} value={s.id}>
-              {/* A drawn scene has no builder; it is worth seeing which is which. */}
-              {s.id}.scene.json{s.hasBuilder ? "" : " · drawn"}
-            </option>
-          ))}
-        </select>
+          className="bg-panel px-2 py-[3px] font-mono text-[11.5px] text-muted"
+        />
       ) : (
         <span className="rounded-sm border border-line bg-panel px-2 py-[3px] font-mono text-[11.5px] text-muted">
           {doc === null ? "—" : `${doc.id}.scene.json`}
@@ -193,10 +189,12 @@ export function Toolbar({ onSave }: { onSave: () => void }) {
         Save
       </button>
       {shots.length > 0 && (
-        <select
+        <Select
+          label="Shot to render"
+          items={[{ value: "", label: "Viewport" }, ...shots.map((s) => ({ value: s.id, label: s.name }))]}
           value={shotId ?? ""}
-          onChange={(event) => {
-            const next = event.target.value === "" ? null : event.target.value;
+          onValueChange={(id) => {
+            const next = id === "" ? null : id;
             setShotId(next);
             // Framing the viewport to the shot is what makes the picker honest:
             // otherwise the button says "Garden elevation" while the screen
@@ -206,17 +204,9 @@ export function Toolbar({ onSave }: { onSave: () => void }) {
               window.dispatchEvent(new CustomEvent("solstice:frame", { detail: picked }));
             }
           }}
-          aria-label="Shot to render"
           title="Which shot the Render button reproduces"
-          className="rounded-sm border border-line bg-panel px-2 py-1.5 text-[12px] text-ink"
-        >
-          <option value="">Viewport</option>
-          {shots.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.name}
-            </option>
-          ))}
-        </select>
+          className="bg-panel px-2 py-1.5 text-[12px] text-ink"
+        />
       )}
 
       <button
