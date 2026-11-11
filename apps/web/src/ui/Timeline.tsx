@@ -1,6 +1,7 @@
 import { clockToMinutes, evaluate, minutesToClock } from "@solstice/animation";
 import { dayBounds, sunPosition, utcToLocalClock } from "@solstice/solar";
 import { useMemo } from "react";
+import { Slider } from "../components/ui/Slider.jsx";
 import { setSolar, useStore } from "../state/store.js";
 
 const transport = (action: "play" | "pause" | "seek", at?: number): void => {
@@ -111,15 +112,14 @@ export function Timeline() {
           >
             {playing ? "❚❚" : "▶"}
           </button>
-          <input
-            type="range"
-            aria-label="Animation time"
+          <Slider
+            label="Animation time"
             min={0}
             max={animation.duration}
             step={0.05}
             value={playhead}
-            onChange={(event) => transport("seek", Number(event.target.value))}
-            className="h-1 flex-1 cursor-ew-resize accent-accent"
+            onValueChange={(at) => transport("seek", at)}
+            className="h-4"
           />
           <span className="w-20 text-right font-mono text-[10px] text-subtle tabular-nums">
             {playhead.toFixed(1)} / {animation.duration.toFixed(1)}s
@@ -137,15 +137,14 @@ export function Timeline() {
         <div className="pointer-events-none absolute -top-1 -bottom-1 w-0.5 bg-accent" style={{ left: `${pct}%` }}>
           <span className="absolute -top-1 -left-[3px] size-2 rounded-full bg-accent" />
         </div>
-        <input
-          type="range"
-          aria-label="Solar time"
+        <Slider
+          label="Solar time"
+          look="scrub"
           min={0}
           max={HOURS * 60 - 1}
           step={1}
           value={minutes}
-          onChange={(event) => setSolar({ ...doc.solar, time: minutesToClock(Number(event.target.value)) })}
-          className="absolute inset-0 h-full w-full cursor-ew-resize opacity-0"
+          onValueChange={(next) => setSolar({ ...doc.solar, time: minutesToClock(next) })}
         />
       </div>
 

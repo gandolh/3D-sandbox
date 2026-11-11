@@ -1,5 +1,6 @@
 import { estimateQueue, formatDuration, pickRenderDirectory, renderQueue } from "../engine/queue.js";
 import type { RenderRequest } from "../engine/SandboxEngine.js";
+import { Checkbox } from "../components/ui/Checkbox.jsx";
 import { Select } from "../components/ui/Select.jsx";
 import { openScene } from "../lib/scene-source.js";
 import {
@@ -104,29 +105,21 @@ export function Toolbar({ onSave }: { onSave: () => void }) {
 
       <div className="flex-1" />
 
-      <label
+      <Checkbox
+        label="Context"
         title={duringRender}
-        className="flex cursor-pointer items-center gap-1.5 font-mono text-[10px] tracking-wider text-muted uppercase has-disabled:cursor-default has-disabled:opacity-40"
-      >
-        <input
-          type="checkbox"
-          checked={showContext}
-          onChange={(event) => setShowContext(event.target.checked)}
-          disabled={rendering}
-          className="accent-accent"
-        />
-        Context
-      </label>
+        checked={showContext}
+        onCheckedChange={setShowContext}
+        disabled={rendering}
+        className="font-mono text-[10px] tracking-wider text-muted uppercase"
+      />
 
-      <label className="flex cursor-pointer items-center gap-1.5 font-mono text-[10px] tracking-wider text-muted uppercase">
-        <input
-          type="checkbox"
-          checked={showColliders}
-          onChange={(event) => setShowColliders(event.target.checked)}
-          className="accent-accent"
-        />
-        Colliders
-      </label>
+      <Checkbox
+        label="Colliders"
+        checked={showColliders}
+        onCheckedChange={setShowColliders}
+        className="font-mono text-[10px] tracking-wider text-muted uppercase"
+      />
 
       <button
         type="button"
