@@ -31,7 +31,7 @@ export const sceneParamsSchema = z.object({ id: z.string() });
 
 /**
  * A create or a replace takes any JSON: the document is validated by `loadScene` in the file store, which
- * answers 422 `invalid_document` with its findings, the reply the web client and the CLI read. A stricter body
+ * answers 422 `invalid_document` with its findings, the reply the web client reads. A stricter body
  * schema would turn that into a 400 of another shape.
  */
 export const sceneBodySchema = z.unknown();

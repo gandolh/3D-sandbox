@@ -1,6 +1,6 @@
 ---
 summary: Locked technical and design calls with the reasons behind them — read before proposing an alternative, so settled trade-offs are not relitigated.
-updated: 2026-11-06
+updated: 2026-11-11
 ---
 
 # Decisions
@@ -169,7 +169,8 @@ Decisions about **how wall geometry is built and cached** (the per-wall
 cache, mitred ends) live in [decisions-geometry.md](decisions-geometry.md).
 Decisions about **how a scene is modelled and authored** — roof association,
 material colour, plot orientation, the asset manifest, schema versioning — live
-in [decisions-scene.md](decisions-scene.md). This page is the stack.
+in [decisions-scene.md](decisions-scene.md). Decisions about **`apps/api`'s code** — the house structure, what
+waits until it is deployed, the error body — live in [decisions-api.md](decisions-api.md). This page is the stack.
 
 ## Agents get a CLI; no constraint solver
 _2026-11-06_ — Of SolidCraft and CADCraft (compared in brief 02), Solstice

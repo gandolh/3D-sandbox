@@ -1,6 +1,6 @@
 ---
-summary: Layer map, dependency direction, and the document-to-pixels pipeline — how a scene JSON file becomes a rendered image.
-updated: 2026-11-06
+summary: Layer map, dependency direction, apps/api's layout, and the document-to-pixels pipeline — how a scene JSON file becomes a rendered image.
+updated: 2026-11-11
 ---
 
 # Architecture
@@ -65,6 +65,28 @@ or a swing (2026-10-27, [drawing.md](drawing.md)). `packages/geometry` sits abov
 the generator is testable headlessly in Node. That is why triangle counts, opening
 cuts and scatter determinism have real tests rather than a screenshot someone
 squinted at.
+
+## `apps/api`
+
+The estate's code structure (2026-11-11, [decisions-api.md](decisions-api.md)):
+
+```
+apps/api/src/
+  server.ts            loadConfig, buildApp, listen; the only file that listens
+  app.ts               buildApp(config, options): the zod compilers, the plugins, the features, onClose
+  config.ts            the one reader of the environment: a zod parse into Config, or a ConfigError
+  plugins/cors.ts      the named-origins CORS policy (fastify-plugin)
+  plugins/errors.ts    the error handler and the 404 handler (fastify-plugin)
+  lib/api-error.ts     ApiError and the code-to-status table; no Fastify import
+  features/health/     GET /api/health
+  features/scenes/     the six scene routes, their zod schemas, the errors, the file store (files.ts)
+                       and the derived index (index-db.ts), used through index.ts
+apps/api/test/         inject() tests: the routes, the errors, the config, the byte compare
+```
+
+Each feature is an encapsulated plugin that names the options it takes (the config and the index); none imports
+`app.ts`. Every route declares its schemas through `@fastify/type-provider-zod`, and `check-structure` runs strict
+in `npm run check:conventions`.
 
 ## The pipeline
 

@@ -19,7 +19,7 @@ function statusOf(error: unknown): number | undefined {
 
 /**
  * The one error handler, and the 404 handler. Wrapped in fastify-plugin, so they are set on the root and every
- * route inherits them. Every body is `{ error, message, ... }`, which the web client and the CLI parse.
+ * route inherits them. Every body is `{ error, message, ... }`, which the web client parses.
  *
  * - A document that does not load answers 422 with its findings.
  * - An `ApiError` answers its code's status with its message and details.
