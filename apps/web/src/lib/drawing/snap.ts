@@ -133,7 +133,8 @@ const withDirection = (snap: Omit<Snap, "direction" | "bearing">, from: Pt | nul
  */
 export function snapPoint(pointer: Pt, walls: readonly Wall[], scale: number, options: SnapOptions): Snap {
   const tol = (options.tolerancePx ?? SNAP_TOLERANCE_PX) / scale;
-  const candidates = options.ignore === undefined ? walls : walls.filter((w) => !options.ignore!.has(w.id));
+  const { ignore } = options;
+  const candidates = ignore === undefined ? walls : walls.filter((w) => !ignore.has(w.id));
   const from = options.from ?? null;
   const grid = options.gridStep;
 
