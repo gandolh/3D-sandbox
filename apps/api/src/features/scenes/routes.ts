@@ -8,6 +8,7 @@ import {
   deletedSchema,
   errorReplySchema,
   preconditionHeadersSchema,
+  reindexedSchema,
   savedSchema,
   sceneBodySchema,
   sceneListSchema,
@@ -158,8 +159,8 @@ export const sceneRoutes: FastifyPluginAsyncZod<ScenesOptions> = async (app, { c
    * Rescan. The reason this route exists at all: scene files are edited outside
    * the app routinely, and the index has to be able to catch up.
    */
-  app.post("/api/reindex", async () => {
+  app.post("/api/reindex", { schema: { response: { 200: reindexedSchema } } }, async () => {
     const result = await index.reindex(config.scenesDir);
-    return { ok: true, ...result };
+    return { ok: true as const, ...result };
   });
 };

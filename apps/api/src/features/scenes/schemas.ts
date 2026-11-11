@@ -60,3 +60,10 @@ export const savedSchema = z.object({
 
 /** `DELETE`: the scene removed. */
 export const deletedSchema = z.object({ ok: z.literal(true), id: z.string() });
+
+/** `POST /api/reindex`: the scenes the rescan indexed, and the files it dropped because they do not load. */
+export const reindexedSchema = z.object({
+  ok: z.literal(true),
+  indexed: z.array(z.string()),
+  failed: z.array(z.string()),
+});

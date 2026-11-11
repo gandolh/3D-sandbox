@@ -79,4 +79,12 @@ describe("the scene replies through their response schemas", () => {
     expect(res.statusCode).toBe(200);
     expect(res.body).toBe(JSON.stringify({ ok: true, id }));
   });
+
+  it("a rescan answers what it indexed and what it dropped", async () => {
+    const res = await app.inject({ method: "POST", url: "/api/reindex" });
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toBe(
+      JSON.stringify({ ok: true, indexed: FILES.map((file) => file.replace(".scene.json", "")), failed: [] }),
+    );
+  });
 });
