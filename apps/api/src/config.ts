@@ -17,8 +17,7 @@ export interface Config {
   /**
    * `SOLSTICE_ALLOWED_ORIGINS`, comma-separated: the origins a browser may call this API from.
    *
-   * The dev client, and nothing else by default. See the note beside the `cors` registration for why this is
-   * not `true`.
+   * The dev client, and nothing else by default. See `plugins/cors.ts` for why this is not `true`.
    */
   allowedOrigins: string[];
 }

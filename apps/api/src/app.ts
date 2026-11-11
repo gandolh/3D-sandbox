@@ -1,10 +1,9 @@
-import cors from "@fastify/cors";
 import Fastify, { type FastifyInstance, type FastifyServerOptions } from "fastify";
 import type { Config } from "./config.js";
-import { SceneNotFoundError, UnsafeIdError } from "./features/scenes/errors.js";
+import { healthRoutes } from "./features/health/index.js";
+import { SceneIndex, sceneRoutes } from "./features/scenes/index.js";
+import { corsPolicy } from "./plugins/cors.js";
 import { errors } from "./plugins/errors.js";
-import { deleteSceneFile, hasBuilder, readSceneFile, sceneMtime, writeSceneFile } from "./store/files.js";
-import { SceneIndex, summarize } from "./store/index-db.js";
 
 /** The app, and the index it serves, which tests read to check what a route changed. */
 export interface BuiltApp {
@@ -18,9 +17,12 @@ export interface BuildAppOptions {
 }
 
 /**
- * Seven routes. The service reads and writes JSON files and keeps a rebuildable
- * cache beside them; it stores nothing authoritative and re-implements none of
- * the validation that already lives in `@solstice/schema`.
+ * The app, ready and not listening. Seven routes: the service reads and writes JSON files and keeps a
+ * rebuildable cache beside them; it stores nothing authoritative and re-implements none of the validation that
+ * already lives in `@solstice/schema`.
+ *
+ * It registers in a fixed order: the app's own plugins (CORS, errors), then each feature, handed the config
+ * and the index as its options. Closing it closes the index.
  */
 export async function buildApp(config: Config, options: BuildAppOptions = {}): Promise<BuiltApp> {
   const index = new SceneIndex(config.databasePath);
@@ -28,148 +30,14 @@ export async function buildApp(config: Config, options: BuildAppOptions = {}): P
 
   const app = Fastify(options.server);
 
-  /**
-   * One named origin, not `true`.
-   *
-   * `origin: true` **reflects whatever origin asked**, which is not a relaxed
-   * setting — it is the removal of the browser's own same-origin protection.
-   * Any page in any tab could then read every scene on this machine and
-   * `DELETE` them, because the browser would attach the reflected header and
-   * hand the response over.
-   *
-   * That is a separate question from the locked decision that the API is
-   * unauthenticated: unauthenticated is fine for something bound to
-   * `127.0.0.1` and reachable only by its own client. Reflecting origins makes
-   * it reachable by every website the user visits, which is not the same thing
-   * at all.
-   */
-  await app.register(cors, { origin: config.allowedOrigins });
-
+  // The app's own plugins, fastify-plugin wrapped so they reach every feature.
+  await app.register(corsPolicy, { allowedOrigins: config.allowedOrigins });
   await app.register(errors);
 
-  // No `scenesDir`: a health check that publishes an absolute filesystem path
-  // is telling an unauthenticated caller the layout of the host. Whether one is
-  // configured is all the information the check was ever used for.
-  app.get("/api/health", async () => ({
-    ok: true,
-    scenesConfigured: config.scenesDir.length > 0,
-    scenes: index.list().length,
-  }));
-
-  /**
-   * The index, plus `hasBuilder` per scene: whether `npm run scenes` would
-   * overwrite it. The browser warns before drawing in one that it would.
-   */
-  app.get("/api/scenes", async () => ({
-    scenes: await Promise.all(
-      index.list().map(async (scene) => ({ ...scene, hasBuilder: await hasBuilder(config.scenesDir, scene.id) })),
-    ),
-  }));
-
-  /**
-   * The document, and the version of it the caller is now holding.
-   *
-   * `mtime` goes out in a header rather than in the body because the body is a
-   * `SceneDocument` and has to stay exactly that — it is parsed by the schema
-   * on the way back in, and a stray field would be a lint finding.
-   */
-  app.get<{ Params: { id: string } }>("/api/scenes/:id", async (request, reply) => {
-    const { id } = request.params;
-    const document = await readSceneFile(config.scenesDir, id);
-    reply.header("x-scene-mtime", String(await sceneMtime(config.scenesDir, id)));
-    return document;
-  });
-
-  /**
-   * Whether a scene file is on disk — asked of the disk, the way `PUT` asks,
-   * because the index is a derived cache and a scene dropped in by hand is a
-   * real scene before any rescan notices it. Asking the index here let a `POST`
-   * replace a hand-written file it had never heard of.
-   *
-   * A file that is present but does not load still counts as present: it is
-   * somebody's work, and refusing to overwrite it is the whole point.
-   */
-  const onDisk = async (id: string): Promise<boolean> => {
-    try {
-      await readSceneFile(config.scenesDir, id);
-      return true;
-    } catch (error) {
-      if (error instanceof SceneNotFoundError) return false;
-      if (error instanceof UnsafeIdError) throw error;
-      return true;
-    }
-  };
-
-  /**
-   * Create. No `x-scene-mtime` precondition, unlike `PUT`: a create has no
-   * earlier read to be stale against, and the existence check above it is the
-   * only guard it needs.
-   */
-  app.post<{ Body: unknown }>("/api/scenes", async (request, reply) => {
-    const body = request.body as { id?: unknown };
-    const id = typeof body?.id === "string" ? body.id : "";
-    if (await onDisk(id)) {
-      return reply.code(409).send({ error: "exists", message: `Scene "${id}" already exists` });
-    }
-    const { document, bytes } = await writeSceneFile(config.scenesDir, id, request.body);
-    index.upsert(await summarize(config.scenesDir, id, document, bytes));
-    // The version the creator now holds, as a read would hand it out, so its
-    // first save can be conditional like every later one.
-    reply.header("x-scene-mtime", String(await sceneMtime(config.scenesDir, id)));
-    return reply.code(201).send(document);
-  });
-
-  /**
-   * Replace a scene that exists. It does not create one.
-   *
-   * It used to: a `PUT` to an unknown id wrote a new file. That reading of
-   * `PUT` is defensible in the abstract and wrong here, because the id comes
-   * from a URL a person typed and the cost of a typo was a **second scene**
-   * silently appearing beside the one they meant to edit, with the index
-   * dutifully listing it. `POST /api/scenes` is how a scene is created, it
-   * refuses to clobber any file on disk — indexed or not — and having exactly
-   * one door in is worth more than the convenience.
-   *
-   * `x-scene-mtime`, echoed from the read, makes the write conditional. Absent,
-   * the write proceeds — a caller that never read the file has nothing to be
-   * stale about, and scripts that generate scenes wholesale are legitimate.
-   */
-  app.put<{ Params: { id: string }; Body: unknown }>("/api/scenes/:id", async (request, reply) => {
-    const { id } = request.params;
-    const header = request.headers["x-scene-mtime"];
-    const expected = typeof header === "string" && header !== "" ? Number(header) : undefined;
-    if (expected !== undefined && !Number.isFinite(expected)) {
-      return reply.code(400).send({ error: "invalid_precondition", message: "x-scene-mtime must be a number" });
-    }
-
-    // Existence is checked here rather than inferred from a failed write, and
-    // against the disk rather than the index — see `onDisk`. A file that is
-    // present but does not load fails here too, which is right for a replace.
-    await readSceneFile(config.scenesDir, id);
-
-    const { document, bytes } = await writeSceneFile(config.scenesDir, id, request.body, expected);
-    index.upsert(await summarize(config.scenesDir, id, document, bytes));
-    // The new version. Without it a client holding the mtime it read would
-    // find its own second save refused as stale.
-    reply.header("x-scene-mtime", String(await sceneMtime(config.scenesDir, id)));
-    return { ok: true, id, bytes, warnings: index.get(id)?.warnings ?? 0 };
-  });
-
-  app.delete<{ Params: { id: string } }>("/api/scenes/:id", async (request) => {
-    const { id } = request.params;
-    await deleteSceneFile(config.scenesDir, id);
-    index.remove(id);
-    return { ok: true, id };
-  });
-
-  /**
-   * Rescan. The reason this route exists at all: scene files are edited outside
-   * the app routinely, and the index has to be able to catch up.
-   */
-  app.post("/api/reindex", async () => {
-    const result = await index.reindex(config.scenesDir);
-    return { ok: true, ...result };
-  });
+  // The features, each encapsulated.
+  const context = { config, index };
+  await app.register(healthRoutes, context);
+  await app.register(sceneRoutes, context);
 
   app.addHook("onClose", async () => index.close());
   return { app, index };

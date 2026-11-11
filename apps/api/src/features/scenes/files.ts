@@ -1,7 +1,7 @@
 import { type FileHandle, open, readdir, readFile, rename, rm, stat, unlink } from "node:fs/promises";
 import { basename, join, resolve, sep } from "node:path";
 import { loadScene, type SceneDocument, SceneValidationError, serializeScene } from "@solstice/schema";
-import { SceneNotFoundError, StalePreconditionError, UnsafeIdError } from "../features/scenes/errors.js";
+import { SceneNotFoundError, StalePreconditionError, UnsafeIdError } from "./errors.js";
 
 const SLUG = /^[A-Za-z][A-Za-z0-9_-]*$/;
 const SUFFIX = ".scene.json";

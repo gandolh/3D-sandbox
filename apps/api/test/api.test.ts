@@ -6,7 +6,7 @@ import type { FastifyInstance } from "fastify";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { buildApp } from "../src/app.js";
 import { loadConfig } from "../src/config.js";
-import type { SceneIndex } from "../src/store/index-db.js";
+import type { SceneIndex } from "../src/features/scenes/index.js";
 
 const REFERENCE = new URL("../../../scenes/villa-carpathia.scene.json", import.meta.url);
 
