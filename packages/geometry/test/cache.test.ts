@@ -7,9 +7,7 @@ import { GeometryCache, generateScene } from "../src/index.js";
 
 const scene = (): SceneDocument =>
   SceneDocument.parse(
-    JSON.parse(
-      readFileSync(fileURLToPath(new URL("../../../scenes/greenhollow.scene.json", import.meta.url)), "utf8"),
-    ),
+    JSON.parse(readFileSync(fileURLToPath(new URL("../../../scenes/greenhollow.scene.json", import.meta.url)), "utf8")),
   );
 
 /** Every mesh in the subject tier, by name, with its vertex positions. */

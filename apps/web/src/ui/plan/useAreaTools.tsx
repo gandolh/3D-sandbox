@@ -24,15 +24,7 @@ export const ROOM_USES: { use: Room["use"]; label: string }[] = [
 ];
 
 /** A polygon traced over the plan, for showing what a click would make. */
-function Outline({
-  polygon,
-  view,
-  dashed,
-}: {
-  polygon: [number, number][];
-  view: ViewTransform;
-  dashed?: boolean;
-}) {
+function Outline({ polygon, view, dashed }: { polygon: [number, number][]; view: ViewTransform; dashed?: boolean }) {
   const d = `${polygon.map((p, i) => `${i === 0 ? "M" : "L"}${toScreen(view, p).map(n).join(",")}`).join(" ")} Z`;
   return (
     <path
@@ -227,15 +219,12 @@ export function defaultSlabMaterial(doc: SceneDocument, level: Level): string | 
   const mostUsed = (slabs: readonly { material: string }[]): string | undefined => {
     const counts = new Map<string, number>();
     for (const slab of slabs) {
-      if (doc.materials[slab.material] !== undefined)
-        counts.set(slab.material, (counts.get(slab.material) ?? 0) + 1);
+      if (doc.materials[slab.material] !== undefined) counts.set(slab.material, (counts.get(slab.material) ?? 0) + 1);
     }
     return [...counts].sort((a, b) => b[1] - a[1])[0]?.[0];
   };
   return (
-    mostUsed(level.slabs) ??
-    mostUsed(doc.subject.levels.flatMap((l) => l.slabs)) ??
-    defaultWallMaterial(doc, level)
+    mostUsed(level.slabs) ?? mostUsed(doc.subject.levels.flatMap((l) => l.slabs)) ?? defaultWallMaterial(doc, level)
   );
 }
 

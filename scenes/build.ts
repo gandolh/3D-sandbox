@@ -65,9 +65,7 @@ for (const entry of entries) {
       const total = schedule.reduce((n, r) => n + r.area, 0);
       const widest = Math.max(...schedule.map((r) => r.room.name.length));
       for (const { room, area } of schedule) {
-        console.log(
-          `    ${room.name.padEnd(widest)}  ${room.use.padEnd(7)} ${area.toFixed(1).padStart(6)} m²`,
-        );
+        console.log(`    ${room.name.padEnd(widest)}  ${room.use.padEnd(7)} ${area.toFixed(1).padStart(6)} m²`);
       }
       console.log(`    ${"".padEnd(widest)}  ${"total".padEnd(7)} ${total.toFixed(1).padStart(6)} m²`);
     }

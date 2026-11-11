@@ -98,10 +98,8 @@ describe("wall solids", () => {
     // A ray straight down meets the top of whatever is under it (front faces
     // only): one solid there, so one hit. Two would be an overlap, none a gap.
     const crossings = (x: number, z: number) =>
-      new THREE.Raycaster(new THREE.Vector3(x, 5, z), new THREE.Vector3(0, -1, 0)).intersectObjects(
-        meshes,
-        false,
-      ).length;
+      new THREE.Raycaster(new THREE.Vector3(x, 5, z), new THREE.Vector3(0, -1, 0)).intersectObjects(meshes, false)
+        .length;
     // Either side of the mitre, which runs from (0.12, −0.12) to (−0.12, 0.12).
     for (const [x, z] of [
       [-0.08, 0.04],
@@ -119,8 +117,7 @@ describe("wall solids", () => {
     const b: Wall = { ...wall(), id: "W-b", start: [0, -4], end: [0, 0] };
     const ends = wallEnds(a, [a, b]);
     // Rounded to the micrometre, with −0 folded into 0, so equal points key equally.
-    const key = (x: number, z: number) =>
-      [x, z].map((v) => (Math.round(v * 1e6) / 1e6 + 0).toFixed(6)).join(",");
+    const key = (x: number, z: number) => [x, z].map((v) => (Math.round(v * 1e6) / 1e6 + 0).toFixed(6)).join(",");
     const position = wallSolid(a, level(), ends).getAttribute("position");
     const footprint = new Set<string>();
     for (let i = 0; i < position.count; i++) footprint.add(key(position.getX(i), position.getZ(i)));
@@ -138,10 +135,7 @@ describe("wall solids", () => {
     const mesh = new THREE.Mesh(buildWall(a, level(), new Evaluator(), wallEnds(a, [a, b])));
     mesh.updateMatrixWorld(true);
     const hits = (x: number, y: number) =>
-      new THREE.Raycaster(new THREE.Vector3(x, y, 1), new THREE.Vector3(0, 0, -1)).intersectObject(
-        mesh,
-        false,
-      ).length;
+      new THREE.Raycaster(new THREE.Vector3(x, y, 1), new THREE.Vector3(0, 0, -1)).intersectObject(mesh, false).length;
     expect(hits(0.7, 1.5)).toBe(0);
     // The pier between the window and the corner, and the wall under the sill.
     expect(hits(0.15, 1.5)).toBeGreaterThan(0);
@@ -167,30 +161,21 @@ describe("openings are actually cut", () => {
   it("lets a ray pass straight through the opening", () => {
     const mesh = new THREE.Mesh(withWindow());
     mesh.updateMatrixWorld(true);
-    const raycaster = new THREE.Raycaster(
-      new THREE.Vector3(2.7, 1.5, -1),
-      new THREE.Vector3(0, 0, 1).normalize(),
-    );
+    const raycaster = new THREE.Raycaster(new THREE.Vector3(2.7, 1.5, -1), new THREE.Vector3(0, 0, 1).normalize());
     expect(raycaster.intersectObject(mesh, false)).toHaveLength(0);
   });
 
   it("still stops a ray through the solid part of the same wall", () => {
     const mesh = new THREE.Mesh(withWindow());
     mesh.updateMatrixWorld(true);
-    const raycaster = new THREE.Raycaster(
-      new THREE.Vector3(0.5, 1.5, -1),
-      new THREE.Vector3(0, 0, 1).normalize(),
-    );
+    const raycaster = new THREE.Raycaster(new THREE.Vector3(0.5, 1.5, -1), new THREE.Vector3(0, 0, 1).normalize());
     expect(raycaster.intersectObject(mesh, false).length).toBeGreaterThan(0);
   });
 
   it("stops a ray above the opening's head", () => {
     const mesh = new THREE.Mesh(withWindow());
     mesh.updateMatrixWorld(true);
-    const raycaster = new THREE.Raycaster(
-      new THREE.Vector3(2.7, 2.5, -1),
-      new THREE.Vector3(0, 0, 1).normalize(),
-    );
+    const raycaster = new THREE.Raycaster(new THREE.Vector3(2.7, 2.5, -1), new THREE.Vector3(0, 0, 1).normalize());
     expect(raycaster.intersectObject(mesh, false).length).toBeGreaterThan(0);
   });
 
@@ -207,10 +192,8 @@ describe("openings are actually cut", () => {
     );
     mesh.updateMatrixWorld(true);
     const through = (x: number) =>
-      new THREE.Raycaster(new THREE.Vector3(x, 1.5, -1), new THREE.Vector3(0, 0, 1)).intersectObject(
-        mesh,
-        false,
-      ).length;
+      new THREE.Raycaster(new THREE.Vector3(x, 1.5, -1), new THREE.Vector3(0, 0, 1)).intersectObject(mesh, false)
+        .length;
     expect(through(1.5)).toBe(0);
     expect(through(4.0)).toBe(0);
     expect(through(2.5)).toBeGreaterThan(0);
@@ -435,9 +418,7 @@ describe("mulberry32", () => {
 
 describe("generating the reference scene", () => {
   const doc = loadScene(
-    JSON.parse(
-      readFileSync(new URL("../../../scenes/villa-carpathia.scene.json", import.meta.url), "utf8"),
-    ) as unknown,
+    JSON.parse(readFileSync(new URL("../../../scenes/villa-carpathia.scene.json", import.meta.url), "utf8")) as unknown,
   ).document;
 
   it("produces both tiers with the expected shape", () => {
@@ -651,9 +632,7 @@ describe("attribute consistency", () => {
   // missing `uv` while its neighbour has one breaks the merge far from the
   // cause. Every geometry leaving this package carries the same attributes.
   const doc = loadScene(
-    JSON.parse(
-      readFileSync(new URL("../../../scenes/villa-carpathia.scene.json", import.meta.url), "utf8"),
-    ) as unknown,
+    JSON.parse(readFileSync(new URL("../../../scenes/villa-carpathia.scene.json", import.meta.url), "utf8")) as unknown,
   ).document;
 
   it("gives every generated mesh position, normal and uv", () => {
@@ -700,8 +679,7 @@ describe("hand-wound surfaces face outward", () => {
     [-3.25, 10.6],
   ];
 
-  const road = (path: [number, number][]) =>
-    buildRoad({ id: "r", path, width: 6, material: "asphalt" } as never);
+  const road = (path: [number, number][]) => buildRoad({ id: "r", path, width: 6, material: "asphalt" } as never);
 
   it("lays a road face-up, straight and round a bend", () => {
     // The shipped winding produced (0, −1, 0) on every triangle, and every road
@@ -786,9 +764,7 @@ describe("hand-wound surfaces face outward", () => {
       material: "brick",
       thickness: 0.04,
     } as never);
-    const box = new THREE.Box3().setFromBufferAttribute(
-      geometry.getAttribute("position") as THREE.BufferAttribute,
-    );
+    const box = new THREE.Box3().setFromBufferAttribute(geometry.getAttribute("position") as THREE.BufferAttribute);
     expect(box.max.y).toBeCloseTo(0.04, 6);
     expect(box.min.y).toBeCloseTo(0, 6);
     geometry.dispose();
@@ -811,9 +787,7 @@ describe("hand-wound surfaces face outward", () => {
       ],
       [
         "flat mass",
-        buildMass(
-          BuildingMass.parse({ id: "m", footprint: rect, height: 5.8, roofKind: "flat", material: "m" }),
-        ),
+        buildMass(BuildingMass.parse({ id: "m", footprint: rect, height: 5.8, roofKind: "flat", material: "m" })),
       ],
       ["extrusion", extrudePolygon(rect, 0, 3)],
       ["wall solid", wallSolid(wall(), level())],
@@ -933,15 +907,7 @@ describe("the house at Greenhollow", () => {
     const doors = ground.walls
       .filter((w) => w.id.startsWith("P-"))
       .flatMap((w) => w.openings.filter((o) => o.kind === "door").map((o) => o.id));
-    expect(doors.sort()).toEqual([
-      "d-bath",
-      "d-bed1",
-      "d-bed2",
-      "d-bed3",
-      "d-kitchen",
-      "d-larder",
-      "d-living",
-    ]);
+    expect(doors.sort()).toEqual(["d-bath", "d-bed1", "d-bed2", "d-bed3", "d-kitchen", "d-larder", "d-living"]);
   });
 
   it("keeps partitions thinner than the envelope", () => {

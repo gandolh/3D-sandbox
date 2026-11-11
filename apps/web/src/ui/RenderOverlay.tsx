@@ -60,9 +60,7 @@ export function RenderOverlay({ progress, onCancel }: { progress: RenderProgress
     .join(", ");
 
   const building = progress.phase === "building";
-  const pct = building
-    ? progress.build * 100
-    : (progress.samples / Math.max(1, progress.targetSamples)) * 100;
+  const pct = building ? progress.build * 100 : (progress.samples / Math.max(1, progress.targetSamples)) * 100;
 
   return (
     <div className="pointer-events-auto absolute inset-x-0 bottom-0 flex items-center gap-4 border-t border-line bg-chrome/95 px-4 py-3 backdrop-blur">

@@ -152,9 +152,7 @@ export function generateScene(doc: SceneDocument, options: GenerateOptions = {})
     // it one without giving it to every other surface that names the same
     // material. Cloned per mesh, which is a handful of them.
     const material =
-      options.twoSided !== true
-        ? shared
-        : Object.assign(shared.clone(), { side: THREE.DoubleSide, name: shared.name });
+      options.twoSided !== true ? shared : Object.assign(shared.clone(), { side: THREE.DoubleSide, name: shared.name });
     let placed = geometry;
     if (options.project !== false && material.map !== null) {
       placed = boxProjectUv(geometry, doc.materials[materialId]?.textureScale ?? 2);

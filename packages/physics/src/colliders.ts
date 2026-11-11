@@ -160,13 +160,7 @@ export function wallColliders(wall: Wall, level: Level, ends: WallEnds = squareE
   const halfThickness = wall.thickness / 2;
 
   // Local frame: u runs along the wall from its midpoint, v up from the floor.
-  const place = (
-    suffix: string,
-    uStart: number,
-    uEnd: number,
-    vStart: number,
-    vEnd: number,
-  ): CuboidCollider | null => {
+  const place = (suffix: string, uStart: number, uEnd: number, vStart: number, vEnd: number): CuboidCollider | null => {
     const du = uEnd - uStart;
     const dv = vEnd - vStart;
     if (du <= EPSILON || dv <= EPSILON) return null;

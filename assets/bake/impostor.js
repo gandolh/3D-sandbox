@@ -58,7 +58,9 @@ async function bake() {
   box.getSize(size);
   box.getCenter(centre);
 
-  log(`${Math.round(triangles).toLocaleString()} triangles · ${size.x.toFixed(1)} × ${size.y.toFixed(1)} × ${size.z.toFixed(1)} m`);
+  log(
+    `${Math.round(triangles).toLocaleString()} triangles · ${size.x.toFixed(1)} × ${size.y.toFixed(1)} × ${size.z.toFixed(1)} m`,
+  );
 
   const scene = new THREE.Scene();
   scene.add(subject);
@@ -87,11 +89,7 @@ async function bake() {
   const radius = half * 4;
   for (let i = 0; i < angles; i++) {
     const theta = (i / angles) * Math.PI * 2;
-    camera.position.set(
-      centre.x + Math.sin(theta) * radius,
-      centre.y,
-      centre.z + Math.cos(theta) * radius,
-    );
+    camera.position.set(centre.x + Math.sin(theta) * radius, centre.y, centre.z + Math.cos(theta) * radius);
     camera.lookAt(centre);
     camera.updateProjectionMatrix();
     renderer.render(scene, camera);

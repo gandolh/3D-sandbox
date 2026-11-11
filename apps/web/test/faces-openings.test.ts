@@ -2,13 +2,7 @@ import { area, SceneDocument, type Wall } from "@solstice/schema";
 import { describe, expect, it } from "vitest";
 import villaJson from "../../../scenes/villa-carpathia.scene.json";
 import { faceAt, floorOutline, planarFaces, roomOutline } from "../src/lib/drawing/faces.js";
-import {
-  nextOpeningId,
-  offsetAt,
-  offsetFromTyped,
-  openingProblems,
-  wallUnder,
-} from "../src/lib/drawing/openings.js";
+import { nextOpeningId, offsetAt, offsetFromTyped, openingProblems, wallUnder } from "../src/lib/drawing/openings.js";
 import type { Pt } from "../src/lib/drawing/snap.js";
 
 const wall = (id: string, start: Pt, end: Pt, thickness = 0.24): Wall => ({

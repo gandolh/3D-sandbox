@@ -150,9 +150,7 @@ export function Toolbar({ onSave }: { onSave: () => void }) {
         aria-pressed={showPlan}
         onClick={() => setShowPlan(!showPlan)}
         className={`rounded-sm border px-2.5 py-1.5 font-mono text-[10px] tracking-wider uppercase ${
-          showPlan
-            ? "border-accent bg-accent text-accent-ink"
-            : "border-line bg-panel text-muted hover:text-ink"
+          showPlan ? "border-accent bg-accent text-accent-ink" : "border-line bg-panel text-muted hover:text-ink"
         }`}
       >
         Plan
@@ -169,9 +167,7 @@ export function Toolbar({ onSave }: { onSave: () => void }) {
           type="button"
           onClick={undo}
           disabled={rendering || undoStep === undefined}
-          title={
-            duringRender ?? (undoStep === undefined ? "Nothing to undo" : `Undo ${undoStep.label} (Ctrl+Z)`)
-          }
+          title={duringRender ?? (undoStep === undefined ? "Nothing to undo" : `Undo ${undoStep.label} (Ctrl+Z)`)}
           className="rounded-l-sm border border-line bg-panel px-2.5 py-1.5 text-[12px] text-ink disabled:opacity-40"
         >
           Undo
@@ -180,10 +176,7 @@ export function Toolbar({ onSave }: { onSave: () => void }) {
           type="button"
           onClick={redo}
           disabled={rendering || redoStep === undefined}
-          title={
-            duringRender ??
-            (redoStep === undefined ? "Nothing to redo" : `Redo ${redoStep.label} (Ctrl+Shift+Z)`)
-          }
+          title={duringRender ?? (redoStep === undefined ? "Nothing to redo" : `Redo ${redoStep.label} (Ctrl+Shift+Z)`)}
           className="-ml-px rounded-r-sm border border-line bg-panel px-2.5 py-1.5 text-[12px] text-ink disabled:opacity-40"
         >
           Redo

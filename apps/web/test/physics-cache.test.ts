@@ -25,9 +25,7 @@ afterEach(() => {
 
 const doc = SceneDocument.parse(sceneById(DEFAULT_SCENE_ID)!.json);
 const empty = new Map<string, readonly [number, number, number]>();
-const withTable = new Map<string, readonly [number, number, number]>([
-  ["polyhaven/CoffeeTable_01", [1.2, 0.4, 0.6]],
-]);
+const withTable = new Map<string, readonly [number, number, number]>([["polyhaven/CoffeeTable_01", [1.2, 0.4, 0.6]]]);
 
 describe("physicsFor", () => {
   it("reuses a world when nothing changed", async () => {

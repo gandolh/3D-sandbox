@@ -1,9 +1,7 @@
 import { type ReactNode, useEffect, useRef, useState } from "react";
 
 export const PanelTitle = ({ children }: { children: ReactNode }) => (
-  <div className="px-3 pt-3 pb-2 font-mono text-[9.5px] tracking-[0.13em] text-subtle uppercase">
-    {children}
-  </div>
+  <div className="px-3 pt-3 pb-2 font-mono text-[9.5px] tracking-[0.13em] text-subtle uppercase">{children}</div>
 );
 
 /**

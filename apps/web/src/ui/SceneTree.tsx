@@ -46,11 +46,7 @@ function Node({
    */
   if (id === undefined) {
     return (
-      <div
-        role="presentation"
-        style={{ paddingLeft: 7 + depth * 12 }}
-        className={`${shared} cursor-default text-ink`}
-      >
+      <div role="presentation" style={{ paddingLeft: 7 + depth * 12 }} className={`${shared} cursor-default text-ink`}>
         {inner}
       </div>
     );

@@ -20,8 +20,5 @@ interface FileSystemDirectoryHandle {
   getFileHandle(name: string, options?: { create?: boolean }): Promise<FileSystemFileHandle>;
 }
 interface Window {
-  showDirectoryPicker?: (options?: {
-    id?: string;
-    mode?: "read" | "readwrite";
-  }) => Promise<FileSystemDirectoryHandle>;
+  showDirectoryPicker?: (options?: { id?: string; mode?: "read" | "readwrite" }) => Promise<FileSystemDirectoryHandle>;
 }

@@ -308,8 +308,7 @@ export const setTheme = (theme: "dark" | "light"): void => {
 
 export const setShowColliders = (showColliders: boolean): void => set({ showColliders });
 
-export const setShowContext = (showContext: boolean): void =>
-  set({ showContext, revision: state.revision + 1 });
+export const setShowContext = (showContext: boolean): void => set({ showContext, revision: state.revision + 1 });
 
 export const setShowPlan = (showPlan: boolean): void => set({ showPlan });
 
@@ -451,17 +450,12 @@ function hasId(node: unknown, id: string): boolean {
  * scene picker and Save, because the trace is sampling the geometry this
  * would dispose.
  */
-function restore(
-  from: "undoStack" | "redoStack",
-  to: "undoStack" | "redoStack",
-  verb: "Undid" | "Redid",
-): void {
+function restore(from: "undoStack" | "redoStack", to: "undoStack" | "redoStack", verb: "Undid" | "Redid"): void {
   const current = state.document;
   const step = state[from].at(-1);
   if (current === null || step === undefined || state.rendering) return;
   lastGroup = null;
-  const selection =
-    state.selection !== null && hasId(step.document.subject, state.selection) ? state.selection : null;
+  const selection = state.selection !== null && hasId(step.document.subject, state.selection) ? state.selection : null;
   set({
     document: step.document,
     findings: lintScene(step.document),

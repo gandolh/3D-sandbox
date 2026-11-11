@@ -104,11 +104,7 @@ export function wallsFromFootprint(
 }
 
 /** Attach openings to a wall by id, leaving the rest of the array untouched. */
-export function withOpenings(
-  walls: readonly WallSpec[],
-  id: string,
-  openings: readonly OpeningInput[],
-): WallSpec[] {
+export function withOpenings(walls: readonly WallSpec[], id: string, openings: readonly OpeningInput[]): WallSpec[] {
   let matched = false;
   const out = walls.map((w) => {
     if (w.id !== id) return w;

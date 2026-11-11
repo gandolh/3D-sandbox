@@ -25,12 +25,7 @@ export function impostorDir(root: string, asset: string): string {
 }
 
 /** Write a finished bake where the manifest will find it, and say where. */
-export async function writeImpostor(
-  root: string,
-  asset: string,
-  atlas: Buffer,
-  meta: string,
-): Promise<string> {
+export async function writeImpostor(root: string, asset: string, atlas: Buffer, meta: string): Promise<string> {
   const dir = impostorDir(root, asset);
   await mkdir(dir, { recursive: true });
   await writeFile(join(dir, "atlas.png"), atlas);

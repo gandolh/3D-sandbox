@@ -152,11 +152,7 @@ function structureUnder(level: Level, roofBox: ReturnType<typeof bounds>): Wall[
   for (const wall of level.walls) {
     const touching = groups.filter((g) =>
       g.some(
-        (w) =>
-          same(w.start, wall.start) ||
-          same(w.start, wall.end) ||
-          same(w.end, wall.start) ||
-          same(w.end, wall.end),
+        (w) => same(w.start, wall.start) || same(w.start, wall.end) || same(w.end, wall.start) || same(w.end, wall.end),
       ),
     );
     if (touching.length === 0) {

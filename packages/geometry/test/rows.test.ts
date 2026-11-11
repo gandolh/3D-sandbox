@@ -104,8 +104,6 @@ describe("the sampler cannot be asked for more than it can draw", () => {
     // Spacing is bounded below and coordinates above, but their *ratio* is
     // not: 1 000 m at 0.1 m spacing is 10⁸ cells, each of which would draw
     // five random numbers and run two point-in-polygon tests.
-    expect(() => scatterInstances(bigField({ arrangement: "rows", rowSpacing: [0.1, 0.1] }))).toThrow(
-      RangeError,
-    );
+    expect(() => scatterInstances(bigField({ arrangement: "rows", rowSpacing: [0.1, 0.1] }))).toThrow(RangeError);
   });
 });

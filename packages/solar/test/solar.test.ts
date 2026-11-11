@@ -27,15 +27,11 @@ const at = (date: string, time: string): SolarTime => ({ date, time });
 
 describe("timezone resolution", () => {
   it("reads Bucharest summer time as UTC+3", () => {
-    expect(localToUtc("2026-06-21", "17:42", "Europe/Bucharest").toISOString()).toBe(
-      "2026-06-21T14:42:00.000Z",
-    );
+    expect(localToUtc("2026-06-21", "17:42", "Europe/Bucharest").toISOString()).toBe("2026-06-21T14:42:00.000Z");
   });
 
   it("reads Bucharest winter time as UTC+2", () => {
-    expect(localToUtc("2026-01-15", "12:00", "Europe/Bucharest").toISOString()).toBe(
-      "2026-01-15T10:00:00.000Z",
-    );
+    expect(localToUtc("2026-01-15", "12:00", "Europe/Bucharest").toISOString()).toBe("2026-01-15T10:00:00.000Z");
   });
 
   it("resolves correctly on both sides of a DST boundary", () => {
@@ -135,11 +131,7 @@ describe("direction vectors", () => {
  */
 describe("seen from above", () => {
   type V = readonly [number, number, number];
-  const cross = (a: V, b: V): V => [
-    a[1] * b[2] - a[2] * b[1],
-    a[2] * b[0] - a[0] * b[2],
-    a[0] * b[1] - a[1] * b[0],
-  ];
+  const cross = (a: V, b: V): V => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
   const right: V = [1, 0, 0];
   const back: V = [0, 1, 0];
   const up = cross(back, right);
@@ -270,9 +262,7 @@ describe("lighting model", () => {
 
 describe("resolveSolar against the reference scene", () => {
   const doc = loadScene(
-    JSON.parse(
-      readFileSync(new URL("../../../scenes/villa-carpathia.scene.json", import.meta.url), "utf8"),
-    ) as unknown,
+    JSON.parse(readFileSync(new URL("../../../scenes/villa-carpathia.scene.json", import.meta.url), "utf8")) as unknown,
   ).document;
 
   it("resolves the document's working moment", () => {

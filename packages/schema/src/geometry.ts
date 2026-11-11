@@ -80,13 +80,7 @@ export function boundsContain(outer: Bounds, inner: Bounds, tolerance: M = 0): b
 }
 
 /** True when two closed 1-D intervals overlap by more than `epsilon`. */
-export function intervalsOverlap(
-  aStart: number,
-  aEnd: number,
-  bStart: number,
-  bEnd: number,
-  epsilon = 1e-6,
-): boolean {
+export function intervalsOverlap(aStart: number, aEnd: number, bStart: number, bEnd: number, epsilon = 1e-6): boolean {
   return Math.min(aEnd, bEnd) - Math.max(aStart, bStart) > epsilon;
 }
 

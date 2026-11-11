@@ -67,8 +67,7 @@ export function prepareAsset(object: THREE.Object3D): AssetGeometry {
   geometry.translate(-(box.min.x + box.max.x) / 2, -box.min.y, -(box.min.z + box.max.z) / 2);
 
   const position = geometry.getAttribute("position");
-  const triangles =
-    position === undefined ? 0 : (geometry.index === null ? position.count : geometry.index.count) / 3;
+  const triangles = position === undefined ? 0 : (geometry.index === null ? position.count : geometry.index.count) / 3;
 
   return { geometry, triangles, size: [size.x, size.y, size.z] };
 }

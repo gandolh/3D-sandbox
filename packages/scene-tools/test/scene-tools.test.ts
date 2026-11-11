@@ -131,9 +131,7 @@ describe("planSceneFile", () => {
   it("refuses a level the scene does not have, rather than drawing the first", async () => {
     const result = await planSceneFile(greenhollow, "attic");
     expect(result.kind).toBe("refused");
-    expect(result.kind === "refused" && result.reason).toMatch(
-      /^the scene has no level "attic"; its levels are /,
-    );
+    expect(result.kind === "refused" && result.reason).toMatch(/^the scene has no level "attic"; its levels are /);
   });
 
   it("passes an unreadable file through", async () => {

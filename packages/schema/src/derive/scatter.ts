@@ -181,10 +181,7 @@ export function scatterInstances(field: ScatterField): ScatterInstance[] {
   // the failure mode with no symptom. One expression, called from both sides —
   // and not `estimateScatterInstances`, which for rows calls back into the
   // placement below.
-  const target = Math.min(
-    scatterTarget(polygonNetArea(field.area, field.exclude), field.density),
-    MAX_INSTANCES,
-  );
+  const target = Math.min(scatterTarget(polygonNetArea(field.area, field.exclude), field.density), MAX_INSTANCES);
   if (target === 0) return [];
 
   const b = bounds(field.area);

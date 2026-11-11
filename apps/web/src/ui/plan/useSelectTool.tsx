@@ -219,8 +219,7 @@ export function useSelectTool({ doc, level, view, active }: ToolContext): Tool {
           if (target !== undefined) moveCorner(target.walls, d.from, to);
         },
         {
-          label:
-            d.ids.length > 1 ? `Move the corner of ${d.ids.join(" and ")}` : `Move the end of ${d.ids[0]}`,
+          label: d.ids.length > 1 ? `Move the corner of ${d.ids.join(" and ")}` : `Move the end of ${d.ids[0]}`,
         },
       );
     },

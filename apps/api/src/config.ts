@@ -22,8 +22,7 @@ export interface Config {
 export function loadConfig(overrides: Partial<Config> = {}): Config {
   return {
     scenesDir: overrides.scenesDir ?? process.env.SOLSTICE_SCENES_DIR ?? resolve(here, "../../../scenes"),
-    databasePath:
-      overrides.databasePath ?? process.env.SOLSTICE_INDEX_DB ?? resolve(here, "../.data/index.db"),
+    databasePath: overrides.databasePath ?? process.env.SOLSTICE_INDEX_DB ?? resolve(here, "../.data/index.db"),
     port: overrides.port ?? Number(process.env.PORT ?? 5174),
     host: overrides.host ?? process.env.HOST ?? "127.0.0.1",
     allowedOrigins: overrides.allowedOrigins ??

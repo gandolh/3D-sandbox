@@ -159,11 +159,7 @@ export function sunLighting(position: SunPosition): SunLighting {
   const neutral = { r: 1.0, g: 0.97, b: 0.93 };
   const mix = (a: number, b: number) => a + (b - a) * t;
   const to255 = (v: number) => Math.round(Math.max(0, Math.min(1, v)) * 255);
-  const hex = `#${[
-    to255(mix(warm.r, neutral.r)),
-    to255(mix(warm.g, neutral.g)),
-    to255(mix(warm.b, neutral.b)),
-  ]
+  const hex = `#${[to255(mix(warm.r, neutral.r)), to255(mix(warm.g, neutral.g)), to255(mix(warm.b, neutral.b))]
     .map((v) => v.toString(16).padStart(2, "0"))
     .join("")}`;
 

@@ -160,14 +160,7 @@ export class SandboxEngine {
     this.selectionBox.visible = false;
     this.colliderOverlay.visible = false;
     this.colliderOverlay.name = "collider-overlay";
-    this.scene.add(
-      this.sky,
-      this.sun,
-      this.sun.target,
-      this.ambient,
-      this.selectionBox,
-      this.colliderOverlay,
-    );
+    this.scene.add(this.sky, this.sun, this.sun.target, this.ambient, this.selectionBox, this.colliderOverlay);
 
     canvas.addEventListener("pointerdown", this.onPointerDown);
     this.observeResize();

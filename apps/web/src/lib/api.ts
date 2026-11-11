@@ -164,9 +164,7 @@ export function newHouseDocument(id: string, title: string, from: SceneDocument)
     solar: from.solar,
     materials: from.materials,
     subject: {
-      levels: [
-        { id: "ground", name: "Ground floor", elevation: 0, height: 2.7, walls: [], slabs: [], rooms: [] },
-      ],
+      levels: [{ id: "ground", name: "Ground floor", elevation: 0, height: 2.7, walls: [], slabs: [], rooms: [] }],
       roofs: [],
       placements: [],
       runs: [],

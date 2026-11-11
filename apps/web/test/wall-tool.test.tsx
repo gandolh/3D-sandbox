@@ -30,8 +30,7 @@ const at = (pt: Pt) => {
   const [clientX, clientY] = toScreen(VIEW, pt);
   return { clientX, clientY };
 };
-const move = (pt: Pt, shiftKey = false) =>
-  fireEvent.pointerMove(surface(), { ...at(pt), pointerId: 1, shiftKey });
+const move = (pt: Pt, shiftKey = false) => fireEvent.pointerMove(surface(), { ...at(pt), pointerId: 1, shiftKey });
 const click = (pt: Pt, shiftKey = false) => {
   move(pt, shiftKey);
   fireEvent.pointerDown(surface(), { ...at(pt), button: 0, pointerId: 1, shiftKey });

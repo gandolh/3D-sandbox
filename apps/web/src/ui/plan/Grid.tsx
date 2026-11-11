@@ -55,12 +55,7 @@ export const Grid = memo(function Grid({
         />
       )}
       <path d={path(isMajor)} stroke="#cfcfcf" strokeWidth={1} fill="none" />
-      <path
-        d={`M${n(ox)},0 V${n(height)} M0,${n(oy)} H${n(width)}`}
-        stroke="#a9a9a9"
-        strokeWidth={1}
-        fill="none"
-      />
+      <path d={`M${n(ox)},0 V${n(height)} M0,${n(oy)} H${n(width)}`} stroke="#a9a9a9" strokeWidth={1} fill="none" />
     </g>
   );
 });

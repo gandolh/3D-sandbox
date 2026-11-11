@@ -1,13 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  pointInPolygon,
-  squareEnds,
-  type Wall,
-  wallEnds,
-  wallLength,
-  wallOutline,
-  wallPoint,
-} from "../src/index.js";
+import { pointInPolygon, squareEnds, type Wall, wallEnds, wallLength, wallOutline, wallPoint } from "../src/index.js";
 
 /**
  * Where walls meet, as the mesh, the collider and the plan all read it.
@@ -27,9 +19,7 @@ const wall = (id: string, start: [number, number], end: [number, number], thickn
 });
 
 const outline = (w: Wall, walls: readonly Wall[]): [number, number][] =>
-  wallOutline(w, wallEnds(w, walls)).map(
-    ([along, across]) => wallPoint(w, along, across) as [number, number],
-  );
+  wallOutline(w, wallEnds(w, walls)).map(([along, across]) => wallPoint(w, along, across) as [number, number]);
 
 const area = (polygon: readonly (readonly [number, number])[]): number => {
   let sum = 0;
@@ -131,9 +121,7 @@ describe("wall ends", () => {
     const ends = wallEnds(a, [a, b]);
     expect(ends.start.plus).toBeCloseTo(0.12 / Math.tan(turn / 2), 9);
     const stretch = (from: number, to: number) =>
-      wallOutline(a, ends, from, to).map(
-        ([along, across]) => wallPoint(a, along, across) as [number, number],
-      );
+      wallOutline(a, ends, from, to).map(([along, across]) => wallPoint(a, along, across) as [number, number]);
     const pieces = [stretch(0, 0.25), stretch(0.25, 1.15), stretch(1.15, 4)];
     const total = pieces.reduce((sum, piece) => sum + area(piece), 0);
     expect(total).toBeCloseTo(area(outline(a, [a, b])), 9);

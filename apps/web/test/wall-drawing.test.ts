@@ -156,12 +156,8 @@ describe("ids and defaults", () => {
   });
 
   it("leaves height out when the wall takes the level's", () => {
-    expect(
-      "height" in makeWall("W-01", [0, 0], [1, 0], { thickness: 0.24, height: null, material: "m" }),
-    ).toBe(false);
-    expect(makeWall("W-01", [0, 0], [1, 0], { thickness: 0.24, height: 2.4, material: "m" }).height).toBe(
-      2.4,
-    );
+    expect("height" in makeWall("W-01", [0, 0], [1, 0], { thickness: 0.24, height: null, material: "m" })).toBe(false);
+    expect(makeWall("W-01", [0, 0], [1, 0], { thickness: 0.24, height: 2.4, material: "m" }).height).toBe(2.4);
   });
 });
 

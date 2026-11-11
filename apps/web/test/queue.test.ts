@@ -1,11 +1,6 @@
 import type { Shot } from "@solstice/schema";
 import { describe, expect, it } from "vitest";
-import {
-  estimateQueue,
-  formatDuration,
-  MEASURED_SAMPLES_PER_SECOND,
-  renderQueue,
-} from "../src/engine/queue.js";
+import { estimateQueue, formatDuration, MEASURED_SAMPLES_PER_SECOND, renderQueue } from "../src/engine/queue.js";
 
 const shot = (id: string, render: Partial<Shot["render"]> = {}): Shot => ({
   id,

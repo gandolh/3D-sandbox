@@ -228,12 +228,7 @@ function Door({
         stroke={ink}
         strokeWidth={bump(px(WEIGHT.seen))}
       />
-      <path
-        d={`M${s(mark.hinge)} L${s(mark.leaf)}`}
-        fill="none"
-        stroke={ink}
-        strokeWidth={bump(px(WEIGHT.symbol))}
-      />
+      <path d={`M${s(mark.hinge)} L${s(mark.leaf)}`} fill="none" stroke={ink} strokeWidth={bump(px(WEIGHT.symbol))} />
       <path
         d={`M${s(mark.leaf)} A${n(r)} ${n(r)} 0 0 ${sweepFlag(hinge, leaf, shut)} ${s(mark.shut)}`}
         fill="none"

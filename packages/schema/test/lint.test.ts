@@ -17,8 +17,7 @@ import {
 import { baseScene } from "./fixtures.js";
 
 /** Parse then lint, so rules see a document with defaults applied. */
-const lint = (input: SceneDocumentInput, options = {}): LintFinding[] =>
-  lintScene(SceneDocument.parse(input), options);
+const lint = (input: SceneDocumentInput, options = {}): LintFinding[] => lintScene(SceneDocument.parse(input), options);
 
 const rules = (findings: readonly LintFinding[]): string[] => findings.map((f) => f.rule);
 
@@ -203,9 +202,7 @@ describe("unique-ids claims every entity kind there is", () => {
     const donor = list.findLast((e) => e.path !== victim.path && !e.path.startsWith(`${victim.path}.`))!;
     victim.target.id = donor.target.id;
     const found = lintScene(SceneDocument.parse(doc)).filter((f) => f.rule === "unique-ids");
-    expect(found.map((f) => f.path)).toContain(
-      list.indexOf(victim) < list.indexOf(donor) ? donor.path : victim.path,
-    );
+    expect(found.map((f) => f.path)).toContain(list.indexOf(victim) < list.indexOf(donor) ? donor.path : victim.path);
   });
 });
 
@@ -739,9 +736,7 @@ describe("rooms-are-habitable", () => {
     // A room is a claim about space the walls enclose. One that runs past them
     // is claiming floor that is outdoors.
     const f = found(withRooms(box("r-1", "living", 0.2, 0.2, 9, 7.8)));
-    expect(f.map((x) => x.message)).toEqual([
-      expect.stringMatching(/extends outside the walls/) as unknown as string,
-    ]);
+    expect(f.map((x) => x.message)).toEqual([expect.stringMatching(/extends outside the walls/) as unknown as string]);
     expect(f[0]!.severity).toBe("error");
   });
 

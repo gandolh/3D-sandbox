@@ -1,9 +1,4 @@
-import {
-  lintScene,
-  type SceneDocument,
-  SceneDocument as SceneSchema,
-  serializeScene,
-} from "@solstice/schema";
+import { lintScene, type SceneDocument, SceneDocument as SceneSchema, serializeScene } from "@solstice/schema";
 import { DEFAULT_SCENE_ID, SCENES, sceneById } from "../scenes.js";
 import {
   getState,
@@ -19,15 +14,7 @@ import {
   setShowPlan,
   setStatus,
 } from "../state/store.js";
-import {
-  apiBase,
-  createScene,
-  idFromTitle,
-  listScenes,
-  newHouseDocument,
-  readScene,
-  saveScene,
-} from "./api.js";
+import { apiBase, createScene, idFromTitle, listScenes, newHouseDocument, readScene, saveScene } from "./api.js";
 
 /**
  * Where scenes come from, and where they go.
@@ -172,10 +159,7 @@ export async function saveOpenScene(): Promise<void> {
  * dialog to show and ask again: an id already on disk is refused by the API,
  * never replaced.
  */
-export async function createHouse(
-  title: string,
-  options: { copy: boolean; tool?: PlanTool },
-): Promise<string | null> {
+export async function createHouse(title: string, options: { copy: boolean; tool?: PlanTool }): Promise<string | null> {
   const from = getState().document;
   if (from === null) return "There is no open scene to start from";
   const id = idFromTitle(title);

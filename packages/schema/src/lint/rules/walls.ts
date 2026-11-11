@@ -129,12 +129,7 @@ export const openingsDoNotOverlap: Rule = {
           for (let b = a + 1; b < wall.openings.length; b++) {
             const oa = wall.openings[a]!;
             const ob = wall.openings[b]!;
-            const planOverlap = intervalsOverlap(
-              oa.offset,
-              oa.offset + oa.width,
-              ob.offset,
-              ob.offset + ob.width,
-            );
+            const planOverlap = intervalsOverlap(oa.offset, oa.offset + oa.width, ob.offset, ob.offset + ob.width);
             if (!planOverlap) continue;
             const vertOverlap = intervalsOverlap(oa.sill, oa.sill + oa.height, ob.sill, ob.sill + ob.height);
             if (!vertOverlap) continue;

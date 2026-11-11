@@ -38,8 +38,7 @@ export function mulberry32(seed: number): () => number {
   return next;
 }
 
-export const randomBetween = (rng: () => number, min: number, max: number): number =>
-  min + rng() * (max - min);
+export const randomBetween = (rng: () => number, min: number, max: number): number => min + rng() * (max - min);
 
 export const pick = <T>(rng: () => number, items: readonly T[]): T => {
   if (items.length === 0) throw new Error("pick: empty list");

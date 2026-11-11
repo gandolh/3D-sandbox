@@ -317,11 +317,7 @@ describe("ignoreEntity", () => {
 describe("what a box is resting on, when it is not resting on its middle", () => {
   const sizes = {
     get: (id: string) =>
-      id === "a/chair"
-        ? ([0.78, 0.86, 0.83] as const)
-        : id === "a/post"
-          ? ([0.3, 0.6, 0.3] as const)
-          : undefined,
+      id === "a/chair" ? ([0.78, 0.86, 0.83] as const) : id === "a/post" ? ([0.3, 0.6, 0.3] as const) : undefined,
   };
 
   const withChair = (rotationY: number): SceneDocument => {

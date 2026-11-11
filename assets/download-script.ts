@@ -104,8 +104,7 @@ const header = (lines: string[]): string[] => [
 const fetchLines = (dir: string, d: Download): string[] => {
   const target = `${dir}/${d.target}`;
   const lines: string[] = [];
-  if (d.target.includes("/"))
-    lines.push(`mkdir -p ${shellQuote(`${dir}/${d.target.replace(/\/[^/]+$/, "")}`)}`);
+  if (d.target.includes("/")) lines.push(`mkdir -p ${shellQuote(`${dir}/${d.target.replace(/\/[^/]+$/, "")}`)}`);
   lines.push(`fetch_one ${shellQuote(d.url)} ${shellQuote(target)} ${Math.trunc(d.bytes)}`);
   return lines;
 };
@@ -139,9 +138,7 @@ export function downloadScript(
       return [...lines, ""];
     }),
     ...missing.map((m) => `# UNRESOLVED ${shellComment(`${m.source}/${m.slug} — ${m.note ?? ""}`)}`),
-    ...heavy.map(
-      (h) => `# SKIPPED ${shellComment(`${h.source}/${h.slug} — ${size(h)}`)}, see download-heavy.sh`,
-    ),
+    ...heavy.map((h) => `# SKIPPED ${shellComment(`${h.source}/${h.slug} — ${size(h)}`)}, see download-heavy.sh`),
     'echo "done — now run: npm run check"',
     "",
   ].join("\n");

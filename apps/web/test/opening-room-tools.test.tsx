@@ -60,9 +60,7 @@ function boxScene(): void {
   editDocument((draft) => {
     const attic = draft.subject.levels.find((l) => l.id === "attic")!;
     corners.forEach((c, i) => {
-      attic.walls.push(
-        makeWall(`W-0${5 + i}`, c, corners[(i + 1) % 4]!, { thickness: 0.24, height: null, material }),
-      );
+      attic.walls.push(makeWall(`W-0${5 + i}`, c, corners[(i + 1) % 4]!, { thickness: 0.24, height: null, material }));
     });
   });
   setPlanLevelId("attic");

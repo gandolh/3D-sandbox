@@ -130,10 +130,7 @@ export async function summarize(
   bytes?: number,
 ): Promise<SceneSummary> {
   const counts = sceneCounts(document);
-  const scatterInstances = document.context.scatter.reduce(
-    (n, f) => n + estimateScatterInstances(f).instances,
-    0,
-  );
+  const scatterInstances = document.context.scatter.reduce((n, f) => n + estimateScatterInstances(f).instances, 0);
 
   return {
     id,

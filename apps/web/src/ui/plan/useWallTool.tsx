@@ -99,9 +99,7 @@ export function useWallTool({ doc, level, view, active }: ToolContext): Tool {
           ? 1
           : Math.max(
               0.01,
-              toCentimetre(
-                (h.snap.point[0] - from[0]) * direction[0] + (h.snap.point[1] - from[1]) * direction[1],
-              ),
+              toCentimetre((h.snap.point[0] - from[0]) * direction[0] + (h.snap.point[1] - from[1]) * direction[1]),
             ));
       return length !== null && length <= 0 ? null : pointAlong(from, direction, along);
     }
@@ -251,9 +249,7 @@ export function useWallTool({ doc, level, view, active }: ToolContext): Tool {
 function ChainPoints({ points, view }: { points: Chain["points"]; view: ToolContext["view"] }) {
   const [first, ...rest] = points.map((pt) => toScreen(view, pt));
   if (first === undefined) return null;
-  const dots = rest
-    .map(([x, y]) => `M${n(x - 2.5)},${n(y)} a2.5,2.5 0 1,0 5,0 a2.5,2.5 0 1,0 -5,0`)
-    .join(" ");
+  const dots = rest.map(([x, y]) => `M${n(x - 2.5)},${n(y)} a2.5,2.5 0 1,0 5,0 a2.5,2.5 0 1,0 -5,0`).join(" ");
   return (
     <g data-chain={points.length}>
       {dots !== "" && <path d={dots} fill={SELECTED} />}
@@ -298,14 +294,7 @@ function Ghost({
   const mid: [number, number] = [(a2[0] + b2[0]) / 2, (a2[1] + b2[1]) / 2];
   return (
     <g data-ghost="">
-      <path
-        d={d}
-        fill={SELECTED}
-        fillOpacity={0.18}
-        stroke={SELECTED}
-        strokeWidth={1.2}
-        strokeDasharray="5 3"
-      />
+      <path d={d} fill={SELECTED} fillOpacity={0.18} stroke={SELECTED} strokeWidth={1.2} strokeDasharray="5 3" />
       <path
         d={`M${n(a[0])},${n(a[1])} L${n(a2[0])},${n(a2[1])} M${n(b[0])},${n(b[1])} L${n(b2[0])},${n(b2[1])} M${n(a2[0])},${n(a2[1])} L${n(b2[0])},${n(b2[1])}`}
         stroke={SELECTED}

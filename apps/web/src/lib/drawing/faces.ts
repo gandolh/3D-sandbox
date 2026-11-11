@@ -240,10 +240,7 @@ export function offsetFace(face: Face): [number, number][] {
       // different one steps across at the joint.
       if (Math.abs(a.h - b.h) < EPS) continue;
       const v = face.polygon[i]!;
-      out.push(
-        [v[0] + a.left[0] * a.h, v[1] + a.left[1] * a.h],
-        [v[0] + b.left[0] * b.h, v[1] + b.left[1] * b.h],
-      );
+      out.push([v[0] + a.left[0] * a.h, v[1] + a.left[1] * a.h], [v[0] + b.left[0] * b.h, v[1] + b.left[1] * b.h]);
       continue;
     }
     const t = cross(b.p[0] - a.p[0], b.p[1] - a.p[1], b.d[0], b.d[1]) / denom;
@@ -270,9 +267,7 @@ export function floorOutline(walls: readonly Wall[], point: Pt): [number, number
   if (inside === undefined) return null;
   // The group's outside is its one negative face; with several (a group
   // closing round a courtyard), the largest is the outer one.
-  const outside = faces
-    .filter((f) => f.group === inside.group && f.area < -EPS)
-    .sort((a, b) => a.area - b.area)[0];
+  const outside = faces.filter((f) => f.group === inside.group && f.area < -EPS).sort((a, b) => a.area - b.area)[0];
   if (outside === undefined) return null;
   return offsetFace(outside).reverse();
 }

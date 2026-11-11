@@ -29,9 +29,7 @@ import { WEIGHT } from "../src/style.js";
  */
 const scene = (id: string): SceneDocument =>
   SceneDocument.parse(
-    JSON.parse(
-      readFileSync(fileURLToPath(new URL(`../../../scenes/${id}.scene.json`, import.meta.url)), "utf8"),
-    ),
+    JSON.parse(readFileSync(fileURLToPath(new URL(`../../../scenes/${id}.scene.json`, import.meta.url)), "utf8")),
   );
 
 const greenhollow = scene("greenhollow");
@@ -145,12 +143,8 @@ describe("a window above the cut plane", () => {
 
   const bare = withOpenings([]);
   // Sill 1.8, head 2.4, in a 2.7 m storey: entirely above the 1.2 m plane.
-  const clerestory = withOpenings([
-    { id: "cl-1", kind: "window", offset: 0.6, width: 1.2, height: 0.6, sill: 1.8 },
-  ]);
-  const ordinary = withOpenings([
-    { id: "w-1", kind: "window", offset: 0.6, width: 1.2, height: 1.4, sill: 0.9 },
-  ]);
+  const clerestory = withOpenings([{ id: "cl-1", kind: "window", offset: 0.6, width: 1.2, height: 0.6, sill: 1.8 }]);
+  const ordinary = withOpenings([{ id: "w-1", kind: "window", offset: 0.6, width: 1.2, height: 1.4, sill: 0.9 }]);
 
   it("leaves the poché unbroken", () => {
     expect(count(clerestory, POCHE)).toBe(count(bare, POCHE));
@@ -250,12 +244,7 @@ describe("which way the sheet faces", () => {
 });
 
 describe("where walls meet", () => {
-  const wall = (
-    id: string,
-    start: [number, number],
-    end: [number, number],
-    openings: Wall["openings"] = [],
-  ): Wall => ({
+  const wall = (id: string, start: [number, number], end: [number, number], openings: Wall["openings"] = []): Wall => ({
     id,
     start,
     end,
@@ -278,12 +267,7 @@ describe("where walls meet", () => {
     // At 30° the inside face stops 0.45 m from the corner point, past the
     // door's 250 mm; the hole between the pieces is the door's stretch.
     const turn = (30 * Math.PI) / 180;
-    const a = wall(
-      "a",
-      [0, 0],
-      [4, 0],
-      [{ id: "d-1", kind: "door", offset: 0.25, width: 0.9, height: 2.1, sill: 0 }],
-    );
+    const a = wall("a", [0, 0], [4, 0], [{ id: "d-1", kind: "door", offset: 0.25, width: 0.9, height: 2.1, sill: 0 }]);
     const b = wall("b", [0, 0], [3 * Math.cos(turn), 3 * Math.sin(turn)]);
     const ends = wallEnds(a, [a, b]);
     const pieces = wallSolids(a, 1.2, ends);

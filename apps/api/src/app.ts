@@ -89,9 +89,7 @@ export async function buildApp(overrides: Partial<Config> = {}): Promise<BuiltAp
    */
   app.get("/api/scenes", async () => ({
     scenes: await Promise.all(
-      index
-        .list()
-        .map(async (scene) => ({ ...scene, hasBuilder: await hasBuilder(config.scenesDir, scene.id) })),
+      index.list().map(async (scene) => ({ ...scene, hasBuilder: await hasBuilder(config.scenesDir, scene.id) })),
     ),
   }));
 
@@ -168,9 +166,7 @@ export async function buildApp(overrides: Partial<Config> = {}): Promise<BuiltAp
     const header = request.headers["x-scene-mtime"];
     const expected = typeof header === "string" && header !== "" ? Number(header) : undefined;
     if (expected !== undefined && !Number.isFinite(expected)) {
-      return reply
-        .code(400)
-        .send({ error: "invalid_precondition", message: "x-scene-mtime must be a number" });
+      return reply.code(400).send({ error: "invalid_precondition", message: "x-scene-mtime must be a number" });
     }
 
     // Existence is checked here rather than inferred from a failed write, and

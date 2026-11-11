@@ -43,8 +43,7 @@ export function Timeline() {
    * document and the readout went on showing the playhead. Paused, the document
    * wins — and `seek` commits to it, so scrubbing the playhead stays live too.
    */
-  const played =
-    playing && animation !== undefined ? evaluate(animation, playhead)["solar.minutes"] : undefined;
+  const played = playing && animation !== undefined ? evaluate(animation, playhead)["solar.minutes"] : undefined;
   const minutes = played ?? (doc === null ? 0 : clockToMinutes(doc.solar.time));
 
   /**
@@ -135,10 +134,7 @@ export function Timeline() {
             style={{ left: `${bandStart}%`, right: `${100 - bandEnd}%` }}
           />
         </div>
-        <div
-          className="pointer-events-none absolute -top-1 -bottom-1 w-0.5 bg-accent"
-          style={{ left: `${pct}%` }}
-        >
+        <div className="pointer-events-none absolute -top-1 -bottom-1 w-0.5 bg-accent" style={{ left: `${pct}%` }}>
           <span className="absolute -top-1 -left-[3px] size-2 rounded-full bg-accent" />
         </div>
         <input

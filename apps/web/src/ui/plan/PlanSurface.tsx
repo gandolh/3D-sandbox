@@ -1,15 +1,7 @@
 import { CUT_HEIGHT } from "@solstice/drawing";
 import type { Level, SceneDocument } from "@solstice/schema";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import {
-  fitExtent,
-  levelExtent,
-  pan,
-  toWorld,
-  type ViewTransform,
-  wheelFactor,
-  zoomAt,
-} from "../../lib/plan-view.js";
+import { fitExtent, levelExtent, pan, toWorld, type ViewTransform, wheelFactor, zoomAt } from "../../lib/plan-view.js";
 import { getState, setPlanPointer, setPlanView, useStore } from "../../state/store.js";
 import { Grid } from "./Grid.jsx";
 import { LevelDrawing } from "./LevelDrawing.jsx";

@@ -162,11 +162,7 @@ function subjectWalls(level: Level): Wall[] {
   for (const wall of level.walls) {
     const touching = groups.filter((g) =>
       g.some(
-        (w) =>
-          same(w.start, wall.start) ||
-          same(w.start, wall.end) ||
-          same(w.end, wall.start) ||
-          same(w.end, wall.end),
+        (w) => same(w.start, wall.start) || same(w.start, wall.end) || same(w.end, wall.start) || same(w.end, wall.end),
       ),
     );
     if (touching.length === 0) {
@@ -194,10 +190,7 @@ function subjectWalls(level: Level): Wall[] {
 
   const box = bounds(envelope.flatMap((w) => [w.start, w.end]));
   const inside = (pt: readonly [number, number]): boolean =>
-    pt[0] >= box.minX - 1e-6 &&
-    pt[0] <= box.maxX + 1e-6 &&
-    pt[1] >= box.minZ - 1e-6 &&
-    pt[1] <= box.maxZ + 1e-6;
+    pt[0] >= box.minX - 1e-6 && pt[0] <= box.maxX + 1e-6 && pt[1] >= box.minZ - 1e-6 && pt[1] <= box.maxZ + 1e-6;
 
   return level.walls.filter((w) => envelope.includes(w) || (inside(w.start) && inside(w.end)));
 }
@@ -348,8 +341,6 @@ function scaleBar(sheet: Sheet, margin: number, height: number): string[] {
       `<path d="M${n(x)},${n(y - 1.4)} L${n(x)},${n(y + 1.4)}" stroke="${INK.line}" stroke-width="${WEIGHT.fine}"/>`,
     );
   }
-  out.push(
-    `<text x="${n(margin + len + 2)}" y="${n(y + 1)}" font-size="2.6" fill="${INK.label}">${metres} m</text>`,
-  );
+  out.push(`<text x="${n(margin + len + 2)}" y="${n(y + 1)}" font-size="2.6" fill="${INK.label}">${metres} m</text>`);
   return out;
 }

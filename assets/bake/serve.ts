@@ -84,12 +84,7 @@ const server = await createServer({
                 // Inside the asset's own directory, which is what the
                 // manifest scan picks up and what gets committed — see
                 // `impostorDir`.
-                const outDir = await writeImpostor(
-                  assetsRoot,
-                  asset,
-                  Buffer.from(await atlas.arrayBuffer()),
-                  meta,
-                );
+                const outDir = await writeImpostor(assetsRoot, asset, Buffer.from(await atlas.arrayBuffer()), meta);
 
                 console.log(`✓ ${asset} → ${outDir}`);
                 res.statusCode = 200;

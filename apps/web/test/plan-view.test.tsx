@@ -4,14 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it } from "vitest";
 import { formatMetres, toScreen, toWorld, type ViewTransform } from "../src/lib/plan-view.js";
 import { SCENES, sceneById } from "../src/scenes.js";
-import {
-  getState,
-  loadDocument,
-  select,
-  setPlanLevelId,
-  setPlanSheet,
-  setPlanView,
-} from "../src/state/store.js";
+import { getState, loadDocument, select, setPlanLevelId, setPlanSheet, setPlanView } from "../src/state/store.js";
 import { PlanView } from "../src/ui/PlanView.jsx";
 
 const parse = (id: string): SceneDocument => SceneDocument.parse(sceneById(id)!.json);

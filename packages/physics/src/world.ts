@@ -190,11 +190,7 @@ export class PhysicsWorld {
   /** Would a box at this transform interpenetrate anything already here? */
   overlaps(at: [number, number, number], halfExtents: [number, number, number]): boolean {
     const shape = new RAPIER.Cuboid(...halfExtents);
-    const hit = this.world.intersectionWithShape(
-      { x: at[0], y: at[1], z: at[2] },
-      { x: 0, y: 0, z: 0, w: 1 },
-      shape,
-    );
+    const hit = this.world.intersectionWithShape({ x: at[0], y: at[1], z: at[2] }, { x: 0, y: 0, z: 0, w: 1 }, shape);
     return hit !== null;
   }
 

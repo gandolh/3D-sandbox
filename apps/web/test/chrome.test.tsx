@@ -53,10 +53,7 @@ describe("the render overlay", () => {
     // The numbers change many times a second. A live region carrying them
     // would read the sample count aloud continuously and be switched off.
     const { container } = render(
-      <RenderOverlay
-        progress={progress({ queue: { index: 2, total: 4 }, label: "South-west" })}
-        onCancel={vi.fn()}
-      />,
+      <RenderOverlay progress={progress({ queue: { index: 2, total: 4 }, label: "South-west" })} onCancel={vi.fn()} />,
     );
     const live = container.querySelector('[role="status"]');
     expect(live?.getAttribute("aria-live")).toBe("polite");
@@ -69,8 +66,6 @@ describe("the render overlay", () => {
     const { container } = render(
       <RenderOverlay progress={progress({ phase: "building", build: 0.4 })} onCancel={vi.fn()} />,
     );
-    expect(container.querySelector('[role="status"]')?.textContent).toContain(
-      "building acceleration structure",
-    );
+    expect(container.querySelector('[role="status"]')?.textContent).toContain("building acceleration structure");
   });
 });

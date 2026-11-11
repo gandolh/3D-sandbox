@@ -43,12 +43,7 @@ export function runLength(run: Run): number {
 }
 
 /** A box laid along a segment at distance `t`, in world space. */
-function boxAt(
-  segment: Segment,
-  t: number,
-  size: [number, number, number],
-  baseY: number,
-): THREE.BufferGeometry {
+function boxAt(segment: Segment, t: number, size: [number, number, number], baseY: number): THREE.BufferGeometry {
   const geometry = new THREE.BoxGeometry(...size);
   geometry.translate(0, size[1] / 2 + baseY, 0);
   geometry.rotateY(segment.angle);

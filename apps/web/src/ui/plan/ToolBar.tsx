@@ -150,9 +150,7 @@ export function WallOptionsBar({ doc, levelHeight }: { doc: SceneDocument; level
         <select
           aria-label="Material"
           value={options.material ?? ""}
-          onChange={(event) =>
-            setWallOptions({ material: event.target.value === "" ? null : event.target.value })
-          }
+          onChange={(event) => setWallOptions({ material: event.target.value === "" ? null : event.target.value })}
           className="max-w-[180px] rounded-sm border border-line bg-input px-1.5 py-[2px] text-[11px] text-ink"
         >
           <option value="">Most used on this level</option>
@@ -170,8 +168,7 @@ export function WallOptionsBar({ doc, levelHeight }: { doc: SceneDocument; level
   );
 }
 
-const barClass =
-  "flex h-[30px] min-w-0 shrink-0 items-center gap-4 border-0 border-b border-line bg-panel px-2.5";
+const barClass = "flex h-[30px] min-w-0 shrink-0 items-center gap-4 border-0 border-b border-line bg-panel px-2.5";
 
 /** What the Door or Window tool cuts. The tooltip says why a door cannot be flipped. */
 export function OpeningOptionsBar({ kind }: { kind: "door" | "window" }) {
@@ -180,22 +177,10 @@ export function OpeningOptionsBar({ kind }: { kind: "door" | "window" }) {
   return (
     <fieldset aria-label={kind === "door" ? "Door options" : "Window options"} className={barClass}>
       <MetreBox label="Width" value={size.width} onCommit={(width) => width !== null && set({ width })} />
-      <MetreBox
-        label="Height"
-        value={size.height}
-        onCommit={(height) => height !== null && set({ height })}
-      />
-      <MetreBox
-        label="Sill"
-        value={size.sill}
-        allowZero
-        onCommit={(sill) => sill !== null && set({ sill })}
-      />
+      <MetreBox label="Height" value={size.height} onCommit={(height) => height !== null && set({ height })} />
+      <MetreBox label="Sill" value={size.sill} allowZero onCommit={(sill) => sill !== null && set({ sill })} />
       {kind === "door" && (
-        <span
-          title={SWING_NOTE}
-          className="cursor-help text-[10.5px] text-subtle underline decoration-dotted"
-        >
+        <span title={SWING_NOTE} className="cursor-help text-[10.5px] text-subtle underline decoration-dotted">
           Swings to the wall's left
         </span>
       )}
@@ -222,9 +207,7 @@ export function FloorOptionsBar({ doc, level }: { doc: SceneDocument; level: Lev
         <select
           aria-label="Material"
           value={options.material ?? ""}
-          onChange={(event) =>
-            setSlabOptions({ material: event.target.value === "" ? null : event.target.value })
-          }
+          onChange={(event) => setSlabOptions({ material: event.target.value === "" ? null : event.target.value })}
           className="max-w-[180px] rounded-sm border border-line bg-input px-1.5 py-[2px] text-[11px] text-ink"
         >
           <option value="">

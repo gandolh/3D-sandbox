@@ -1,13 +1,4 @@
-import {
-  area,
-  degToRad,
-  mmToM,
-  mToMm,
-  type Opening,
-  type Wall,
-  wallBearing,
-  wallLength,
-} from "@solstice/schema";
+import { area, degToRad, mmToM, mToMm, type Opening, type Wall, wallBearing, wallLength } from "@solstice/schema";
 import { findEntity, setWallBearing, setWallLength } from "../lib/entities.js";
 import { physicsFor, physicsReady } from "../lib/physics.js";
 import { editDocument, getState, setStatus, useStore } from "../state/store.js";
@@ -44,16 +35,13 @@ export function Inspector() {
               </span>
               {loadError}
               <span className="mt-1.5 block text-muted">
-                Nothing is selectable until a scene loads. Pick another from the toolbar, or fix the file and
-                reload.
+                Nothing is selectable until a scene loads. Pick another from the toolbar, or fix the file and reload.
               </span>
             </div>
           ) : doc === null ? (
             <p className="py-6 text-center text-[11.5px] text-subtle">Loading the scene…</p>
           ) : entity === null ? (
-            <p className="py-6 text-center text-[11.5px] text-subtle">
-              Select something in the viewport or the tree.
-            </p>
+            <p className="py-6 text-center text-[11.5px] text-subtle">Select something in the viewport or the tree.</p>
           ) : entity.kind === "wall" ? (
             <WallInspector id={entity.wall.id} levelIndex={entity.levelIndex} wallIndex={entity.wallIndex} />
           ) : entity.kind === "opening" ? (

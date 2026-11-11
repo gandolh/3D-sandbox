@@ -94,9 +94,9 @@ export const collidersFor = (doc: SceneDocument, sizes?: PlacementSizes): Cuboid
   deriveColliders(doc, sizes);
 
 /** Adapt the store's plain map to what `deriveColliders` wants. */
-export const sizesFromMap = (
-  sizes: ReadonlyMap<string, readonly [number, number, number]>,
-): PlacementSizes => ({ get: (id) => sizes.get(id) });
+export const sizesFromMap = (sizes: ReadonlyMap<string, readonly [number, number, number]>): PlacementSizes => ({
+  get: (id) => sizes.get(id),
+});
 
 export function disposePhysics(): void {
   cached?.world.dispose();

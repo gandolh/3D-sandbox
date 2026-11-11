@@ -40,9 +40,7 @@ const narrowFindings = (width: number) => {
       },
     ],
   };
-  return lintScene(SceneDocument.parse(input)).filter((f) =>
-    f.message.includes("narrower than its own posts"),
-  );
+  return lintScene(SceneDocument.parse(input)).filter((f) => f.message.includes("narrower than its own posts"));
 };
 
 /**
@@ -258,9 +256,7 @@ describe("the document ceiling", () => {
       ...input.context,
       scatter: [field({ density: 1000 }) as never],
     };
-    const findings = lintScene(SceneDocument.parse(input)).filter(
-      (f) => f.rule === "scatter-density-is-sane",
-    );
+    const findings = lintScene(SceneDocument.parse(input)).filter((f) => f.rule === "scatter-density-is-sane");
     expect(findings).toHaveLength(1);
     expect(findings[0]!.severity).toBe("error");
   });
@@ -274,9 +270,7 @@ describe("the document ceiling", () => {
       ...input.context,
       scatter: [field({ density: 60 }) as never],
     };
-    const findings = lintScene(SceneDocument.parse(input)).filter(
-      (f) => f.rule === "scatter-density-is-sane",
-    );
+    const findings = lintScene(SceneDocument.parse(input)).filter((f) => f.rule === "scatter-density-is-sane");
     expect(findings).toHaveLength(1);
     expect(findings[0]!.severity).toBe("warning");
   });

@@ -126,9 +126,8 @@ async function resolvePolyHaven(w: Wanted): Promise<Resolved> {
     }
   } else {
     for (const map of PH_MAPS) {
-      const entry = (
-        files[map] as Record<string, Record<string, { url?: string; size?: number }>> | undefined
-      )?.[RES]?.jpg;
+      const entry = (files[map] as Record<string, Record<string, { url?: string; size?: number }>> | undefined)?.[RES]
+        ?.jpg;
       if (entry?.url !== undefined) {
         downloads.push({
           url: entry.url,
@@ -160,8 +159,7 @@ async function resolveAmbientCg(w: Wanted): Promise<Resolved> {
       >;
     }[];
   };
-  const zips =
-    body.foundAssets?.[0]?.downloadFolders?.default?.downloadFiletypeCategories?.zip?.downloads ?? [];
+  const zips = body.foundAssets?.[0]?.downloadFolders?.default?.downloadFiletypeCategories?.zip?.downloads ?? [];
   const pick = zips.find((z) => z.attribute === `${RES.toUpperCase()}-JPG`);
   if (pick?.downloadLink === undefined) {
     return { ...w, ok: false, downloads: [], note: `no ${RES.toUpperCase()}-JPG zip` };
@@ -189,9 +187,7 @@ async function resolveAmbientCg(w: Wanted): Promise<Resolved> {
 }
 
 const resolved: Resolved[] = [];
-for (const w of [...wanted.values()].sort((a, b) =>
-  `${a.source}/${a.slug}`.localeCompare(`${b.source}/${b.slug}`),
-)) {
+for (const w of [...wanted.values()].sort((a, b) => `${a.source}/${a.slug}`.localeCompare(`${b.source}/${b.slug}`))) {
   if (w.source === "polyhaven") resolved.push(await resolvePolyHaven(w));
   else if (w.source === "ambientcg") resolved.push(await resolveAmbientCg(w));
   else resolved.push({ ...w, ok: false, downloads: [], note: `unknown source "${w.source}"` });
@@ -332,9 +328,7 @@ for (const r of resolved) {
 }
 
 const totalFiles = resolved.reduce((n, r) => n + r.downloads.length, 0);
-console.log(
-  `${resolved.length} assets referenced · ${totalFiles} files to fetch · ${missing.length} unresolved`,
-);
+console.log(`${resolved.length} assets referenced · ${totalFiles} files to fetch · ${missing.length} unresolved`);
 for (const m of missing) console.error(`  ✗ ${m.source}/${m.slug} — ${m.note}`);
 for (const line of suspect) console.error(`  ! ${line} — delete it and re-run download.sh`);
 if (suspect.length > 0) {

@@ -31,10 +31,7 @@ describe("wall colliders", () => {
 
   it("splits around a door, leaving the doorway open", () => {
     // A door reaching 2.1 m in a 2.7 m wall leaves a lintel and two solid spans.
-    const out = wallColliders(
-      wall([{ id: "d-1", kind: "door", offset: 2, width: 1, height: 2.1, sill: 0 }]),
-      level,
-    );
+    const out = wallColliders(wall([{ id: "d-1", kind: "door", offset: 2, width: 1, height: 2.1, sill: 0 }]), level);
     const ids = out.map((c) => c.id);
     expect(ids).toContain("wall:W-01:s0"); // before the door
     expect(ids).toContain("wall:W-01:a0"); // lintel over it
@@ -47,10 +44,7 @@ describe("wall colliders", () => {
   });
 
   it("leaves no solid box spanning the doorway at floor level", () => {
-    const out = wallColliders(
-      wall([{ id: "d-1", kind: "door", offset: 2, width: 1, height: 2.1, sill: 0 }]),
-      level,
-    );
+    const out = wallColliders(wall([{ id: "d-1", kind: "door", offset: 2, width: 1, height: 2.1, sill: 0 }]), level);
     const atFloor = out.filter((c) => c.position[1] - c.halfExtents[1] < 0.01);
     const doorway = atFloor.some((c) => {
       const [lo, hi] = spanAlong(c);
@@ -89,10 +83,7 @@ describe("wall colliders", () => {
   });
 
   it("carries the wall's own id on every fragment", () => {
-    const out = wallColliders(
-      wall([{ id: "d-1", kind: "door", offset: 2, width: 1, height: 2.1, sill: 0 }]),
-      level,
-    );
+    const out = wallColliders(wall([{ id: "d-1", kind: "door", offset: 2, width: 1, height: 2.1, sill: 0 }]), level);
     expect(out.every((c) => c.entity === "W-01")).toBe(true);
   });
 
@@ -105,9 +96,7 @@ describe("wall colliders", () => {
   });
 
   it("drops a zero-length wall entirely", () => {
-    expect(
-      wallColliders(Wall.parse({ id: "W-0", start: [1, 1], end: [1, 1], material: "m" }), level),
-    ).toEqual([]);
+    expect(wallColliders(Wall.parse({ id: "W-0", start: [1, 1], end: [1, 1], material: "m" }), level)).toEqual([]);
   });
 
   it("cuts the end that meets another wall the way the mesh is cut", () => {

@@ -74,9 +74,7 @@ export function App() {
           </span>
         )}
         {errors > 0 && <span className="text-danger">{errors} error(s)</span>}
-        {errors === 0 && findings.length > 0 && (
-          <span className="text-warn">{findings.length} warning(s)</span>
-        )}
+        {errors === 0 && findings.length > 0 && <span className="text-warn">{findings.length} warning(s)</span>}
       </footer>
     </div>
   );

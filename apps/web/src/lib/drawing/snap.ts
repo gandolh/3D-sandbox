@@ -180,9 +180,7 @@ export function snapPoint(pointer: Pt, walls: readonly Wall[], scale: number, op
     if (delta <= ANGLE_APERTURE) {
       const bearing = snapped % 360;
       const direction = directionOf(bearing);
-      const along = toCentimetre(
-        (pointer[0] - from[0]) * direction[0] + (pointer[1] - from[1]) * direction[1],
-      );
+      const along = toCentimetre((pointer[0] - from[0]) * direction[0] + (pointer[1] - from[1]) * direction[1]);
       if (along > 0) {
         return {
           point: [clean(from[0] + direction[0] * along), clean(from[1] + direction[1] * along)],

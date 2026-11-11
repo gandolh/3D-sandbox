@@ -237,9 +237,7 @@ describe("scatter instance count", () => {
  */
 describe("post width", () => {
   const greenhollow = SceneDocument.parse(
-    JSON.parse(
-      readFileSync(fileURLToPath(new URL("../../../scenes/greenhollow.scene.json", import.meta.url)), "utf8"),
-    ),
+    JSON.parse(readFileSync(fileURLToPath(new URL("../../../scenes/greenhollow.scene.json", import.meta.url)), "utf8")),
   );
 
   /** A straight colonnade along +X, so its two rows differ only in Z. */

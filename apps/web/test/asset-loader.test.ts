@@ -19,8 +19,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-const json = (body: unknown) =>
-  new Response(JSON.stringify(body), { headers: { "content-type": "application/json" } });
+const json = (body: unknown) => new Response(JSON.stringify(body), { headers: { "content-type": "application/json" } });
 
 describe("loadAssets", () => {
   it("yields an empty source when there is no index — the production case", async () => {
@@ -65,9 +64,7 @@ describe("loadAssets", () => {
     //
     // It is kept as the genuine empty-library case and the mapping itself is
     // tested against a populated one, below, where a wrong key is visible.
-    respondWith((url) =>
-      url.endsWith("index.json") ? json({ materials: [] }) : new Response("", { status: 404 }),
-    );
+    respondWith((url) => (url.endsWith("index.json") ? json({ materials: [] }) : new Response("", { status: 404 })));
     const loaded = await loadAssets();
     const source = loaded.materialsFor({
       materials: { wall: { label: "W", source: "polyhaven", slug: "clay_plaster" } },
@@ -96,9 +93,7 @@ describe("the library outlives any one document", () => {
     const scene = new THREE.Scene();
     // 1.2 x 0.75 x 0.8: a table, so a wrong size is recognisable as one.
     scene.add(new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.75, 0.8)));
-    vi.spyOn(GLTFLoader.prototype, "loadAsync").mockImplementation(
-      async () => Promise.resolve({ scene }) as never,
-    );
+    vi.spyOn(GLTFLoader.prototype, "loadAsync").mockImplementation(async () => Promise.resolve({ scene }) as never);
   };
 
   const docWith = (materials: Record<string, { source: string; slug: string }>) =>
@@ -118,12 +113,8 @@ describe("the library outlives any one document", () => {
     // Greenhollow's name for it, then Elmsgate's. Both must resolve, in either
     // order, from the one library — and neither document's ids may leak into
     // the other's lookup.
-    const first = loaded.materialsFor(
-      docWith({ "plaster-lime": { source: "polyhaven", slug: "clay_plaster" } }),
-    );
-    const second = loaded.materialsFor(
-      docWith({ "render-stucco": { source: "polyhaven", slug: "clay_plaster" } }),
-    );
+    const first = loaded.materialsFor(docWith({ "plaster-lime": { source: "polyhaven", slug: "clay_plaster" } }));
+    const second = loaded.materialsFor(docWith({ "render-stucco": { source: "polyhaven", slug: "clay_plaster" } }));
 
     expect(first.maps("plaster-lime")).toBeDefined();
     expect(second.maps("render-stucco")).toBeDefined();
@@ -172,9 +163,7 @@ describe("loadAssets, when the assets are there", () => {
   };
 
   const stubGltf = (scene: THREE.Scene) =>
-    vi
-      .spyOn(GLTFLoader.prototype, "loadAsync")
-      .mockImplementation(async () => Promise.resolve({ scene }) as never);
+    vi.spyOn(GLTFLoader.prototype, "loadAsync").mockImplementation(async () => Promise.resolve({ scene }) as never);
 
   const stubTextures = () =>
     vi

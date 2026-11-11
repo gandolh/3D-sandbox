@@ -66,8 +66,8 @@ function BuilderWarning({ tool }: { tool: PlanTool }) {
   return (
     <Modal title={`${doc.title} has a builder`} onCancel={close}>
       <p className="mb-4 text-[12px] leading-relaxed text-muted">
-        {doc.title} is built from <code className="font-mono text-ink">scenes/src/{doc.id}.ts</code>. What you
-        draw here is erased the next time the scenes are rebuilt.
+        {doc.title} is built from <code className="font-mono text-ink">scenes/src/{doc.id}.ts</code>. What you draw here
+        is erased the next time the scenes are rebuilt.
       </p>
       <div className="flex justify-end gap-2">
         <button type="button" onClick={close} className={button(false)}>
@@ -105,15 +105,7 @@ function BuilderWarning({ tool }: { tool: PlanTool }) {
 }
 
 /** New house, or Save as a new house: a title, the id it makes, and Create. */
-function NewHouse({
-  copy,
-  tool,
-  error,
-}: {
-  copy: boolean;
-  tool?: PlanTool | undefined;
-  error?: string | undefined;
-}) {
+function NewHouse({ copy, tool, error }: { copy: boolean; tool?: PlanTool | undefined; error?: string | undefined }) {
   const doc = useStore((s) => s.document);
   const [title, setTitle] = useState(copy && doc !== null ? `${doc.title} copy` : "");
   const [busy, setBusy] = useState(false);
@@ -125,8 +117,7 @@ function NewHouse({
     const why = await createHouse(title, { copy, ...(tool === undefined ? {} : { tool }) });
     setBusy(false);
     // Still open, with the reason: an id already taken asks for another title.
-    if (why !== null)
-      setDialog({ kind: "new-house", copy, ...(tool === undefined ? {} : { tool }), error: why });
+    if (why !== null) setDialog({ kind: "new-house", copy, ...(tool === undefined ? {} : { tool }), error: why });
   };
   return (
     <Modal title={copy ? "Save as a new house" : "New house"} onCancel={close}>
@@ -185,9 +176,9 @@ function StaleSave() {
   return (
     <Modal title="The file changed on disk" onCancel={close}>
       <p className="mb-4 text-[12px] leading-relaxed text-muted">
-        <code className="font-mono text-ink">{doc.id}.scene.json</code> changed on disk since it was opened
-        here. Saving would have overwritten that change, so nothing was saved. Reload it to see the file as it
-        is now; your edits here are lost if you do.
+        <code className="font-mono text-ink">{doc.id}.scene.json</code> changed on disk since it was opened here. Saving
+        would have overwritten that change, so nothing was saved. Reload it to see the file as it is now; your edits
+        here are lost if you do.
       </p>
       <div className="flex justify-end gap-2">
         <button type="button" onClick={close} className={button(false)}>

@@ -120,9 +120,7 @@ export function useOpeningTool(kind: Opening["kind"], { doc, level, view, active
     const opening = { ...c.opening, id: nextOpeningId(current, kind) };
     editDocument(
       (draft) => {
-        const wall = draft.subject.levels
-          .find((l) => l.id === level.id)
-          ?.walls.find((w) => w.id === c.wall.id);
+        const wall = draft.subject.levels.find((l) => l.id === level.id)?.walls.find((w) => w.id === c.wall.id);
         wall?.openings.push(opening);
       },
       { label: `Add ${kind} ${opening.id}` },

@@ -16,9 +16,7 @@ import { planSvg } from "../src/plan.js";
  */
 const scene = (id: string): SceneDocument =>
   SceneDocument.parse(
-    JSON.parse(
-      readFileSync(fileURLToPath(new URL(`../../../scenes/${id}.scene.json`, import.meta.url)), "utf8"),
-    ),
+    JSON.parse(readFileSync(fileURLToPath(new URL(`../../../scenes/${id}.scene.json`, import.meta.url)), "utf8")),
   );
 
 describe("the sheet is unchanged by the plan view's extraction", () => {

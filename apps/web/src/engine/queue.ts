@@ -43,8 +43,7 @@ export function estimateQueue(requests: readonly RenderRequest[]): QueueEstimate
     // Guard the degenerate case rather than dividing by zero: a zero-area shot
     // cannot pass the schema, but an estimate that returns Infinity for one
     // would put "Infinityh" in a button label.
-    const rate =
-      pixels > 0 ? MEASURED_SAMPLES_PER_SECOND * (MEASURED_PIXELS / pixels) : MEASURED_SAMPLES_PER_SECOND;
+    const rate = pixels > 0 ? MEASURED_SAMPLES_PER_SECOND * (MEASURED_PIXELS / pixels) : MEASURED_SAMPLES_PER_SECOND;
     samples += request.samples;
     seconds += request.samples / rate;
   }

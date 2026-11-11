@@ -32,8 +32,7 @@ function fakeApi(files: Record<string, { json: unknown; mtime: number; hasBuilde
       });
     }
     const id = decodeURIComponent(url.replace("/api/scenes/", ""));
-    if (method === "GET")
-      return files[id] === undefined ? reply(404, {}) : reply(200, files[id].json, files[id].mtime);
+    if (method === "GET") return files[id] === undefined ? reply(404, {}) : reply(200, files[id].json, files[id].mtime);
     if (method === "POST") {
       const doc = JSON.parse(String(init.body)) as { id: string };
       if (files[doc.id] !== undefined) return reply(409, { error: "exists" });
@@ -198,9 +197,7 @@ describe("New house", () => {
     );
     await refreshScenes();
     render(<Toolbar onSave={vi.fn()} />);
-    expect((screen.getByRole("button", { name: "New house" }) as HTMLButtonElement).title).toMatch(
-      /npm run api/,
-    );
+    expect((screen.getByRole("button", { name: "New house" }) as HTMLButtonElement).title).toMatch(/npm run api/);
   });
 
   it("creates the house, opens it in the plan view with the Wall tool, and lists it as drawn", async () => {

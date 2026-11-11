@@ -42,7 +42,5 @@ export interface RoomArea {
  * approximately true by the time the plan moved.
  */
 export function scheduleOfAreas(doc: SceneDocument): RoomArea[] {
-  return doc.subject.levels.flatMap((level) =>
-    level.rooms.map((room) => ({ room, area: area(room.polygon) })),
-  );
+  return doc.subject.levels.flatMap((level) => level.rooms.map((room) => ({ room, area: area(room.polygon) })));
 }

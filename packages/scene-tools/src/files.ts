@@ -1,12 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { planSvg } from "@solstice/drawing";
-import {
-  errorsOf,
-  type LintFinding,
-  loadScene,
-  type SceneDocument,
-  SceneValidationError,
-} from "@solstice/schema";
+import { errorsOf, type LintFinding, loadScene, type SceneDocument, SceneValidationError } from "@solstice/schema";
 import { sceneLintOptions } from "./lint-options.ts";
 
 /** The file could not be linted at all: it could not be read, or it is not JSON. */

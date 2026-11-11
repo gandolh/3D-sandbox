@@ -62,14 +62,12 @@ describe("translateEntity", () => {
   it("touches nothing but the entity it names", () => {
     const doc = fresh();
     const target = doc.subject.placements[0]!.id;
-    const others = doc.subject.placements
-      .filter((p) => p.id !== target)
-      .map((p) => JSON.stringify(p.position));
+    const others = doc.subject.placements.filter((p) => p.id !== target).map((p) => JSON.stringify(p.position));
 
     translateEntity(doc, target, 3, 3);
 
-    expect(
-      doc.subject.placements.filter((p) => p.id !== target).map((p) => JSON.stringify(p.position)),
-    ).toEqual(others);
+    expect(doc.subject.placements.filter((p) => p.id !== target).map((p) => JSON.stringify(p.position))).toEqual(
+      others,
+    );
   });
 });

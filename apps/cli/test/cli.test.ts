@@ -55,8 +55,7 @@ beforeAll(async () => {
   // A wall with one opening, so the only error is the opening running past the wall's end.
   const wall = doc.subject.levels[0]?.walls.find((w) => w.openings.length === 1);
   const opening = wall?.openings[0];
-  if (wall === undefined || opening === undefined)
-    throw new Error("greenhollow has no lone opening to widen");
+  if (wall === undefined || opening === undefined) throw new Error("greenhollow has no lone opening to widen");
   const length = Math.hypot(wall.end[0] - wall.start[0], wall.end[1] - wall.start[1]);
   opening.width = length - opening.offset + 0.5;
   widenedId = opening.id;

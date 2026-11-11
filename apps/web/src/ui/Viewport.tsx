@@ -82,8 +82,7 @@ export function Viewport() {
     // the engine out of global state without threading a ref through the tree.
     // Name the file after the shot: a render nobody can trace back to its
     // framing is just a picture.
-    const filename = (request: RenderRequest): string =>
-      `${request.shot?.id ?? "viewport"}-${Date.now()}.png`;
+    const filename = (request: RenderRequest): string => `${request.shot?.id ?? "viewport"}-${Date.now()}.png`;
 
     /**
      * Write one finished render, and say whether it actually landed.
@@ -181,9 +180,7 @@ export function Viewport() {
             break;
           }
           done += 1;
-          setStatus(
-            queue.length === 1 ? "Render downloaded" : `Rendered ${String(done)} of ${String(queue.length)}`,
-          );
+          setStatus(queue.length === 1 ? "Render downloaded" : `Rendered ${String(done)} of ${String(queue.length)}`);
         }
         if (queue.length > 1 && done < queue.length) {
           setAlert(`Queue stopped after ${String(done)} of ${String(queue.length)}`);
@@ -331,9 +328,7 @@ export function Viewport() {
         {stats.triangles.toLocaleString("en-GB")} tris · {stats.instances.toLocaleString("en-GB")} instances
       </Hud>
 
-      {render !== null && (
-        <RenderOverlay progress={render} onCancel={() => engineRef.current?.cancelRender()} />
-      )}
+      {render !== null && <RenderOverlay progress={render} onCancel={() => engineRef.current?.cancelRender()} />}
     </div>
   );
 }
