@@ -41,7 +41,7 @@ export class SceneNotFoundError extends Error {
  * checked against the scenes directory afterwards — belt and braces, because a
  * path-traversal bug here reads arbitrary files off the host.
  */
-export function scenePath(scenesDir: string, id: string): string {
+function scenePath(scenesDir: string, id: string): string {
   if (!SLUG.test(id)) throw new UnsafeIdError(id);
   const full = resolve(scenesDir, `${id}${SUFFIX}`);
   const root = resolve(scenesDir);

@@ -1,7 +1,7 @@
 import cors from "@fastify/cors";
-import { SceneValidationError, serializeScene } from "@solstice/schema";
+import { SceneValidationError } from "@solstice/schema";
 import Fastify, { type FastifyInstance } from "fastify";
-import { type Config, loadConfig } from "./config.js";
+import type { Config } from "./config.js";
 import {
   deleteSceneFile,
   hasBuilder,
@@ -14,9 +14,9 @@ import {
 } from "./store/files.js";
 import { SceneIndex, summarize } from "./store/index-db.js";
 
+/** The app, and the index it serves, which tests read to check what a route changed. */
 export interface BuiltApp {
   app: FastifyInstance;
-  config: Config;
   index: SceneIndex;
 }
 
@@ -25,8 +25,7 @@ export interface BuiltApp {
  * cache beside them; it stores nothing authoritative and re-implements none of
  * the validation that already lives in `@solstice/schema`.
  */
-export async function buildApp(overrides: Partial<Config> = {}): Promise<BuiltApp> {
-  const config = loadConfig(overrides);
+export async function buildApp(config: Config): Promise<BuiltApp> {
   const index = new SceneIndex(config.databasePath);
   await index.reindex(config.scenesDir);
 
@@ -199,7 +198,5 @@ export async function buildApp(overrides: Partial<Config> = {}): Promise<BuiltAp
   });
 
   app.addHook("onClose", async () => index.close());
-  return { app, config, index };
+  return { app, index };
 }
-
-export { serializeScene };

@@ -3,9 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "exports": {
-    ".": "./dist/index.js"
-  },
   "scripts": {
     "build": "tsc --build",
     "dev": "tsc --build --watch --preserveWatchOutput & node --watch --enable-source-maps dist/server.js",
@@ -14,6 +11,7 @@
   "dependencies": {
     "@fastify/cors": "11.3.0",
     "@solstice/schema": "0.1.0",
-    "fastify": "5.12.7"
+    "fastify": "5.12.7",
+    "zod": "4.6.2"
   }
 }

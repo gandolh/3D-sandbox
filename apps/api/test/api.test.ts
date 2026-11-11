@@ -5,6 +5,7 @@ import { serializeScene } from "@solstice/schema";
 import type { FastifyInstance } from "fastify";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { buildApp } from "../src/app.js";
+import { loadConfig } from "../src/config.js";
 import type { SceneIndex } from "../src/store/index-db.js";
 
 const REFERENCE = new URL("../../../scenes/villa-carpathia.scene.json", import.meta.url);
@@ -18,7 +19,8 @@ beforeEach(async () => {
   dir = await mkdtemp(join(tmpdir(), "solstice-api-"));
   reference = JSON.parse(await readFile(REFERENCE, "utf8")) as Record<string, unknown>;
   await writeFile(join(dir, "villa-carpathia.scene.json"), serializeScene(reference as never), "utf8");
-  ({ app, index } = await buildApp({ scenesDir: dir, databasePath: ":memory:" }));
+  // An empty environment, so a PORT or HOST in the shell running the tests changes nothing.
+  ({ app, index } = await buildApp(loadConfig({ scenesDir: dir, databasePath: ":memory:" }, {})));
 });
 
 afterEach(async () => {
