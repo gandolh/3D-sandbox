@@ -1,8 +1,10 @@
-import { type BuildingMass, bounds, degToRad, type Paving, type RoadNetwork } from "@solstice/schema";
+import { type BuildingMass, bounds, degToRad, type Paving, type RoadNetwork, itemAt } from "@solstice/schema";
 import * as THREE from "three";
 import { ensureStandardAttributes } from "../attributes.js";
 import { extrudePolygon } from "../polygon.js";
 import { mergeSimple } from "./scatter.js";
+
+type Corner = readonly [number, number, number];
 
 /**
  * A neighbouring building: an extruded footprint, with a crude prism on top when
@@ -29,22 +31,22 @@ export function buildMass(mass: BuildingMass): THREE.BufferGeometry {
 
   const positions: number[] = [];
   const push = (x: number, y: number, z: number) => positions.push(x, y, z);
-  const quad = (a: number[], c: number[], d: number[], e: number[]) => {
-    push(a[0]!, a[1]!, a[2]!);
-    push(c[0]!, c[1]!, c[2]!);
-    push(d[0]!, d[1]!, d[2]!);
-    push(a[0]!, a[1]!, a[2]!);
-    push(d[0]!, d[1]!, d[2]!);
-    push(e[0]!, e[1]!, e[2]!);
+  const quad = (a: Corner, c: Corner, d: Corner, e: Corner) => {
+    push(...a);
+    push(...c);
+    push(...d);
+    push(...a);
+    push(...d);
+    push(...e);
   };
 
   // Gable ends are filled in as well as the slopes. Without them the extruded
   // walls stop at `height` and you see straight through the triangle under the
   // ridge — cheap context geometry is fine, see-through context geometry is not.
-  const tri = (a: number[], c: number[], d: number[]) => {
-    push(a[0]!, a[1]!, a[2]!);
-    push(c[0]!, c[1]!, c[2]!);
-    push(d[0]!, d[1]!, d[2]!);
+  const tri = (a: Corner, c: Corner, d: Corner) => {
+    push(...a);
+    push(...c);
+    push(...d);
   };
 
   if (ridgeAlongZ) {
@@ -80,8 +82,8 @@ export function buildRoad(road: RoadNetwork): THREE.BufferGeometry {
   const y = 0.02; // clear of z-fighting with the ground plane
 
   for (let i = 0; i < road.path.length - 1; i++) {
-    const a = road.path[i]!;
-    const b = road.path[i + 1]!;
+    const a = itemAt(road.path, i);
+    const b = itemAt(road.path, i + 1);
     const dx = b[0] - a[0];
     const dz = b[1] - a[1];
     const len = Math.hypot(dx, dz) || 1;
