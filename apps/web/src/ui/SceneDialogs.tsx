@@ -1,4 +1,5 @@
-import { type ReactNode, useState } from "react";
+import { useState } from "react";
+import { Dialog } from "../components/ui/Dialog.jsx";
 import { idFromTitle } from "../lib/api.js";
 import { createHouse, openScene } from "../lib/scene-source.js";
 import { allowDrawing, type PlanTool, setDialog, setPlanTool, useStore } from "../state/store.js";
@@ -8,38 +9,6 @@ const button = (primary: boolean): string =>
   `rounded-sm border px-3 py-1.5 text-[12px] disabled:cursor-default disabled:opacity-40 ${
     primary ? "border-accent bg-accent font-semibold text-accent-ink" : "border-line bg-panel text-ink"
   }`;
-
-/**
- * A modal question: an overlay, a panel, and Esc to back out.
- *
- * A fixed overlay with `role="dialog"` rather than `<dialog>.showModal()`,
- * which the test DOM does not implement. Focus goes to the panel's first
- * control (`autoFocus` there), and the overlay takes every click outside.
- */
-function Modal({ title, onCancel, children }: { title: string; onCancel: () => void; children: ReactNode }) {
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55">
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="scene-dialog-title"
-        onKeyDown={(event) => {
-          if (event.key === "Escape") {
-            event.preventDefault();
-            event.stopPropagation();
-            onCancel();
-          }
-        }}
-        className="w-[420px] max-w-[calc(100vw-32px)] rounded-sm border border-line bg-panel p-4 shadow-2xl"
-      >
-        <h2 id="scene-dialog-title" className="mb-2 text-[13px] font-semibold text-ink">
-          {title}
-        </h2>
-        {children}
-      </div>
-    </div>
-  );
-}
 
 /** The app's modal questions, one at a time, from `state.dialog`. */
 export function SceneDialogs() {
@@ -64,43 +33,48 @@ function BuilderWarning({ tool }: { tool: PlanTool }) {
   if (doc === null) return null;
   const close = (): void => setDialog(null);
   return (
-    <Modal title={`${doc.title} has a builder`} onCancel={close}>
+    <Dialog
+      open
+      onOpenChange={close}
+      title={`${doc.title} has a builder`}
+      footer={
+        <>
+          <button type="button" onClick={close} className={button(false)}>
+            Cancel
+          </button>
+          <button
+            type="button"
+            disabled={apiState !== "up"}
+            title={
+              apiState === "up"
+                ? "Copy this scene under a new title, with no builder, and draw in that"
+                : newHouseTitle(apiState)
+            }
+            onClick={() => setDialog({ kind: "new-house", copy: true, tool })}
+            className={button(false)}
+          >
+            Save as a new house
+          </button>
+          <button
+            type="button"
+            data-autofocus
+            onClick={() => {
+              allowDrawing(doc.id);
+              setPlanTool(tool);
+              close();
+            }}
+            className={button(true)}
+          >
+            Draw anyway
+          </button>
+        </>
+      }
+    >
       <p className="mb-4 text-[12px] leading-relaxed text-muted">
         {doc.title} is built from <code className="font-mono text-ink">scenes/src/{doc.id}.ts</code>. What you draw here
         is erased the next time the scenes are rebuilt.
       </p>
-      <div className="flex justify-end gap-2">
-        <button type="button" onClick={close} className={button(false)}>
-          Cancel
-        </button>
-        <button
-          type="button"
-          disabled={apiState !== "up"}
-          title={
-            apiState === "up"
-              ? "Copy this scene under a new title, with no builder, and draw in that"
-              : newHouseTitle(apiState)
-          }
-          onClick={() => setDialog({ kind: "new-house", copy: true, tool })}
-          className={button(false)}
-        >
-          Save as a new house
-        </button>
-        <button
-          type="button"
-          // eslint-disable-next-line no-restricted-syntax -- a modal's first control takes focus
-          autoFocus
-          onClick={() => {
-            allowDrawing(doc.id);
-            setPlanTool(tool);
-            close();
-          }}
-          className={button(true)}
-        >
-          Draw anyway
-        </button>
-      </div>
-    </Modal>
+    </Dialog>
   );
 }
 
@@ -120,8 +94,24 @@ function NewHouse({ copy, tool, error }: { copy: boolean; tool?: PlanTool | unde
     if (why !== null) setDialog({ kind: "new-house", copy, ...(tool === undefined ? {} : { tool }), error: why });
   };
   return (
-    <Modal title={copy ? "Save as a new house" : "New house"} onCancel={close}>
+    <Dialog
+      open
+      onOpenChange={close}
+      title={copy ? "Save as a new house" : "New house"}
+      disablePointerDismissal
+      footer={
+        <>
+          <button type="button" onClick={close} className={button(false)}>
+            Cancel
+          </button>
+          <button type="submit" form="new-house" disabled={id === null || busy} className={button(true)}>
+            {busy ? "Creating…" : "Create"}
+          </button>
+        </>
+      }
+    >
       <form
+        id="new-house"
         onSubmit={(event) => {
           event.preventDefault();
           void submit();
@@ -135,8 +125,7 @@ function NewHouse({ copy, tool, error }: { copy: boolean; tool?: PlanTool | unde
         <label className="mb-1 flex items-center gap-2">
           <span className="w-10 text-[11.5px] text-muted">Title</span>
           <input
-            // eslint-disable-next-line no-restricted-syntax -- the dialog exists to ask for this
-            autoFocus
+            data-autofocus
             type="text"
             aria-label="Title"
             value={title}
@@ -155,16 +144,8 @@ function NewHouse({ copy, tool, error }: { copy: boolean; tool?: PlanTool | unde
             {error}
           </p>
         )}
-        <div className="flex justify-end gap-2">
-          <button type="button" onClick={close} className={button(false)}>
-            Cancel
-          </button>
-          <button type="submit" disabled={id === null || busy} className={button(true)}>
-            {busy ? "Creating…" : "Create"}
-          </button>
-        </div>
       </form>
-    </Modal>
+    </Dialog>
   );
 }
 
@@ -174,29 +155,34 @@ function StaleSave() {
   const close = (): void => setDialog(null);
   if (doc === null) return null;
   return (
-    <Modal title="The file changed on disk" onCancel={close}>
+    <Dialog
+      open
+      onOpenChange={close}
+      title="The file changed on disk"
+      footer={
+        <>
+          <button type="button" onClick={close} className={button(false)}>
+            Keep editing
+          </button>
+          <button
+            type="button"
+            data-autofocus
+            onClick={() => {
+              close();
+              void openScene(doc.id);
+            }}
+            className={button(true)}
+          >
+            Reload from disk
+          </button>
+        </>
+      }
+    >
       <p className="mb-4 text-[12px] leading-relaxed text-muted">
         <code className="font-mono text-ink">{doc.id}.scene.json</code> changed on disk since it was opened here. Saving
         would have overwritten that change, so nothing was saved. Reload it to see the file as it is now; your edits
         here are lost if you do.
       </p>
-      <div className="flex justify-end gap-2">
-        <button type="button" onClick={close} className={button(false)}>
-          Keep editing
-        </button>
-        <button
-          type="button"
-          // eslint-disable-next-line no-restricted-syntax -- a modal's first control takes focus
-          autoFocus
-          onClick={() => {
-            close();
-            void openScene(doc.id);
-          }}
-          className={button(true)}
-        >
-          Reload from disk
-        </button>
-      </div>
-    </Modal>
+    </Dialog>
   );
 }
