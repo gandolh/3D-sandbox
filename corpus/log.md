@@ -1514,3 +1514,11 @@ the route schemas, and each schema left all 45 byte-identical but one: a `PUT` w
 its 422 finding instead of "received undefined". No field was dropped, so there is no leak to note. The scene bodies
 through `SceneDocument` are byte-identical (greenhollow 17,306 bytes, elmsgate 8,108, villa-carpathia 4,640), and
 `apps/api/test/replies.test.ts` keeps that compare. API tests: 42 before, 72 after. `npm run check` exits 0.
+
+## [2026-11-11] build | 06 Base UI by the conventions, and a theme switch
+
+Every control now sits on Base UI 1.9.0 under `apps/web/src/components/ui/`: a `Dialog` for the three scene dialogs, a
+`Select` with `items` for the six pickers, `Checkbox`, `Slider`, a `ToggleToolbar` for the plan tools, a `PointPopover`
+for the room and typed-distance popovers, and a Light, Dark and System switch (a `RadioGroup`, dark on a first visit).
+`check-base-ui` is strict at 0. The calls are in [decisions-web.md](wiki/decisions-web.md). The house-style 1.2.0 sync
+went first (`1a287b9`): nothing retired, no directives to delete.

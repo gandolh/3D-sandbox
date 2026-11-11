@@ -12,6 +12,7 @@ Brief numbering restarted at 01 on 2026-11-02 (see [log.md](../log.md),
 Base UI is on 1.9.0, pinned exactly (brief 04, 2026-11-10).
 The house style harness is in (brief 05, 2026-11-11): Prettier at width 120, typed ESLint, TypeScript 6.0.3, `check` and `check:fast`.
 The API is in the estate's code structure (brief 07, 2026-11-11): `features/`, `plugins/`, zod route schemas, `check-structure` strict; see [decisions-api.md](decisions-api.md).
+The web app's controls are on Base UI with a Light, Dark and System switch (brief 06, 2026-11-11); see [decisions-web.md](decisions-web.md).
 
 ## Where things stand
 

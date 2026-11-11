@@ -199,3 +199,5 @@ files), the `noArrayIndexKey` and `useIndexOf` checks, and `jsx-a11y` (no ESLint
 uses are caught by a `no-restricted-syntax` selector. `useButtonType` and `noDangerouslySetInnerHtml` carry over
 as selectors. Source `!` is replaced by `itemAt` from `@solstice/schema`. The plan tools' compiler-rule findings
 (18) are warnings until the tools are reworked.
+
+The web app's controls (Base UI under `components/ui/`, the theme switch) are in [decisions-web.md](decisions-web.md).

@@ -145,3 +145,13 @@ One commit per step. After each: `npm run check` green, and `npm run build:web` 
   - Rename the 3 deprecated classes to Tailwind v4's names, which keep today's look: `rounded` becomes `rounded-sm` and `backdrop-blur` becomes `backdrop-blur-sm`, because v4 shifted those scales. Then turn the Tailwind rules on (`tailwind` in `houseStyle()`).
   - The `autoFocus` selector stands until `eslint-plugin-jsx-a11y` supports ESLint 10. The house config adds the plugin then, and this repo picks it up at the next sync.
 
+## Outcome (2026-11-11)
+
+Built in seven commits after the house-style 1.2.0 sync (`1a287b9`). `npm run check` exits 0, `check-base-ui` strict at 0.
+
+- **Wrappers** in `apps/web/src/components/ui/`: `Dialog`, `Select`, `Checkbox`, `Slider`, `ToggleToolbar`, `PointPopover`, `RadioGroup`, `ThemeSwitch`, `Scroll` (moved), `looks.ts`. `cn()` in `src/lib/cn.ts`.
+- **Deviations.** The theme switch is a `RadioGroup`, not a `Select` (the skill's rule 16 and the controller's ruling). The room popover and the opening tool's typed distance moved onto `PointPopover` (a non-modal Base UI popover); only Esc closes them, so the plan's click handler decides the rest as before. No change to the tools' Esc listeners was needed: Base UI stops the Esc that closes a dialog at the document. A disabled plan tool is `aria-disabled` (a toolbar keeps it in the arrow ring), so the Wall tool's test checks that. The sun band's three colours became `--color-band-*` tokens, the z scale `--z-index-*`, and the better-tailwindcss rules are on (`tailwind` in `eslint.config.js`).
+- **Swatch exception** recorded in `scripts/conventions.json` (rule 5, `Inspector.tsx`). `--warn-only` dropped in the root `package.json`.
+- **Not run:** screenshots at 390 px and of the dialogs; a look at 1280 showed no horizontal scroll and the switch working.
+- **Owner step:** `node cli.ts solstice deploy`, from the vps-deploy checkout.
+
