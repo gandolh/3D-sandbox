@@ -1,6 +1,6 @@
 # Architecture
 
-Solstice is an npm workspace: seven packages that each do one job on the scene document, a browser app that puts them together, an optional API, and the scenes themselves. The document is the centre. Everything else either writes it, checks it or derives something from it.
+Solstice is an npm workspace: seven packages that each do one job on the scene document, a browser app that puts them together, an optional API, a command-line tool, and the scenes themselves. The document is the centre. Everything else either writes it, checks it or derives something from it.
 
 ```mermaid
 flowchart LR
@@ -18,15 +18,15 @@ flowchart LR
   tools --> cli["apps/cli<br/>npm run solstice"]
 ```
 
-- **schema** holds the document types, the Zod parse, the semantic linter in `src/lint/` and `src/derive/`, the home for values that a generator and its checker both need, such as a wall's angle. It depends on nothing but Zod.
+- **schema** holds the document types, the Zod parse, the semantic linter in `src/lint/`, and `src/derive/`, which holds the values a generator and its checker both need, such as a wall's angle. It depends on nothing but Zod.
 - **geometry** compiles the document into three.js meshes. Walls become solids, `three-bvh-csg` cuts the openings, roofs are lofted from a footprint and pitch. It never needs a WebGL context, so it is tested in Node.
 - **solar** turns site, date and clock into a sun vector, sky and light, using `suncalc`.
 - **physics** derives Rapier colliders from the document and drops a placement onto the surface below it.
 - **drawing** renders a horizontal section of the house as an SVG plan, with no three.js and no DOM, so the plan is asserted in tests rather than eyeballed.
 - **animation** evaluates keyframed tracks, such as the sun-path study's `solar.minutes`, without a renderer.
 - **scene-tools** works on a scene *file*: it reads it, lints it with the options `npm run scenes` uses, the real-asset list included, and draws a level's plan. It ships TypeScript source run by Node's type-stripping rather than a `dist/`, because it reads the asset lists in `assets/`, outside the workspaces, where they are. The scene build and the CLI both use it, so they report the same findings for the same file.
-- **apps/web** is Vite and React 19. React draws the panels only; a `SandboxEngine` class owns the three.js renderer, scene, camera and loop. `three-gpu-pathtracer` produces the final stills.
-- **apps/api** is Fastify with seven routes over the scene files, plus a `node:sqlite` index that can be thrown away and rebuilt.
+- **apps/web** is Vite and React 19. React draws the panels only; a `SandboxEngine` class owns the three.js renderer, scene, camera and loop. The controls are Base UI 1.9.0 wrappers in `src/components/ui/`, styled with Tailwind, and the toolbar has a Light, Dark and System theme switch that this browser remembers. `three-gpu-pathtracer` produces the final stills.
+- **apps/api** is Fastify with seven routes over the scene files, plus a `node:sqlite` index that can be thrown away and rebuilt. `server.ts` listens, `app.ts` builds the app, `config.ts` parses the environment once with Zod, and the routes live in `features/`, each declaring its request and reply schemas.
 - **apps/cli** is `npm run solstice -- lint|plan <file>`, a thin wrapper over scene-tools, so a person or an agent can check a scene and see its plan without the app.
 
 ## From document to pixels
@@ -44,5 +44,7 @@ flowchart LR
 - [corpus/wiki/architecture.md](../corpus/wiki/architecture.md): the layer map and why the dependencies point the way they do
 - [corpus/wiki/decisions.md](../corpus/wiki/decisions.md): WebGL2 over WebGPU, no React Three Fiber, files as truth, and the other locked calls
 - [corpus/wiki/decisions-scene.md](../corpus/wiki/decisions-scene.md): how a scene is modelled and authored
+- [corpus/wiki/decisions-web.md](../corpus/wiki/decisions-web.md): which Base UI wrapper each control uses, and why a first visit is dark
+- [corpus/wiki/decisions-api.md](../corpus/wiki/decisions-api.md): the API's layout, its error body, and what waits until it is exposed
 - [corpus/wiki/glossary.md](../corpus/wiki/glossary.md): subject, context, shot, solar time and the rest of the vocabulary
 - [corpus/wiki/budgets.md](../corpus/wiki/budgets.md): the triangle and instance limits a scene must stay under
