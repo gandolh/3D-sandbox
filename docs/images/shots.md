@@ -1,13 +1,23 @@
 # README images
 
-How each image was made, so the next refresh is a re-run. Re-take an image when the screen it shows changes. The first three show the bundled Greenhollow scene, which is made-up content, with the CC0 assets downloaded. The GIF draws a new house on Greenhollow's site; its first frame shows the viewport without the CC0 assets, which were not downloaded for it.
+How each image was made, so the next refresh is a re-run. Re-take an image when the screen it shows changes. All four use made-up content: the bundled Greenhollow scene, or a new house drawn on its site.
 
-| File | Shows | How to reach that state | Viewport | Taken |
-|---|---|---|---|---|
-| sun-path.gif | Greenhollow from above while the solar clock runs 07:30 to 19:30 | `npm run dev`, wait for "12 model(s) loaded" in the footer, pick the Overview shot, seek the animation to 0, then set the Solar time slider from 07:30 to 19:30 in 12-minute steps, one screenshot per step | 1280×800 @1x, scaled to 960 wide | 2026-10-09 |
-| wall-inspector.webp | The garden side with wall W-02 selected and its fields in the inspector | same, pick the Garden three-quarter shot, set the Solar time slider to 10:15, select W-02 in the scene tree | 1440×900 @2x | 2026-10-09 |
-| plan.webp | The generated ground-floor plan | same, then press PLAN; cropped to the white sheet | 1440×1320 @2x | 2026-10-09 |
-| draw-house.gif | New house, four typed walls, a door, two windows, a room, Save | `npm run dev` and `npm run api` against a scratch copy of `scenes/`, then the beats below, one screenshot per beat | 1280×800 @1x, GIF 960 px wide, 13 s | an empty level on Greenhollow's site, named Sample Cottage | 2026-10-31 |
+| File | Shows | How to reach that state | Viewport | Data | Taken |
+|---|---|---|---|---|---|
+| sun-path.gif | Greenhollow from above while the solar clock runs 07:30 to 19:30 | `npm run dev`, wait for "12 model(s) loaded" in the footer, pick the Overview shot, seek the animation to 0, then set the Solar time slider from 07:30 to 19:30 in 12-minute steps, one screenshot per step | 1280×800 @1x, scaled to 960 wide | Greenhollow, CC0 assets downloaded | 2026-10-09 |
+| wall-inspector.webp | The garden side with wall W-02 selected and its fields in the inspector | same, pick the Garden three-quarter shot, set the Solar time slider to 10:15, select W-02 in the scene tree | 1440×900 @2x | Greenhollow, CC0 assets downloaded | 2026-10-09 |
+| plan.webp | The generated ground-floor plan | same, then press PLAN; cropped to the white sheet | 1440×1320 @2x | Greenhollow | 2026-10-09 |
+| draw-house.gif | New house, four typed walls, a door, two windows, a room, Save | `npm run dev` and `npm run api` against a scratch copy of `scenes/`, then the beats below, one screenshot per beat | 1280×800 @1x, GIF 960 px wide, 13 s | an empty level on Greenhollow's site, named Sample Cottage; no CC0 assets, so the first frame shows proxies | 2026-10-31 |
+
+## Out of date (checked 2026-11-16)
+
+None of the four was re-taken on 2026-11-16; the refresh kept them. They differ from the app as it is now:
+
+- sun-path.gif and wall-inspector.webp: the toolbar has no New house, Undo or Redo (added 2026-10-27).
+- All three that show the toolbar: no Light, Dark and System switch, and the pickers are native selects, not the Base UI ones (2026-11-11). The default theme is still dark, and the viewport, panels and timeline are laid out the same.
+- plan.webp: outside wall corners are notched. Wall ends have been mitred since 2026-11-03, so the plan now closes each corner. The plan needs no browser to re-draw: `npm run -s solstice -- plan scenes/greenhollow.scene.json --out /tmp/plan.svg` writes the same sheet as SVG.
+
+The capture steps below still work. On 2026-11-16 the Solar time input took a value set the way shown here, and the clock read 07:30.
 
 ## How they were captured
 

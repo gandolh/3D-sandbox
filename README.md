@@ -6,7 +6,7 @@ A browser editor and path-traced renderer for one house and its plot, for anyone
   <img src="docs/images/sun-path.gif" width="100%" alt="Solstice showing the Greenhollow smallholding from above while the solar clock runs from 07:30 to 19:30: shadows of the house, pergola and hedges swing round the plot as the timeline's playhead moves across the day">
 </p>
 
-**Status:** Personal project in active development. Its latest work, on 2026-10-27, added drawing a house in the plan view ([status](corpus/wiki/status.md)). It runs locally only, with no hosted copy. The editor works in any WebGL2 browser. The path tracer needs a real GPU, and a headless browser under WSL2 falls back to software and cannot finish a render.
+**Status:** Personal project in active development. The latest work, on 2026-11-11, moved the editor's controls onto the Base UI component library, added a Light, Dark and System theme, and gave every API route a request and reply schema ([status](corpus/wiki/status.md)). It runs locally only, with no hosted copy. The editor works in any WebGL2 browser. The path tracer needs a real GPU, and a headless browser under WSL2 falls back to software and cannot finish a render.
 
 ## What it does
 
@@ -31,20 +31,20 @@ New house, then the Wall tool with typed lengths and bearings, a door, two windo
 
 ## How it works
 
-`scenes/src/*.ts` emit `scenes/*.scene.json`, and that JSON is the only source of truth. `@solstice/schema` parses a document with Zod and lints it. `geometry` turns it into three.js meshes on the CPU, `solar` works out the sun and sky, `physics` derives colliders, `drawing` renders the plan and `animation` evaluates the timeline. `apps/web` puts them together in a WebGL2 viewport, with React for the panels and `three-gpu-pathtracer` for final stills. `apps/api` is an optional Fastify server that writes edits back to the JSON files. More in [docs/architecture.md](docs/architecture.md).
+`scenes/src/*.ts` emit `scenes/*.scene.json`, and that JSON is the only source of truth. `@solstice/schema` parses a document with Zod and lints it. `geometry` turns it into three.js meshes on the CPU, `solar` works out the sun and sky, `physics` derives colliders, `drawing` renders the plan and `animation` evaluates the timeline. `apps/web` puts them together in a WebGL2 viewport, with React and Base UI for the panels and `three-gpu-pathtracer` for final stills. `apps/api` is an optional Fastify server that validates edits and writes them back to the JSON files. `apps/cli` lints a scene file and draws its plan without the browser. More in [docs/architecture.md](docs/architecture.md).
 
 ## Run it locally
 
 Requires Node 22.12 or later. The build scripts rely on Node's built-in TypeScript stripping, and `.npmrc` makes npm refuse older versions.
 
 ```bash
-npm install
-npm run build        # required: every workspace package resolves through its dist/
+npm ci               # the exact versions in package-lock.json
+npm run build        # required: the packages resolve through their dist/
 npm run dev          # the editor on http://localhost:5173
-npm run check        # lint, typechecks, tests, scene build, web build, corpus lint
+npm run check        # lint, format, typechecks, conventions, tests, builds, corpus lint
 ```
 
-Then open <http://localhost:5173>. Greenhollow opens first. Until you fetch the CC0 models and textures with `bash assets-src/download.sh`, materials show as flat colours and models as proxy shapes.
+Then open <http://localhost:5173>. Greenhollow opens first, in the dark theme. Until you fetch the CC0 models and textures with `bash assets-src/download.sh`, materials show as flat colours and models as proxy shapes.
 
 Editing a scene, the optional API, assets, GPU flags and env vars: [docs/getting-started.md](docs/getting-started.md).
 
@@ -70,12 +70,14 @@ npm run solstice -- plan scenes/greenhollow.scene.json --out /tmp/greenhollow.sv
 | `packages/drawing` | Document to an SVG floor plan, with no GPU or DOM |
 | `packages/animation` | Timeline tracks, evaluated headlessly |
 | `packages/scene-tools` | A scene file read, linted with the build's options, and its plan drawn; used by the scene build and the CLI |
-| `apps/web` | The editor and renderer: Vite, React and three.js |
+| `apps/web` | The editor and renderer: Vite, React, Base UI and three.js |
 | `apps/api` | Optional Fastify API; scene files are the truth, SQLite only indexes them |
 | `apps/cli` | `npm run solstice --`: `lint` and `plan` for a scene file |
 | `scenes` | The three scenes: TypeScript sources and the generated `.scene.json` |
 | `assets` | Asset manifest, download-list generator and the impostor bake harness |
 | `assets-src` | Download scripts and list; the downloads themselves are gitignored |
+| `scripts` | The ESLint half of `check:fast`, and `conventions.json`: the folders the convention checks cover and their exceptions |
+| `vendor/house-style` | A generated copy of the shared lint, format and structure rules; `npm run house-style:sync` refreshes it |
 | `corpus` | The project wiki: decisions, status and the log of how it was built |
 
 ## Docs

@@ -2,18 +2,20 @@
 
 ## Prerequisites
 
-- Node 22.12 or later. The scripts run TypeScript through Node's built-in type stripping, and `.npmrc` sets `engine-strict=true`, so `npm install` stops on an older Node instead of failing later with a syntax error.
+- Node 22.12 or later. The scripts run TypeScript through Node's built-in type stripping, and `.npmrc` sets `engine-strict=true`, so npm stops on an older Node instead of failing later with a syntax error.
 - A browser with WebGL2 for the editor.
 - For path-traced renders, a GPU the browser can actually reach. See [Rendering on a GPU](#rendering-on-a-gpu).
 
 ## 1. Install and build
 
 ```bash
-npm install
+npm ci
 npm run build
 ```
 
-The build is not optional on a fresh clone. Every workspace package's only entry point is `./dist/index.js`, and `dist/` is gitignored, so without it `npm run dev` and `npm run api` both stop on `ERR_MODULE_NOT_FOUND: @solstice/schema`. Run it again after changing anything under `packages/`.
+`npm ci` installs the exact versions in `package-lock.json` and leaves the file alone. `npm install` works too, but with npm 10 it rewrites `package-lock.json`, dropping the `libc` entries a newer npm wrote, and leaves a diff you did not mean to make.
+
+The build is not optional on a fresh clone. Six of the seven packages resolve only through `dist/`, and `dist/` is gitignored, so without it `npm run dev` and `npm run api` both stop on `ERR_MODULE_NOT_FOUND: @solstice/schema`. `scene-tools` is the exception: it runs from its TypeScript source. Run the build again after changing anything under `packages/`.
 
 ## 2. Run the editor
 
@@ -27,7 +29,7 @@ Vite serves the editor on <http://localhost:5173>. The port is set in `apps/web/
 npm run dev --workspace @solstice/web -- --port 5301
 ```
 
-Greenhollow opens first. The scene picker at the top left switches to Elmsgate or Villa Carpathia, and the shot menu next to Render moves the camera to a named shot.
+Greenhollow opens first. The scene picker at the top left lists each scene by file name and switches to `elmsgate.scene.json` or `villa-carpathia.scene.json`, and the shot menu next to Render moves the camera to a named shot. A first visit is dark; the Light, Dark and System switch in the toolbar is kept in this browser's `localStorage`.
 
 ## 3. Run the API (optional)
 
@@ -35,7 +37,7 @@ Greenhollow opens first. The scene picker at the top left switches to Elmsgate o
 npm run api
 ```
 
-It starts a Fastify server on <http://127.0.0.1:5174> and prints the scenes folder and index file it uses. The Vite dev server proxies `/api` to that port. With the API running, Save writes the scene back to its `scenes/*.scene.json`, and the API validates and lints the document before it touches the file. Without it, Save downloads the canonical JSON instead.
+It starts a Fastify server on <http://127.0.0.1:5174> and prints the scenes folder and index file it uses. The Vite dev server proxies `/api` to that port. With the API running, Save writes the scene back to its `scenes/*.scene.json`, and the API validates and lints the document before it touches the file. Without it, Save downloads the canonical JSON instead, and New house is disabled, because only the API can write a new scene file.
 
 The API reads and writes `scenes/*.scene.json`; those files are the truth. The SQLite index in `apps/api/.data/` only lists them and is rebuilt by rescanning.
 
@@ -46,6 +48,8 @@ The API reads and writes `scenes/*.scene.json`; those files are the truth. The S
 | `SOLSTICE_SCENES_DIR` | `scenes/` | Folder holding the `*.scene.json` files |
 | `SOLSTICE_INDEX_DB` | `apps/api/.data/index.db` | The derived SQLite index |
 | `SOLSTICE_ALLOWED_ORIGINS` | `localhost` and `127.0.0.1` on 5173 and 5174 | Comma-separated origins allowed by CORS |
+
+The API parses these once at start. A bad value, such as `PORT=abc`, stops it with a `ConfigError` that names the variable.
 
 Two variables shape the web build:
 
@@ -86,7 +90,9 @@ Everything works without the downloads. Materials fall back to their declared co
 npm run check
 ```
 
-That runs ESLint, the Prettier check, the five typechecks, the convention checks, the Vitest suite, the scene build, the web build and the corpus lint, in that order. There is no CI, so run it by hand before committing. The pieces are also separate scripts: `npm run lint`, `npm run typecheck`, `npm test`, `npm run scenes`, `npm run build:web` and `npm run lint:corpus`. `npm run format` applies Prettier.
+That runs ESLint, the Prettier check, the five typechecks, the convention checks, the Vitest suite, the scene build, the web build and the corpus lint, in that order. There is no CI, so run it by hand before committing. The pieces are also separate scripts: `npm run lint`, `npm run format:check`, `npm run typecheck`, `npm run check:conventions`, `npm test`, `npm run scenes`, `npm run build:web` and `npm run lint:corpus`. `npm test` builds the packages first, because the tests import their `dist/`. `npm run format` applies Prettier; Markdown is outside it.
+
+`npm run check:fast` is the quick version: the typecheck, then ESLint on the files you changed. The five typechecks are `typecheck`, which is `tsc --build` over the packages and the API, then `typecheck:web`, `typecheck:scenes`, `typecheck:tools` and `typecheck:tests`.
 
 ## Rendering on a GPU
 
@@ -103,6 +109,7 @@ Check `WEBGL_debug_renderer_info` before trusting any render timing. `SwiftShade
 | Symptom | Cause |
 |---|---|
 | `ERR_MODULE_NOT_FOUND: @solstice/schema` | `npm run build` has not run since the clone or since a package changed |
+| The API exits at start with `ConfigError` | An env var in the table above has a bad value; the message names it |
 | A scene edit does not show up | Run `npm run scenes`, then reload |
 | Trees are cones and walls are flat colour | The assets are not downloaded; see step 5 |
 | Save says "API unreachable — downloaded instead" | The API is not running, which is fine; start it with `npm run api` to write files in place |
