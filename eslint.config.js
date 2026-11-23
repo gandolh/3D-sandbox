@@ -13,8 +13,9 @@ export default [
     web,
     tailwind: { css: "apps/web/src/styles.css" },
     server: "apps/api/src",
-    // Run by hand, so they print and read the environment: the asset downloader and baker, and the scene CLI.
-    scripts: ["assets", "apps/cli"],
+    // Run by hand, so they print and read the environment: the asset downloader and baker, the scene CLI, and
+    // the gate's own scripts.
+    scripts: ["assets", "apps/cli", "scripts"],
     // Allowed to print: the scene build reports each scene, and the API entry says where it listens.
     console: ["scenes/build.ts", "apps/api/src/server.ts"],
     // A scene builder's default export is a load-time contract: scenes/build.ts reads `mod.default`.
