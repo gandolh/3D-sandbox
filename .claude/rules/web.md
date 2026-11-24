@@ -7,6 +7,9 @@ paths:
 
 - Read the `base-ui` skill before you add or change a component, and
   [corpus/wiki/architecture.md](../../corpus/wiki/architecture.md) before you touch the engine.
+- Browsers: Chrome on Android decides what to build; Safari on iPhone,
+  Firefox and desktop Safari must keep working. Before you use a platform
+  feature newer than Baseline Widely available, read the `web-platform` skill.
 - React renders chrome only. The scene graph is imperative three.js in
   `src/engine/`, with no React Three Fiber. WebGL2 only: no `three/webgpu`, no TSL.
 - Base UI (1.9.0, pinned) is imported only by the wrappers in `src/components/ui/`, one per primitive,
