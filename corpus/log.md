@@ -1522,3 +1522,9 @@ Every control now sits on Base UI 1.9.0 under `apps/web/src/components/ui/`: a `
 for the room and typed-distance popovers, and a Light, Dark and System switch (a `RadioGroup`, dark on a first visit).
 `check-base-ui` is strict at 0. The calls are in [decisions-web.md](wiki/decisions-web.md). The house-style 1.2.0 sync
 went first (`1a287b9`): nothing retired, no directives to delete.
+
+## [2026-11-25] todo | Brief 08: the colour mode is kept under Solstice's own key
+
+Filed from the owner's report that the colour-mode picker acts across apps. Solstice and six other apps on the shared
+domain keep the choice under the bare `theme` key; it moves to `solstice.theme`, carrying the old value over once.
+Ships with `node cli.ts solstice all`.
