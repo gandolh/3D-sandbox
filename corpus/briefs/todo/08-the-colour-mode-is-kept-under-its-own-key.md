@@ -1,7 +1,7 @@
 # Task 08: The colour mode is kept under Solstice's own key
 
 **Depends on:** nothing.
-**Runs before:** the next `node cli.ts solstice all`.
+**Runs before:** the next `node cli.ts solstice deploy`.
 **Builder:** Sonnet.
 **Before you start:** run `brief-board guide` (the repo's `CLAUDE.md` says so).
 
@@ -60,7 +60,7 @@ All settled. None of them is open.
 
 ## Owner steps
 
-- `node cli.ts solstice all` from vps-deploy. On the first load after it, Solstice takes the mode last picked in any
+- `node cli.ts solstice deploy` from vps-deploy (the web build only; no server restart). On the first load after it, Solstice takes the mode last picked in any
   app, once; from then on it keeps its own.
 
 ## Owner decisions
