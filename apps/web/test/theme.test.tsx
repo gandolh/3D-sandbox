@@ -55,18 +55,43 @@ describe("the theme choice", () => {
   });
 
   it("applies a stored light, and keeps what is picked", () => {
-    localStorage.setItem("theme", "light");
+    localStorage.setItem("solstice.theme", "light");
     expect(readThemeChoice()).toBe("light");
     setThemeChoice("light");
     expect(attribute()).toBe("light");
     expect(getState()).toMatchObject({ themeChoice: "light", theme: "light" });
     setThemeChoice("dark");
-    expect(localStorage.getItem("theme")).toBe("dark");
+    expect(localStorage.getItem("solstice.theme")).toBe("dark");
+    expect(localStorage.getItem("theme")).toBeNull();
   });
 
   it("ignores a stored value it does not know", () => {
+    localStorage.setItem("solstice.theme", "sepia");
     localStorage.setItem("theme", "sepia");
     expect(readThemeChoice()).toBe(DEFAULT_THEME);
+  });
+
+  it("carries a bare theme over once: used, copied to solstice.theme, the bare key left alone", () => {
+    localStorage.setItem("theme", "light");
+    expect(readThemeChoice()).toBe("light");
+    expect(localStorage.getItem("solstice.theme")).toBe("light");
+    expect(localStorage.getItem("theme")).toBe("light");
+    localStorage.setItem("theme", "dark");
+    expect(readThemeChoice()).toBe("light");
+  });
+
+  it("lets solstice.theme win over the bare theme", () => {
+    localStorage.setItem("solstice.theme", "dark");
+    localStorage.setItem("theme", "light");
+    expect(readThemeChoice()).toBe("dark");
+    expect(localStorage.getItem("theme")).toBe("light");
+  });
+
+  it("never writes the bare theme when a choice is picked", () => {
+    localStorage.setItem("theme", "system");
+    setThemeChoice("light");
+    expect(localStorage.getItem("theme")).toBe("system");
+    expect(localStorage.getItem("solstice.theme")).toBe("light");
   });
 
   it("follows the system setting live while the choice is System, and stops when it is not", () => {
@@ -110,13 +135,30 @@ describe("the boot script in index.html", () => {
   });
 
   it("applies a stored choice before the first paint", () => {
-    localStorage.setItem("theme", "light");
+    localStorage.setItem("solstice.theme", "light");
     expect(boot()).toBe("light");
-    localStorage.setItem("theme", "dark");
+    localStorage.setItem("solstice.theme", "dark");
     expect(boot()).toBe("dark");
     mockSystem(false);
-    localStorage.setItem("theme", "system");
+    localStorage.setItem("solstice.theme", "system");
     expect(boot()).toBe("light");
+  });
+
+  it("carries a bare theme over once, as the store does, and never writes it", () => {
+    localStorage.setItem("theme", "light");
+    expect(boot()).toBe("light");
+    expect(localStorage.getItem("solstice.theme")).toBe("light");
+    expect(localStorage.getItem("theme")).toBe("light");
+  });
+
+  it("prefers solstice.theme to the bare theme, and ignores unknown values in both", () => {
+    localStorage.setItem("solstice.theme", "light");
+    localStorage.setItem("theme", "dark");
+    expect(boot()).toBe("light");
+    localStorage.setItem("solstice.theme", "sepia");
+    localStorage.setItem("theme", "sepia");
+    expect(boot()).toBe(DEFAULT_THEME);
+    expect(localStorage.getItem("solstice.theme")).toBe("sepia");
   });
 
   it("falls back to the default when storage throws", () => {
@@ -144,7 +186,8 @@ describe("ThemeSwitch", () => {
     render(<ThemeSwitch />);
     await userEvent.click(screen.getByRole("radio", { name: "Light" }));
     expect(attribute()).toBe("light");
-    expect(localStorage.getItem("theme")).toBe("light");
+    expect(localStorage.getItem("solstice.theme")).toBe("light");
+    expect(localStorage.getItem("theme")).toBeNull();
     expect(screen.getByRole("radio", { name: "Light" }).getAttribute("aria-checked")).toBe("true");
   });
 

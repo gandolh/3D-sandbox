@@ -1,6 +1,6 @@
 ---
 summary: Dated snapshot (2026-11-02) of Solstice — what runs (three scenes, five packages, the API, the plan drawing), the audits of 2026-09-12 to 2026-10-01 and what they changed, the right-handed compass (2026-10-07), drawing the house in the browser (2026-10-27), the scene CLI (2026-11-06), what cannot be exercised on this machine, and what is open.
-updated: 2026-11-11
+updated: 2026-11-26
 ---
 
 # Status — 2026-11-02
@@ -13,6 +13,7 @@ Base UI is on 1.9.0, pinned exactly (brief 04, 2026-11-10).
 The house style harness is in (brief 05, 2026-11-11): Prettier at width 120, typed ESLint, TypeScript 6.0.3, `check` and `check:fast`.
 The API is in the estate's code structure (brief 07, 2026-11-11): `features/`, `plugins/`, zod route schemas, `check-structure` strict; see [decisions-api.md](decisions-api.md).
 The web app's controls are on Base UI with a Light, Dark and System switch (brief 06, 2026-11-11); see [decisions-web.md](decisions-web.md).
+The colour mode is kept under `solstice.theme`, carrying a bare `theme` over once (brief 08, 2026-11-26); ships with the next `node cli.ts solstice deploy`.
 
 ## Where things stand
 

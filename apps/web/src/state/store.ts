@@ -16,14 +16,32 @@ export type ThemeChoice = Theme | "system";
  */
 export const DEFAULT_THEME: Theme = "dark";
 
-const THEME_KEY = "theme";
+/** The app's own key: one localStorage serves every app on the domain, so the name carries the app's. */
+const THEME_KEY = "solstice.theme";
+/** The bare key older builds used, read once to carry the choice over and never written or deleted. */
+const LEGACY_THEME_KEY = "theme";
 const DARK_QUERY = "(prefers-color-scheme: dark)";
 
-/** The stored choice, or the default: storage can be missing or blocked, and the app works without it. */
+const isThemeChoice = (value: unknown): value is ThemeChoice =>
+  value === "light" || value === "dark" || value === "system";
+
+const readLegacyThemeChoice = (): ThemeChoice | null => {
+  const value = localStorage.getItem(LEGACY_THEME_KEY);
+  return isThemeChoice(value) ? value : null;
+};
+
+/**
+ * The stored choice, or the default: storage can be missing or blocked, and the app works without it. When
+ * `solstice.theme` holds nothing valid, the bare `theme` an older build wrote is carried over once.
+ */
 export function readThemeChoice(): ThemeChoice {
   try {
     const value = localStorage.getItem(THEME_KEY);
-    return value === "light" || value === "dark" || value === "system" ? value : DEFAULT_THEME;
+    if (isThemeChoice(value)) return value;
+    const legacy = readLegacyThemeChoice();
+    if (legacy === null) return DEFAULT_THEME;
+    localStorage.setItem(THEME_KEY, legacy);
+    return legacy;
   } catch {
     return DEFAULT_THEME;
   }

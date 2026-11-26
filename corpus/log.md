@@ -1528,3 +1528,15 @@ went first (`1a287b9`): nothing retired, no directives to delete.
 Filed from the owner's report that the colour-mode picker acts across apps. Solstice and six other apps on the shared
 domain keep the choice under the bare `theme` key; it moves to `solstice.theme`, carrying the old value over once.
 Ships with `node cli.ts solstice deploy`.
+
+## [2026-11-26] build | 08 The colour mode is kept under Solstice's own key
+
+The Light, Dark and System choice moved from the bare `theme` key to `solstice.theme`, so Solstice no longer shares it
+with the other apps on the domain. The boot script in `index.html` and `readThemeChoice` in the store both carry a valid
+bare `theme` over once when `solstice.theme` holds nothing valid; the bare key is never written or deleted
+(`LEGACY_THEME_KEY` names it). First visit stays dark, so an unknown value in either key reads as dark, not light (the
+Darkroom decision in [decisions-web.md](wiki/decisions-web.md)). The repo has no e2e specs, so none needed the new key.
+Checked in Chromium on the dev server: a bare `light` carried over with no dark flash, picking Dark wrote only
+`solstice.theme`, and setting the bare key to `light` then reloading left the page dark. `npm run check` exits 0. Its first run on the fresh clone reported 17 `no-unnecessary-type-assertion` lint errors; they were
+the typed rules running before the packages' `dist/` existed, and a second run (after `tsc --build` made it) had none, with
+or without this change. brief-board was not updated: it was not available in this session.
