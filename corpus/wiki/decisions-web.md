@@ -41,7 +41,8 @@ name, so it is an inline style, recorded as a rule 5 exception in `scripts/conve
 
 ## The theme
 
-Light, Dark and System, kept in `localStorage` under `theme`. `data-theme` on `<html>` is the only mechanism:
+Light, Dark and System, kept in `localStorage` under `solstice.theme` (2026-11-25: the bare `theme` was shared with every app on the
+domain; the bare value is read once to carry an old choice over and is never written or deleted). `data-theme` on `<html>` is the only mechanism:
 `styles.css` keys the light palette off it and the dark one is `@theme`, with no `prefers-color-scheme` anywhere in
 the stylesheet. `themeChoice` is what was picked; `theme` is the palette in force. `System` asks `matchMedia` and
 follows its `change` event until another choice is made. A boot script in `index.html` sets the attribute before

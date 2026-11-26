@@ -8,7 +8,13 @@
       // The theme before the first paint, so a stored choice never flashes the other palette. A first visit
       // is dark (DEFAULT_THEME in src/state/store.ts: keep the two in step). `system` asks the operating system.
       try {
-        var choice = localStorage.getItem("theme");
+        // The bare "theme" an older build wrote is read once, carried to "solstice.theme" and never written.
+        var choice = localStorage.getItem("solstice.theme");
+        if (choice !== "light" && choice !== "dark" && choice !== "system") {
+          var legacy = localStorage.getItem("theme");
+          choice = legacy === "light" || legacy === "dark" || legacy === "system" ? legacy : null;
+          if (choice) localStorage.setItem("solstice.theme", choice);
+        }
         var dark =
           choice === "light" ? false : choice === "system" ? matchMedia("(prefers-color-scheme: dark)").matches : true;
         document.documentElement.dataset.theme = dark ? "dark" : "light";
